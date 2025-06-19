@@ -13,9 +13,9 @@ import { RouterLink, RouterView } from 'vue-router'
         <div class="wrapper flex justify-end ml-2">
           <nav class="flex gap-7 text-gray-300 roboto">
             <router-link class="hover:text-gray-100" to="/">Home</router-link>
-            <router-link class="hover:text-gray-100" to="recent-records">Recent Records</router-link>
-            <router-link class="hover:text-gray-100" to="maps">Map Leaderboards</router-link>
-            <router-link class="hover:text-gray-100" to="players">Player Lookup</router-link>
+            <router-link class="hover:text-gray-100" to="/recent-records">Recent Records</router-link>
+            <router-link class="hover:text-gray-100" to="/map">Map Leaderboards</router-link>
+            <router-link class="hover:text-gray-100" to="/players">Player Lookup</router-link>
           </nav>
         </div>
       </div>

@@ -13,10 +13,20 @@
 
   const props = defineProps<{
     select_options: { id:number, name:string }[],
+    selected_option: { id:number, name:string },
     type: string
   }>()
 
-  const selected = ref<object>({});
+  const selected = ref<object>(props.selected_option);
+
+  //update selected when parent selected_option changes
+  const selectedProp = computed(()=>{return props.selected_option});
+  watch(selectedProp, async()=>{
+    if(props.selected_option !== selected.value){
+      selected.value = props.selected_option;
+    }
+  });
+
   const emit = defineEmits(['select-Changed']);
   watch(selected, async() => {
     emit('select-Changed', selected.value !== null ? selected.value : {});

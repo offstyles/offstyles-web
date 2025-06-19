@@ -10,15 +10,18 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/maps/',
+      path: '/map',
       name: 'maps',
-      // route level code-splitting
-      // this generates a separate chunk (ServerTrackerView.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/MapsView.vue')
+      component: () => import('../views/MapsView.vue'),
     },
     {
-      path: '/players/',
+      path:'/map/:map',
+      name: 'single-map',
+      component: () => import('../views/MapsView.vue'),
+      props: true
+    },
+    {
+      path: '/players',
       name: 'players',
       // route level code-splitting
       // this generates a separate chunk (ServerTrackerView.[hash].js) for this route
@@ -26,7 +29,7 @@ const router = createRouter({
       component: () => import('../views/PlayersView.vue')
     },
     {
-      path: '/recent-records/',
+      path: '/recent-records',
       name: 'recent-records',
       // route level code-splitting
       // this generates a separate chunk (ServerTrackerView.[hash].js) for this route
