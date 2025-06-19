@@ -1,0 +1,28 @@
+<template>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="32"
+  height="32"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2.25"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class="loadingSpinner"
+>
+  <path d="M12 3a9 9 0 1 0 9 9" />
+</svg>
+
+</template>
+
+<style scoped>
+  .loadingSpinner path{
+    transform-origin:center;
+    animation:spinner_svv2 0.5s infinite linear;
+  }
+
+  @keyframes spinner_svv2{
+    100%{transform:rotate(-360deg)}
+  }
+</style>

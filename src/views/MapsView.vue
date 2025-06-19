@@ -3,6 +3,8 @@
   import ComboBox from '@/components/ComboBox.vue';
   import { useRouter } from 'vue-router'
   import type { Ref } from 'vue'
+  import OffstylesApi from '@/api/offstylesApi';
+  import loadWheel from '@/components/icons/loadWheel.vue';
 
   const router = useRouter();
 
@@ -13,14 +15,8 @@
     },
   });
 
-  const maps = [
-    {id:1,name:'bhop_beginner'},
-    {id:2,name:'bhop_easy'},
-    {id:3,name:'bhop_hard'},
-    {id:4,name:'bhop_bigmichael'},
-    {id:5,name:'bhop_idk'},
-    {id:6,name:'bhop_update'},
-  ];
+  const maps: Ref<object[]> = ref([]);
+  
   const selected_map: Ref<object> = ref({});
   const is_map_set = computed(() => {return (Object.keys(selected_map.value).length > 0) && selected_map.value.hasOwnProperty('name')});
 
@@ -30,10 +26,14 @@
     router.push(is_map_set.value ? '/map/'+selected_map.value.name : '/map');
   }
 
-  //set initial map from url
-  onMounted(()=>{
+  onMounted(async ()=>{
+    const apiMaps = await OffstylesApi.getMapsList();
+    if(apiMaps.length){
+      maps.value = apiMaps;
+    }
+    //set initial map from url
     if(typeof props.map !== 'undefined'){
-      selected_map.value = maps.find((map)=>map.name === props.map) ?? {};
+      selected_map.value = maps.value.find((map)=>map.name === props.map) ?? {};
     }
   });
 </script>
@@ -46,7 +46,12 @@
         <h1 class="text-2xl mb-3">{{ selected_map.name }}</h1>
         <p class="text-gray-200">info go here</p>
       </div>
-      <div v-else><h1 class="text-lg text-gray-100 mt-8">Select a map above to view leaderboards</h1></div>
+      <div v-else class="mt-8">
+        <h1 v-if="maps.length" class="text-lg text-gray-100">Select a map above to view leaderboards</h1>
+        <div v-else>
+          <loadWheel class="text-gray-200"></loadWheel>
+        </div>
+      </div>
     </div>
   </main>
 </template>

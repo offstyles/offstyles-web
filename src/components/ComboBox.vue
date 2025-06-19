@@ -12,7 +12,7 @@
   import IconChevronDown from '@/components/icons/IconChevronDown.vue';
 
   const props = defineProps<{
-    select_options: { id:number, name:string }[],
+    select_options: object[],
     selected_option: { id:number, name:string },
     type: string
   }>()
@@ -46,7 +46,7 @@
 </script>
 
 <template>
-  <Combobox v-model="selected" nullable  v-slot="{open}">
+  <Combobox v-model="selected" nullable  v-slot="{open}" :class="select_options.length ? '' : 'disabled'">
         <div class="relative mt-1 w-64">
           <div class="relative cursor-default overflow-hidden rounded-lg bg-main-800 text-left sm:text-sm border focus-within:border-main-50"
            :class="open ? 'border-main-50' : 'border-transparent'">
@@ -95,3 +95,10 @@
         </div>
       </Combobox>
 </template>
+
+<style scoped>
+.disabled{
+  pointer-events:none;
+  opacity:0.4;
+}
+</style>
