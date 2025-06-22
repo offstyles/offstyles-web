@@ -14,12 +14,9 @@
 
   const props = defineProps<{
     select_options: object[],
-    selected_option: { id:number, name:string },
+    selected_option: { id?:number, name?:string },
     type: string,
-    is_loading: {
-      type: boolean,
-      default: false
-    },
+    is_loading?: boolean,
   }>()
 
   const selected = ref<object>(props.selected_option);
@@ -51,7 +48,7 @@
 </script>
 
 <template>
-  <Combobox v-model="selected" nullable  v-slot="{open}" :class="select_options.length ? '' : 'disabled'">
+  <Combobox v-model="selected" nullable  v-slot="{open}" :class="is_loading ? 'disabled' : ''">
         <div class="relative mt-1 w-64">
           <div class="relative cursor-default overflow-hidden rounded-lg bg-main-800 text-left sm:text-sm border focus-within:border-main-50"
            :class="open ? 'border-main-50' : 'border-transparent'">
@@ -63,8 +60,8 @@
               
             />
             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center px-2 bg-main-800 cursor-pointer">
-              <IconChevronDown v-if="is_loading" class="h-4 w-4 text-gray-400" aria-hidden="true" />
-              <loadWheel v-else class="h-4 w-4 text-gray-400"></loadWheel>
+              <loadWheel v-if="is_loading" class="h-4 w-4 text-gray-400"></loadWheel>
+              <IconChevronDown v-else class="h-4 w-4 text-gray-400" aria-hidden="true" />
             </ComboboxButton>
           </div>
           <TransitionRoot

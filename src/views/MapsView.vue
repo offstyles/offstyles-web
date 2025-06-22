@@ -41,7 +41,7 @@
 <template>
   <main>
     <div class="flex flex-col items-center justify-center">
-      <ComboBox :select_options="maps" :selected_option="selected_map" :is_loading="maps.length" :type="'map'" @select-Changed="selectChanged"></ComboBox>
+      <ComboBox :select_options="maps" :selected_option="selected_map" :is_loading="maps.length === 0" :type="'map'" @select-Changed="selectChanged"></ComboBox>
       <div v-if="is_map_set" class="text-white w-full max-w-[700px] p-4 text-center flex flex-col justify-center rounded-lg mt-8">
         <h1 class="text-2xl mb-3">{{ selected_map.name }}</h1>
         <p class="text-gray-200">info go here</p>
