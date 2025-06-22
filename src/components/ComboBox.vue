@@ -17,7 +17,7 @@
     selected_option: { id:number, name:string },
     type: string,
     is_loading: {
-      type: bool,
+      type: boolean,
       default: false
     },
   }>()
