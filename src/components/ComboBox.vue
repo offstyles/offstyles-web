@@ -10,11 +10,16 @@
   } from '@headlessui/vue';
   import IconCheck from '@/components/icons/IconCheck.vue';
   import IconChevronDown from '@/components/icons/IconChevronDown.vue';
+  import loadWheel from '@/components/icons/loadWheel.vue';
 
   const props = defineProps<{
     select_options: object[],
     selected_option: { id:number, name:string },
-    type: string
+    type: string,
+    is_loading: {
+      type: bool,
+      default: false
+    },
   }>()
 
   const selected = ref<object>(props.selected_option);
@@ -58,7 +63,8 @@
               
             />
             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center px-2 bg-main-800 cursor-pointer">
-              <IconChevronDown class="h-4 w-4 text-gray-400" aria-hidden="true" />
+              <IconChevronDown v-if="is_loading" class="h-4 w-4 text-gray-400" aria-hidden="true" />
+              <loadWheel v-else class="h-4 w-4 text-gray-400"></loadWheel>
             </ComboboxButton>
           </div>
           <TransitionRoot
