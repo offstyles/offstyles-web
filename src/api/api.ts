@@ -12,7 +12,7 @@ class Api {
     }
   }
   //for testing purposes
-  static async fakeFetch(data : object[]){
+  static async fakeFetch(data : any){
     await new Promise(resolve => setTimeout(resolve, 1500));
     return data;
   }

@@ -1,5 +1,6 @@
 import Api from './api';
 import sampleTimes from '../sampleTimes.ts';
+import type { Time } from '@/types/Time.ts';
 class OffstylesApi extends Api {
   static offstylesApiUrl = 'https://example.com';
   static async getMapsList(){
@@ -14,7 +15,7 @@ class OffstylesApi extends Api {
       {id:6,name:'bhop_update'},
     ]);
   }
-  static async getTimesByMap(mapName: string){
+  static async getTimesByMap(mapName: string) : Promise<Time[]>{
     this.url =`${this.offstylesApiUrl}/mapTimes?map=${mapName}`;
     //return this.fetchFromUrl();
     return await this.fakeFetch(sampleTimes);

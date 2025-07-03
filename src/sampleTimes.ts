@@ -1,4 +1,6 @@
-const sampleTimes = [{
+import type { Time } from "./types/Time";
+
+const sampleTimes : Time[] = [{
     _id: "685629946dbd08b4fb2bd0e5",
     map: "bhop_bfur",
     steamid: "tommy",
@@ -11,8 +13,6 @@ const sampleTimes = [{
     tickrate: 100,
     replay: null,
     style: 7,
-    is_invalid: false,
-    invalid_ref: null,
     server: {
       ip: "62.175.236.81",
       name: "TvwkLBcQRwZieAD",
@@ -32,8 +32,6 @@ const sampleTimes = [{
     tickrate: 100,
     replay: null,
     style: 7,
-    is_invalid: false,
-    invalid_ref: null,
     server: {
       ip: "62.175.236.81",
       name: "TvwkLBcQRwZieAD",
