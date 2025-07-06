@@ -15,8 +15,8 @@
   <span>{{ props.col.format ? props.col.format(props.time[props.col.data]) : props.time[props.col.data] }}</span>
   <span v-if="props.col.data === 'time' && props.wrTime" 
   :class="
-    props.time.time - props.wrTime.time > 0 ? 'text-red-600' :
-    props.time.time - props.wrTime.time < 0 ? 'text-green-600 opacity-90' : 
+    props.time.time - props.wrTime.time > 0 ? 'text-red-500 opacity-70' :
+    props.time.time - props.wrTime.time < 0 ? 'text-green-600 opacity-80' : 
    'text-gray-500'
   "> 
     ({{ dateTimeFormats.timeDiff(props.time.time - props.wrTime.time) }})
