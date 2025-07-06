@@ -68,7 +68,7 @@ const timeSince = function(date : number, comparisonDate = Date.now(), suffix = 
   };
 
 const date = function(date : number){
-  return new Date(date).toLocaleDateString();
+  return new Date(date*1000).toLocaleDateString();
 }
 
 export default {time, timeDiff, timeSince, date};

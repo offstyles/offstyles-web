@@ -1,8 +1,6 @@
 <script setup lang="ts">
-  import type { Time } from '@/types/Time';
   import type { TimeListColumn } from '@/types/TimeListColumn';
   import { computed } from 'vue';
-  import TimesListItemContent from './TimesListItemContent.vue';
   const props = defineProps<{
       cols: TimeListColumn[],
     }>();

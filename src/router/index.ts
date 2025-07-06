@@ -10,12 +10,12 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/map',
+      path: '/maps',
       name: 'maps',
       component: () => import('../views/MapsView.vue'),
     },
     {
-      path:'/map/:map',
+      path:'/maps/:mapName',
       name: 'single-map',
       component: () => import('../views/MapsView.vue'),
       props: true

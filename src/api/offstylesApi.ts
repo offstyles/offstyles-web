@@ -2,7 +2,7 @@ import Api from './api';
 import sampleTimes from '../sampleTimes.ts';
 import type { Time } from '@/types/Time.ts';
 class OffstylesApi extends Api {
-  static offstylesApiUrl = 'https://example.com';
+  static offstylesApiUrl = 'https://offstyles.tommyy.dev/api';
   static async getMapsList(){
     this.url =`${this.offstylesApiUrl}/mapsList`;
     //return await this.fetchFromUrl();
@@ -16,9 +16,9 @@ class OffstylesApi extends Api {
     ]);
   }
   static async getTimesByMap(mapName: string) : Promise<Time[]>{
-    this.url =`${this.offstylesApiUrl}/mapTimes?map=${mapName}`;
-    //return this.fetchFromUrl();
-    return await this.fakeFetch(sampleTimes);
+    this.url =`${this.offstylesApiUrl}/map_leaderboard?map=${mapName}`;
+    return this.fetchFromUrl();
+    //return await this.fakeFetch(sampleTimes);
   }
 }
 

@@ -6,50 +6,55 @@
   import OffstylesApi from '@/api/offstylesApi';
   import loadWheel from '@/components/icons/loadWheel.vue';
   import MapDetails from '@/components/MapDetails.vue';
+  import type { Time } from '@/types/Time';
 
   const router = useRouter();
 
   const props = defineProps({
-    map: {
+    mapName: {
       type: String,
       required: false,
     },
   });
-
-  const maps: Ref<object[]> = ref([]);
   
-  const selected_map: Ref<object> = ref({});
-  const is_map_set = computed(() => {return (Object.keys(selected_map.value).length > 0) && selected_map.value.hasOwnProperty('name')});
+  const isLoading: Ref<boolean> = ref(false);
+  const mapTimes: Ref<Time[] | null> = ref(null);
 
   //update selected_map & url
-  function selectChanged(map:object){
-    selected_map.value = map;
-    router.push(is_map_set.value ? '/map/'+selected_map.value.name : '/map');
+  async function updateMap(map:string){
+    await getMapTimes(map);
+    router.push(mapTimes.value ? '/maps/'+mapTimes.value[0].map : '/maps');
   }
 
   onMounted(async ()=>{
-    const apiMaps = await OffstylesApi.getMapsList();
-    if(apiMaps.length){
-      maps.value = apiMaps;
-    }
     //set initial map from url
-    if(typeof props.map !== 'undefined'){
-      selected_map.value = maps.value.find((map)=>map.name === props.map) ?? {};
+    if(typeof props.mapName !== 'undefined'){
+      updateMap(props.mapName);
     }
   });
+
+  async function getMapTimes(mapName: string){
+    isLoading.value = true;
+    mapTimes.value = null;
+    const apiMapTimes = await OffstylesApi.getTimesByMap(mapName);
+    if(apiMapTimes.length){
+      mapTimes.value = apiMapTimes;
+    }
+    isLoading.value = false;
+  }
 </script>
 
 <template>
   <main>
     <div class="flex flex-col items-center justify-center">
-      <ComboBox :select_options="maps" :selected_option="selected_map" :is_loading="maps.length === 0" :type="'map'" @select-Changed="selectChanged"></ComboBox>
-        <MapDetails v-if="is_map_set" :map="selected_map"></MapDetails>
-        <div v-else class="mt-8">
-          <div v-if="!maps.length && props.map">
-            <loadWheel class="text-gray-200"></loadWheel>
-          </div>
-          <h1 v-else class="text-lg text-gray-100">Select a map above to view leaderboards</h1>
+      <!--<ComboBox :select_options="maps" :selected_option="selected_map" :is_loading="maps.length === 0" :type="'map'" @select-Changed="selectChanged"></ComboBox>-->
+      <MapDetails v-if="mapTimes" :mapTimes="mapTimes"></MapDetails>
+      <div v-else class="mt-8">
+        <div v-if="isLoading">
+          <loadWheel class="text-gray-200"></loadWheel>
         </div>
+        <h1 v-else class="text-lg text-gray-100">Select a map above to view leaderboards</h1>
+      </div>
     </div>
   </main>
 </template>

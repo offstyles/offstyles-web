@@ -1,17 +1,18 @@
 <script setup lang="ts">
   import type { Time } from '@/types/Time';
   import dateTimeFormats from '@/utils/dateTimeFormats';
+  import type { TimeListColumn } from '@/types/TimeListColumn';
   import { computed } from 'vue';
   const props = defineProps<{
       time: Time,
       wrTime: Time | undefined,
-      col: object,
+      col: TimeListColumn,
     }>();
 </script>
 
 
 <template>
-  <span>{{ props.col.format ? col.format(props.time[props.col.data]) : props.time[props.col.data] }}</span>
+  <span>{{ props.col.format ? props.col.format(props.time[props.col.data]) : props.time[props.col.data] }}</span>
   <span v-if="props.col.data === 'time' && props.wrTime" 
   :class="
     props.time.time - props.wrTime.time > 0 ? 'text-red-600' :
