@@ -1,6 +1,8 @@
 <script setup lang="ts">
-  import { computed, ref, onMounted, watch } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import TimesList from './TimesList.vue';
+  import dateTimeFormats from '@/utils/dateTimeFormats';
+  import timeLinks from '@/utils/timeLinks';
   import OffstylesApi from '@/api/offstylesApi';
   import type { Time } from '@/types/Time';
   import type { Ref } from 'vue'
@@ -26,7 +28,28 @@
     <h1 class="text-2xl mb-3">{{ props.map.name }}</h1>
     <p class="text-gray-200">info go here</p>
     
-    <TimesList :times="times"></TimesList>
+    <TimesList :times="times" :cols="[{
+      label: 'Player',
+      data: 'name',
+      placement: true,
+      width:'25%',
+      classes: 'text-left',
+      link: timeLinks.playerLink
+    }, 
+    {
+      label: 'Date',
+      data: 'date',
+      width:'35%',
+      classes: 'text-right',
+      format: dateTimeFormats.date
+    },
+    {
+      label: 'Time',
+      data: 'time',
+      width: '40%',
+      classes: 'text-right',
+      format: dateTimeFormats.time
+    }]"></TimesList>
     
   </div>
 </template>
