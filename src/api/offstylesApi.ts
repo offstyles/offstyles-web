@@ -20,6 +20,10 @@ class OffstylesApi extends Api {
     return this.fetchFromUrl();
     //return await this.fakeFetch(sampleTimes);
   }
+  static async getMapsForAutoComplete(input: string) : Promise<string[]>{
+    this.url =`${this.offstylesApiUrl}/autocomplete_maps?text=${input}`;
+    return this.fetchFromUrl();
+  }
 }
 
 export default OffstylesApi;

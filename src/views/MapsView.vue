@@ -1,14 +1,11 @@
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
-  import ComboBox from '@/components/ComboBox.vue';
-  import { useRouter } from 'vue-router'
+  import { ref, onMounted } from 'vue'
   import type { Ref } from 'vue'
   import OffstylesApi from '@/api/offstylesApi';
   import loadWheel from '@/components/icons/loadWheel.vue';
   import MapDetails from '@/components/MapDetails.vue';
   import type { Time } from '@/types/Time';
-
-  const router = useRouter();
+  import SearchBox from '@/components/SearchBox.vue';
 
   const props = defineProps({
     mapName: {
@@ -23,7 +20,6 @@
   //update selected_map & url
   async function updateMap(map:string){
     await getMapTimes(map);
-    router.push(mapTimes.value ? '/maps/'+mapTimes.value[0].map : '/maps');
   }
 
   onMounted(async ()=>{
@@ -48,13 +44,11 @@
   <main>
     <div class="flex flex-col items-center justify-center">
       <!--<ComboBox :select_options="maps" :selected_option="selected_map" :is_loading="maps.length === 0" :type="'map'" @select-Changed="selectChanged"></ComboBox>-->
+      <SearchBox @updateMap="updateMap"></SearchBox>
       <MapDetails v-if="mapTimes" :mapTimes="mapTimes"></MapDetails>
-      <div v-else class="mt-8">
-        <div v-if="isLoading">
-          <loadWheel class="text-gray-200"></loadWheel>
-        </div>
-        <h1 v-else class="text-lg text-gray-100">Select a map above to view leaderboards</h1>
-      </div>
+      <loadWheel v-else-if="isLoading" class="text-gray-200 mt-5"></loadWheel>
+      <h1 v-else-if="props.mapName" class="text-lg text-gray-100 mt-5">No times found for selected map</h1>
+      <h1 v-else class="text-lg text-gray-100 mt-5">Select a map above to view leaderboards</h1>
     </div>
   </main>
 </template>
