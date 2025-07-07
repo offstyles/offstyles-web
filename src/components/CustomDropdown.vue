@@ -5,6 +5,7 @@
   import IconCheck from './icons/IconCheck.vue';
   import IconChevronUpDown from './icons/IconChevronUpDown.vue';
   import { Style } from '@/types/Style';
+  import urlParams from '@/utils/urlParams';
   const emit = defineEmits(['dropdown-Changed']);
   
   const props = defineProps<{
@@ -13,7 +14,7 @@
     format: (value: number) => string
   }>()
 
-  const currentInput : Ref<number> = ref(Style.normal);
+  const currentInput : Ref<number> = ref(urlParams.getAsObject().style ? Number(urlParams.getAsObject().style) : Style.normal);
   
   watch(currentInput, async() => {
     emit('dropdown-Changed', props.name, currentInput.value);
