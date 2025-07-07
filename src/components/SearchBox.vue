@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, computed } from 'vue';
   import type { Ref } from 'vue';
   import OffstylesApi from '@/api/offstylesApi';
   import loadWheel from './icons/loadWheel.vue';
+  import urlParams from '@/utils/urlParams';
   const currentInput : Ref<string> = ref('');
   const autoCompleteResults : Ref<string[]> = ref([]);
   const showAutoCompleteDropdown : Ref<boolean> = ref(false);
@@ -22,6 +23,7 @@
       isLoading.value = false;
     }, 600);
   }
+  const params = computed(()=>{return urlParams.get()});
 </script>
 
 <template>
@@ -34,7 +36,7 @@
     class="rounded-lg bg-main-800 text-left border border-transparent focus-within:border-main-50 py-2 px-3 text-sm leading-5 text-gray-200 placeholder:text-gray-500 outline-none">
     <div class="absolute top-full w-full rounded-lg bg-main-900 border border-main-100 text-sm text-gray-300 mt-1 py-2 px-2 shadow-lg/20 hidden group-focus-within:block" v-if="showAutoCompleteDropdown && currentInput">
       <loadWheel v-if="isLoading" class="text-gray-300 flex mx-auto w-6 h-6"></loadWheel>
-      <router-link v-else v-for="(result, index) in autoCompleteResults" :to="{path:`/maps/${result}/`}" :key="index"
+      <router-link v-else v-for="(result, index) in autoCompleteResults" :to="{path:`/maps/${result}/?${params}`, query:urlParams.getAsObject()}" :key="index"
         @click="$emit('updateMap', result); showAutoCompleteDropdown = false"
         class="py-0.5 px-1.5 hover:bg-main-600 rounded-sm block">{{ result }}
       </router-link>

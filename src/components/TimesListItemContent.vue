@@ -8,11 +8,19 @@
       wrTime: Time | undefined,
       col: TimeListColumn,
     }>();
+    const data = computed(()=>{
+      if(props.col.data === "server"){
+        return props.time[props.col.data].server;
+      }
+      return props.col.numFormat && typeof props.time[props.col.data] === 'number' ?
+       props.col.numFormat(props.time[props.col.data] as number) : 
+       props.time[props.col.data];
+    })
 </script>
 
 
 <template>
-  <span>{{ props.col.format ? props.col.format(props.time[props.col.data]) : props.time[props.col.data] }}</span>
+  <span>{{ data }}</span>
   <span v-if="props.col.data === 'time' && props.wrTime" 
   :class="
     props.time.time - props.wrTime.time > 0 ? 'text-red-500 opacity-70' :

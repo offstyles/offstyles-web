@@ -9,7 +9,11 @@ export interface Time {
     jumps: number;
     date: number;
     tickrate: number;
-    replay: number | null;
+    replay: number;
     style: number;
-    server: object;  
+    server: {
+        ip:string;
+        server:string;
+        internal_server_id:string;
+    };  
 }

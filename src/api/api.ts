@@ -11,11 +11,6 @@ class Api {
       return [];
     }
   }
-  //for testing purposes
-  static async fakeFetch(data : any){
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return data;
-  }
 }
 
 export default Api;

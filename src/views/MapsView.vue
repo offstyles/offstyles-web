@@ -16,6 +16,7 @@
   
   const isLoading: Ref<boolean> = ref(false);
   const mapTimes: Ref<Time[] | null> = ref(null);
+  const mapName: Ref<string> = ref(props.mapName ?? '');
 
   //update selected_map & url
   async function updateMap(map:string){
@@ -29,10 +30,11 @@
     }
   });
 
-  async function getMapTimes(mapName: string){
+  async function getMapTimes(name: string){
+    mapName.value = name;
     isLoading.value = true;
     mapTimes.value = null;
-    const apiMapTimes = await OffstylesApi.getTimesByMap(mapName);
+    const apiMapTimes = await OffstylesApi.getTimesByMap(name);
     if(apiMapTimes.length){
       mapTimes.value = apiMapTimes;
     }
@@ -45,10 +47,9 @@
     <div class="flex flex-col items-center justify-center">
       <!--<ComboBox :select_options="maps" :selected_option="selected_map" :is_loading="maps.length === 0" :type="'map'" @select-Changed="selectChanged"></ComboBox>-->
       <SearchBox @updateMap="updateMap"></SearchBox>
-      <MapDetails v-if="mapTimes" :mapTimes="mapTimes"></MapDetails>
-      <loadWheel v-else-if="isLoading" class="text-gray-200 mt-5"></loadWheel>
-      <h1 v-else-if="props.mapName" class="text-lg text-gray-100 mt-5">No times found for selected map</h1>
-      <h1 v-else class="text-lg text-gray-100 mt-5">Select a map above to view leaderboards</h1>
+      <MapDetails v-if="mapName !== ''" :mapTimes="mapTimes" :mapName="mapName" :isLoading="isLoading" @updateMap="updateMap"></MapDetails>
+      <loadWheel v-if="isLoading" class="text-gray-200 mt-5"></loadWheel>
+      <h1 v-if="mapName === ''" class="text-lg text-gray-100 mt-5">Select a map above to view leaderboards</h1>
     </div>
   </main>
 </template>
