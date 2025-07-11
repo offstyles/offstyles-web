@@ -23,10 +23,16 @@
   <span>{{ data }}</span>
   <span v-if="props.col.data === 'time' && props.wrTime" 
   :class="
-    props.time.time - props.wrTime.time > 0 ? 'text-red-500 opacity-70' :
-    props.time.time - props.wrTime.time < 0 ? 'text-green-600 opacity-80' : 
+    props.time.time - props.wrTime.time > 0 ? 'nonWrTimeColor opacity-70' :
+    props.time.time - props.wrTime.time <= 0 ? 'text-green-600 opacity-80' : 
    'text-gray-500'
   "> 
     ({{ dateTimeFormats.timeDiff(props.time.time - props.wrTime.time) }})
   </span>
 </template>
+
+<style>
+.nonWrTimeColor{
+  color:hsl(357, v-bind('$props.wrTime ? `${($props.time.time - $props.wrTime.time)*200+40}%` : "90%"'), 58%)
+}
+</style>
