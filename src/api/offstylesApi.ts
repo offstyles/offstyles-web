@@ -1,17 +1,20 @@
 import Api from './api';
 import type { Time } from '@/types/Time.ts';
 import urlParams from '@/utils/urlParams';
+import { Style } from '@/types/Style';
 class OffstylesApi extends Api {
   static offstylesApiUrl = 'https://offstyles.tommyy.dev/api';
   static async getTimesByMap(mapName: string) : Promise<Time[]>{
-    const params = urlParams.get();
-    this.url =`${this.offstylesApiUrl}/map_leaderboard?map=${mapName}&${params}`;
+    let paramsObj = urlParams.getAsObject();
+    paramsObj.style = paramsObj.style ?? Style.normal;
+    const params = new URLSearchParams(paramsObj).toString();
+    this.url =`${this.offstylesApiUrl}/map?map=${mapName}&${params}`;
     return this.fetchFromUrl();
     //return await this.fakeFetch(sampleTimes);
   }
   static async getTimesByPlayer(steamID: string) : Promise<Time[]>{
-    const params = urlParams.get();
-    this.url =`${this.offstylesApiUrl}/player_times?steamid=${steamID}&${params}`;
+    let params = urlParams.get()
+    this.url =`${this.offstylesApiUrl}/times?steamid=${steamID}&${params}`;
     return this.fetchFromUrl();
     //return await this.fakeFetch(sampleTimes);
   }
