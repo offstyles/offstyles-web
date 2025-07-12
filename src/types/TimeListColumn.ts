@@ -17,7 +17,7 @@ export interface TimeListColumn {
     "style" |
     "server",
     placement?: boolean,
-    width : string,
+    width? : string,
     classes?: string,
     link?: ((value: Time) => string),
     numFormat?: (value: number) => string

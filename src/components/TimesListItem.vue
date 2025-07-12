@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import type { Time } from '@/types/Time';
   import type { TimeListColumn } from '@/types/TimeListColumn';
-  import { computed } from 'vue';
+  import type { Ref } from 'vue';
+  import { computed, ref } from 'vue';
   import TimesListItemContent from './TimesListItemContent.vue';
+  import TimesListItemMoreDetails from './TimesListItemMoreDetails.vue';
   const props = defineProps<{
       time: Time,
       wrTime: Time,
@@ -13,13 +15,39 @@
   const colWidthsStyle = computed(()=>{
     return props.cols.map((v)=>v.width ? v.width : 'auto').join(' ');
   })
+  const moreDetailsCols: TimeListColumn[] = [
+    {
+      label:'Jumps',
+      data:'jumps'
+    },
+    {
+      label: 'Strafes',
+      data:'strafes'
+    },
+    {
+      label: 'Sync',
+      data:'sync'
+    },
+  ];
+
+  const showDetails: Ref<boolean> = ref(false);
+
+  function toggleDetails(){
+    showDetails.value = !showDetails.value;
+  }
+
 </script>
 
 
 <template>
-  <div class="grid os-grid-cols-auto p-1 px-2 bg-main-600 odd:bg-main-700">
+  <div class="grid os-grid-cols-auto p-1 px-2 border-b 
+  hover:bg-main-500  hover:pb-2 cursor-pointer transition-[padding border-color background-color] duration-200"
+  :class="showDetails ?
+   'pb-2 border-gray-400 hover:border-gray-200 bg-main-500' : 
+   'border-transparent bg-main-600 odd:bg-main-700 hover:border-gray-400'" 
+  @click="toggleDetails()">
     <div v-for="(col,index) in props.cols" :key="index" :class="col.classes">
-      <a v-if="col.link" :href="col.link(props.time)" class="hover:underline">
+      <a v-if="col.link" :href="col.link(props.time)" class="hover:underline" @click.stop>
         <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
       </a>
       <div v-else>
@@ -27,6 +55,7 @@
       </div>
     </div>
   </div>
+  <TimesListItemMoreDetails v-if="showDetails" :time="props.time" :cols="moreDetailsCols"></TimesListItemMoreDetails>
 </template>
 
 <style scoped>
