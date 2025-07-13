@@ -10,7 +10,6 @@ class OffstylesApi extends Api {
     const params = new URLSearchParams(paramsObj).toString();
     this.url =`${this.offstylesApiUrl}/map?map=${mapName}&${params}`;
     return this.fetchFromUrl();
-    //return await this.fakeFetch(sampleTimes);
   }
   static async getTimesByPlayer(steamID: string) : Promise<Time[]>{
     let paramsObj = urlParams.getAsObject();
@@ -18,7 +17,6 @@ class OffstylesApi extends Api {
     const params = new URLSearchParams(paramsObj).toString();
     this.url =`${this.offstylesApiUrl}/times?steamid=${steamID}&${params}`;
     return this.fetchFromUrl();
-    //return await this.fakeFetch(sampleTimes);
   }
   static async getMapsForAutoComplete(input: string) : Promise<string[]>{
     this.url =`${this.offstylesApiUrl}/autocomplete_maps?text=${input}`;

@@ -20,7 +20,8 @@
 
 
 <template>
-  <span>{{ data }}</span>
+  <span v-if="props.col.placement" class="inline-flex items-center justify-end text-end mr-1.5 min-w-5 text-sm text-gray-400">{{ props.time.rank }}.</span>
+  <span class="truncate">{{ data }}</span>
   <span v-if="props.col.data === 'time' && props.wrTime" 
   :class="
     props.time.time - props.wrTime.time > 0 ? 'nonWrTimeColor opacity-70' :
