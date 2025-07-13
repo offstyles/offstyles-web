@@ -29,6 +29,12 @@ const router = createRouter({
       component: () => import('../views/PlayersView.vue')
     },
     {
+      path:'/players/:playerSteamId',
+      name: 'single-player',
+      component: () => import('../views/PlayersView.vue'),
+      props: true
+    },
+    {
       path: '/recent-records',
       name: 'recent-records',
       // route level code-splitting

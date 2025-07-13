@@ -13,7 +13,9 @@ class OffstylesApi extends Api {
     //return await this.fakeFetch(sampleTimes);
   }
   static async getTimesByPlayer(steamID: string) : Promise<Time[]>{
-    let params = urlParams.get()
+    let paramsObj = urlParams.getAsObject();
+    paramsObj.style = paramsObj.style ?? Style.normal;
+    const params = new URLSearchParams(paramsObj).toString();
     this.url =`${this.offstylesApiUrl}/times?steamid=${steamID}&${params}`;
     return this.fetchFromUrl();
     //return await this.fakeFetch(sampleTimes);
