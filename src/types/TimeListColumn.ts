@@ -12,10 +12,13 @@ export interface TimeListColumn {
     "strafes" |
     "jumps" |
     "date" |
-    "tickrate" |
-    "replay" |
+    "replay_ref" |
     "style" |
-    "server",
+    "is_invalid" |
+    "is_banned" |
+    "invalid_ref" |
+    "server" |
+    "rank",
     placement?: boolean,
     width? : string,
     classes?: string,

@@ -8,12 +8,15 @@ export interface Time {
     strafes: number;
     jumps: number;
     date: number;
-    tickrate: number;
-    replay: number;
+    replay_ref?: number | null;
     style: number;
+    is_invalid: boolean;
+    is_banned: boolean;
+    invalid_ref?: number | null;
     server: {
         ip:string;
         server:string;
         internal_server_id:string;
     };  
+    rank: number;
 }
