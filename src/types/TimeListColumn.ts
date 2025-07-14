@@ -22,6 +22,7 @@ export interface TimeListColumn {
     placement?: boolean,
     width? : string,
     classes?: string,
+    alignmentClasses?: string,
     link?: ((value: Time) => string),
     numFormat?: (value: number) => string
 }

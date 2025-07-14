@@ -38,27 +38,27 @@
       data: 'map',
       placement: true,
       width:'25%',
-      classes: 'text-left',
+      alignmentClasses: 'text-left',
       link: timeLinks.mapLink
     }, 
     {
       label: 'Server',
       data: 'server',
       width: '30%',
-      classes: 'text-left'
+      alignmentClasses: 'text-left'
     },
     {
       label: 'Date',
       data: 'date',
       width:'15%',
-      classes: 'text-right justify-end',
+      alignmentClasses: 'text-right justify-end',
       numFormat: dateTimeFormats.date
     },
     {
       label: 'Time',
       data: 'time',
       width: '30%',
-      classes: 'text-right justify-end',
+      alignmentClasses: 'text-right justify-end',
       numFormat: dateTimeFormats.time
     }]"></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected player & style</h1>

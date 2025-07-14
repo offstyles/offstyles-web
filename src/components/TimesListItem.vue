@@ -46,8 +46,8 @@
    'pb-2 border-gray-400 hover:border-gray-200 bg-main-500' : 
    'border-transparent bg-main-600 odd:bg-main-700 hover:border-gray-400'" 
   @click="toggleDetails()">
-    <div v-for="(col,index) in props.cols" :key="index">
-      <a v-if="col.link" :href="col.link(props.time)" class="hover:underline flex" @click.stop :class="col.classes">
+    <div v-for="(col,index) in props.cols" :key="index" class="flex" :class="col.alignmentClasses">
+      <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
         <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
       </a>
       <div v-else class="flex" :class="col.classes">
