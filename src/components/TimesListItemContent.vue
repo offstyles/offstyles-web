@@ -27,7 +27,8 @@
     props.time.time - props.wrTime.time > 0 ? 'nonWrTimeColor opacity-70' :
     props.time.time - props.wrTime.time <= 0 ? 'text-green-600 opacity-80' : 
    'text-gray-500'
-  "> 
+  "
+  class="ml-1"> 
     ({{ dateTimeFormats.timeDiff(props.time.time - props.wrTime.time) }})
   </span>
 </template>
