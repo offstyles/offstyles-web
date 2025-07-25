@@ -36,7 +36,6 @@
     <TimesList v-if="props.playerTimes" :times="props.playerTimes" :cols="[{
       label: 'Map',
       data: 'map',
-      placement: true,
       width:'25%',
       alignmentClasses: 'text-left',
       link: timeLinks.mapLink

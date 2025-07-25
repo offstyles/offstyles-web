@@ -16,25 +16,27 @@
        props.col.numFormat(props.time[props.col.data] as number) : 
        props.time[props.col.data];
     })
+  const wrTime = props.time.wr_time ?? (props.wrTime ? props.wrTime.time : null) ?? false;
+
 </script>
 
 
 <template>
   <span v-if="props.col.placement" class="inline-flex items-center justify-end text-end mr-1.5 min-w-5 text-sm text-gray-400">{{ props.time.rank }}.</span>
   <span class="truncate group-hover/timeLink:underline">{{ data }}</span>
-  <span v-if="props.col.data === 'time' && props.wrTime" 
+  <span v-if="props.col.data === 'time' && wrTime" 
   :class="
-    props.time.time - props.wrTime.time > 0 ? 'nonWrTimeColor opacity-70' :
-    props.time.time - props.wrTime.time <= 0 ? 'text-green-600 opacity-80' : 
+    props.time.time - wrTime > 0 ? 'nonWrTimeColor opacity-70' :
+    props.time.time - wrTime <= 0 ? 'text-green-600 opacity-80' : 
    'text-gray-500'
   "
   class="ml-1"> 
-    ({{ dateTimeFormats.timeDiff(props.time.time - props.wrTime.time) }})
+    ({{ dateTimeFormats.timeDiff(props.time.time - wrTime) }})
   </span>
 </template>
 
 <style>
 .nonWrTimeColor{
-  color:hsl(357, v-bind('$props.wrTime ? `${($props.time.time - $props.wrTime.time)*200+40}%` : "90%"'), 58%)
+  color:hsl(357, v-bind('wrTime ? `${($props.time.time - wrTime)*200+40}%` : "90%"'), 58%)
 }
 </style>

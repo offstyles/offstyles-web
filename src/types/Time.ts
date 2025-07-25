@@ -18,5 +18,6 @@ export interface Time {
         server:string;
         internal_server_id:string;
     };  
-    rank: number;
+    rank?: number;
+    wr_time?: number;
 }
