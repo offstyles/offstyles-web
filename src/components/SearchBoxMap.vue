@@ -8,7 +8,10 @@
   const autoCompleteResults : Ref<string[]> = ref([]);
   const showAutoCompleteDropdown : Ref<boolean> = ref(false);
   const isLoading : Ref<boolean> = ref(false);
-    
+  const props = defineProps<{
+    placeholder: string,
+  }>()
+
   let debounce : ReturnType<typeof setTimeout>;
   const updateMapAutoComplete = () => {
     isLoading.value = true;
@@ -37,7 +40,7 @@
     v-model="currentInput"
     @input="updateMapAutoComplete"
     @click="showAutoCompleteDropdown = true"
-    placeholder = "Enter a Map"
+    :placeholder = "props.placeholder"
     class="rounded-lg bg-main-800 text-left border border-transparent focus-within:border-main-50 py-2 px-3 text-sm leading-5 text-gray-200 placeholder:text-gray-500 outline-none">
     <div class="absolute top-full w-full rounded-lg bg-main-900 border border-main-100 text-sm text-gray-300 mt-1 py-2 px-2 shadow-xl/20 hidden group-focus-within:block" v-if="showAutoCompleteDropdown && currentInput">
       <loadWheel v-if="isLoading" class="text-gray-300 flex mx-auto w-6 h-6"></loadWheel>

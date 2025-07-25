@@ -5,7 +5,7 @@
   import loadWheel from '@/components/icons/loadWheel.vue';
   import PlayerDetails from '@/components/PlayerDetails.vue';
   import type { Time } from '@/types/Time';
-  import SearchBox from '@/components/SearchBox.vue';
+  import SearchBoxPlayer from '@/components/SearchBoxPlayer.vue';
 
   const props = defineProps({
     playerSteamId: {
@@ -48,6 +48,7 @@
   <main>
     <div class="flex flex-col items-center justify-center">
       <!--<SearchBox @updateMap="updatePlayer"></SearchBox>-->
+      <SearchBoxPlayer @updatePlayer="updatePlayer" :placeholder="'Enter a Player'"></SearchBoxPlayer>
       <PlayerDetails v-if="playerSteamId !== ''" :playerTimes="playerTimes" :playerSteamId="playerSteamId" :playerName="playerName" :isLoading="isLoading" @updatePlayer="updatePlayer"></PlayerDetails>
       <loadWheel v-if="isLoading" class="text-gray-200 mt-5"></loadWheel>
       <h1 v-if="playerSteamId === ''" class="text-lg text-gray-100 mt-5">Select a map above to view leaderboards</h1>

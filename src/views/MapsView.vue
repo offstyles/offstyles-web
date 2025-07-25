@@ -5,7 +5,7 @@
   import loadWheel from '@/components/icons/loadWheel.vue';
   import MapDetails from '@/components/MapDetails.vue';
   import type { Time } from '@/types/Time';
-  import SearchBox from '@/components/SearchBox.vue';
+  import SearchBoxMap from '@/components/SearchBoxMap.vue';
 
   const props = defineProps({
     mapName: {
@@ -46,7 +46,7 @@
   <main>
     <div class="flex flex-col items-center justify-center">
       <!--<ComboBox :select_options="maps" :selected_option="selected_map" :is_loading="maps.length === 0" :type="'map'" @select-Changed="selectChanged"></ComboBox>-->
-      <SearchBox @updateMap="updateMap"></SearchBox>
+      <SearchBoxMap @updateMap="updateMap" :placeholder="'Enter a Map'"></SearchBoxMap>
       <MapDetails v-if="mapName !== ''" :mapTimes="mapTimes" :mapName="mapName" :isLoading="isLoading" @updateMap="updateMap"></MapDetails>
       <loadWheel v-if="isLoading" class="text-gray-200 mt-5"></loadWheel>
       <h1 v-if="mapName === ''" class="text-lg text-gray-100 mt-5">Select a map above to view leaderboards</h1>
