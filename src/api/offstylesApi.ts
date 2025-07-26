@@ -18,6 +18,13 @@ class OffstylesApi extends Api {
     this.url =`${this.offstylesApiUrl}/times?steamid=${steamID}&${params}`;
     return this.fetchFromUrl();
   }
+  static async getRecentMatches() : Promise<Time[]>{
+    const paramsObj = urlParams.getAsObject();
+    paramsObj.style = paramsObj.style ?? Style.normal;
+    const params = new URLSearchParams(paramsObj).toString();
+    this.url =`${this.offstylesApiUrl}/recent?${params}`;
+    return this.fetchFromUrl();
+  }
   static async getMapsForAutoComplete(input: string) : Promise<string[]>{
     this.url =`${this.offstylesApiUrl}/autocomplete_maps?text=${input}`;
     return this.fetchFromUrl();
