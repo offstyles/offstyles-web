@@ -46,7 +46,7 @@
    'pb-2 border-gray-400 hover:border-gray-200 bg-main-500' : 
    'border-transparent bg-main-600 odd:bg-main-700 hover:border-gray-400'" 
   @click="toggleDetails()">
-    <div v-for="(col,index) in props.cols" :key="index" class="flex" :class="col.alignmentClasses">
+    <div v-for="(col,index) in props.cols" :key="index" class="grid-col flex" :class="col.alignmentClasses">
       <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
         <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
       </a>
@@ -61,5 +61,19 @@
 <style scoped>
   .os-grid-cols-auto{
     grid-template-columns: v-bind('colWidthsStyle');
+  }
+  @media(max-width:768px){
+    .os-grid-cols-auto{
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+    }
+    .os-grid-cols-auto>.grid-col:nth-child(1n){
+      text-align: left;
+      justify-content: left;
+    }
+    .os-grid-cols-auto>.grid-col:nth-child(2n){
+      text-align: right;
+      justify-content: right;
+    }
   }
 </style>
