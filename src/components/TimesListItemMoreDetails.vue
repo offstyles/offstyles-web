@@ -16,7 +16,7 @@
   <div class="grid os-subgrid-cols-auto p-2 px-2 bg-main-800">
     <div v-for="(col,index) in props.cols" :key="index" :class="col.classes" class="flex flex-col">
       <span class="text-gray-400 text-xs">{{col.label}}:</span>
-      <span>{{ props.time[col.data] }}{{ col.data==='sync' ? '%' : '' }}</span>
+      <span>{{  col.data === 'sync' ? props.time[col.data].toFixed(2)+'%' : props.time[col.data] }}</span>
     </div>
   </div>
 </template>
