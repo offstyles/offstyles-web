@@ -11,10 +11,10 @@ import { RouterLink, RouterView } from 'vue-router'
             </div>
           </router-link>
         <div class="wrapper flex justify-end ml-2">
-          <nav class="flex gap-7 text-gray-300 roboto">
-            <router-link class="hover:text-gray-100" to="/">Recent Records</router-link>
-            <router-link class="hover:text-gray-100" to="/maps">Map Leaderboards</router-link>
-            <router-link class="hover:text-gray-100" to="/players">Player Lookup</router-link>
+          <nav class="flex gap-7 gap-y-2 text-gray-300 roboto text-center flex-wrap justify-center">
+            <router-link class="hover:text-gray-100 text-nowrap" to="/">Recent Records</router-link>
+            <router-link class="hover:text-gray-100 text-nowrap" to="/maps">Map Leaderboards</router-link>
+            <router-link class="hover:text-gray-100 text-nowrap" to="/players">Player Lookup</router-link>
           </nav>
         </div>
       </div>
