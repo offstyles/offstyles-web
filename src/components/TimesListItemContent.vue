@@ -23,7 +23,7 @@
 
 <template>
   <span v-if="props.col.placement" class="inline-flex items-center justify-end text-end mr-1.5 min-w-5 text-sm text-gray-400">{{ props.time.rank }}.</span>
-  <span class="truncate group-hover/timeLink:underline">{{ data }}</span>
+  <span class="truncate group-hover/timeLink:underline w-full">{{ data }}</span>
   <span v-if="props.col.data === 'time' && wrTime" 
   :class="
     props.time.time - wrTime > 0 ? 'nonWrTimeColor opacity-70' :

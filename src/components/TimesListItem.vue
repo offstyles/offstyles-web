@@ -47,10 +47,10 @@
    'border-transparent bg-main-600 odd:bg-main-700 hover:border-gray-400'" 
   @click="toggleDetails()">
     <div v-for="(col,index) in props.cols" :key="index" class="grid-col flex" :class="col.alignmentClasses">
-      <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
+      <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex w-full" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
         <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
       </a>
-      <div v-else class="flex" :class="col.classes">
+      <div v-else class="flex w-full" :class="col.classes">
         <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
       </div>
     </div>
@@ -64,8 +64,11 @@
   }
   @media(max-width:768px){
     .os-grid-cols-auto{
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 40% 60%;
       grid-template-rows: repeat(2, 1fr);
+    }
+    .os-grid-cols-auto>.grid-col{
+      width:100%;
     }
     .os-grid-cols-auto>.grid-col:nth-child(1n){
       text-align: left;

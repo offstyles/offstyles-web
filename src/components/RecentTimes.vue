@@ -28,7 +28,7 @@
 <template>
   <div class="text-white w-full max-w-[800px] p-4 text-center flex flex-col justify-center rounded-lg mt-8">
     <h1 class="text-2xl mb-3">Recent Times</h1>
-    <div class="flex py-2 justify-between">
+    <div class="flex py-2 justify-between flex-wrap gap-3">
       <CustomDropdown :options="[Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
        :name="'style'" :format="styleFormat.name" @dropdown-Changed="dropdownChanged"></CustomDropdown>
       <CheckboxInput @checkbox-Changed="dropdownChanged" :name="'wr'" :label="'Only show WR times'"></CheckboxInput>
