@@ -7,6 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/',  // <-- add this line to ensure assets load correctly from root
   plugins: [
     vue(),
     vueDevTools(),
