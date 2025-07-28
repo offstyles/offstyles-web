@@ -21,4 +21,4 @@ jobs:
 
       - name: Run deploy script on server
         run: |
-          ssh ubuntu@168.138.64.57 '/usr/local/bin/deploy-offstyles.sh'
+          ssh ubuntu@168.138.64.57 '/usr/local/bin/deploy-offstyles'
