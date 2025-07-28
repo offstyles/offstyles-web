@@ -19,7 +19,7 @@ const { user, isLoggedIn, isLoading, login } = useAuth()
     <button 
       v-else
       @click="login"
-      class="hover:opacity-80 transition-opacity"
+      class="hover:opacity-80 transition-opacity cursor-pointer"
     >
       <img 
         src="https://community.fastly.steamstatic.com/public/images/signinthroughsteam/sits_01.png"
