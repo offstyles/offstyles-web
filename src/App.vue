@@ -21,6 +21,6 @@ import { RouterLink, RouterView } from 'vue-router'
     </header>
     <RouterView class="mb-auto" />
     <div class="flex flex-col lg:flex-row pt-8 justify-end">
-      <div class="text-end text-gray-500 text-sm">footer links or something here idk</div>
+      <div class="text-end text-gray-500 text-sm">WIP, Website by @y_mia | <a href="https://github.com/offstyles">https://github.com/offstyles</a></div>
     </div>
 </template>
