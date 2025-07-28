@@ -26,7 +26,7 @@
 
 
 <template>
-  <div class="text-white w-full max-w-[800px] p-4 text-center flex flex-col justify-center rounded-lg mt-8">
+  <div class="text-white w-full max-w-[1000px] p-4 text-center flex flex-col justify-center rounded-lg mt-8">
     <h1 class="text-2xl mb-3">Recent Times</h1>
     <div class="flex py-2 justify-between flex-wrap gap-3">
       <CustomDropdown :options="[Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
@@ -36,15 +36,22 @@
     <TimesList v-if="props.recentTimes" :times="props.recentTimes" :cols="[{
       label: 'Player',
       data: 'name',
-      width:'25%',
+      width:'20%',
       alignmentClasses: 'text-left',
       link: timeLinks.playerLink
     }, 
     {
+      label: 'Map',
+      data: 'map',
+      width: '20%',
+      alignmentClasses: 'text-right justify-end md:justify-start md:text-left',
+      link: timeLinks.mapLink
+    },
+    {
       label: 'Server',
       data: 'server',
-      width: '30%',
-      alignmentClasses: 'text-left'
+      width: '20%',
+      alignmentClasses: 'text-right justify-end md:justify-start md:text-left text-gray-300'
     },
     {
       label: 'Date',
@@ -56,7 +63,7 @@
     {
       label: 'Time',
       data: 'time',
-      width: '30%',
+      width: '25%',
       alignmentClasses: 'text-right justify-end',
       numFormat: dateTimeFormats.time
     }]"></TimesList>
