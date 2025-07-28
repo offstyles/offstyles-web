@@ -40,22 +40,27 @@
 
 
 <template>
-  <div class="grid os-grid-cols-auto p-1 px-1 border-b
-  hover:bg-main-500  hover:pb-2 cursor-pointer transition-[padding border-color background-color] duration-200"
+  <div class="transition-[padding border-color background-color] duration-200 border-b hover:bg-main-500"
   :class="showDetails ?
-   'pb-2 border-gray-400 hover:border-gray-200 bg-main-500' : 
-   'border-transparent bg-main-600 odd:bg-main-700 hover:border-gray-400'" 
-  @click="toggleDetails()">
-    <div v-for="(col,index) in props.cols" :key="index" class="grid-col flex" :class="col.alignmentClasses">
-      <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex w-full px-1.5" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
-        <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
-      </a>
-      <div v-else class="flex w-full px-1.5" :class="col.classes">
-        <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
+    'bg-main-500':
+    'bg-main-600 odd:bg-main-700 hover:border-gray-400 border-transparent border-gray-400 hover:border-gray-200'
+  ">
+    <div class="grid os-grid-cols-auto p-1 px-1
+       cursor-pointer transition-[padding border-color background-color] duration-200  hover:pb-2"
+    :class="showDetails ?
+      'pb-2' : ''" 
+    @click="toggleDetails()">
+      <div v-for="(col,index) in props.cols" :key="index" class="grid-col flex" :class="col.alignmentClasses">
+        <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex w-full px-1.5" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
+          <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
+        </a>
+        <div v-else class="flex w-full px-1.5" :class="col.classes">
+          <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
+        </div>
       </div>
     </div>
+    <TimesListItemMoreDetails v-if="showDetails" :time="props.time" :cols="moreDetailsCols"></TimesListItemMoreDetails>
   </div>
-  <TimesListItemMoreDetails v-if="showDetails" :time="props.time" :cols="moreDetailsCols"></TimesListItemMoreDetails>
 </template>
 
 <style scoped>
