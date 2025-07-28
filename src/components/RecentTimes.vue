@@ -56,7 +56,7 @@
     {
       label: 'Date',
       data: 'date',
-      width:'15%',
+      width: '15%',
       alignmentClasses: 'text-right justify-end',
       numFormat: dateTimeFormats.date
     },
