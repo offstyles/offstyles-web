@@ -50,16 +50,22 @@
       label: 'Date',
       data: 'date',
       width:'15%',
-      alignmentClasses: 'text-right justify-end',
       numFormat: dateTimeFormats.date
+      alignmentClasses: 'text-right justify-end monospace',
     },
     {
       label: 'Time',
       data: 'time',
       width: '30%',
-      alignmentClasses: 'text-right justify-end',
+      alignmentClasses: 'text-right justify-end monospace',
       numFormat: dateTimeFormats.time
     }]"></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected player & style</h1>
   </div>
 </template>
+
+<style scoped>
+  .monospace {
+    font-family: 'Courier New', Courier, monospace;
+  }
+</style>

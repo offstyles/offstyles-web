@@ -57,14 +57,14 @@
       label: 'Date',
       data: 'date',
       width: '15%',
-      alignmentClasses: 'text-right justify-end',
+      alignmentClasses: 'text-right justify-end monospace',
       numFormat: dateTimeFormats.date
     },
     {
       label: 'Time',
       data: 'time',
       width: '25%',
-      alignmentClasses: 'text-right justify-end',
+      alignmentClasses: 'text-right justify-end monospace',
       numFormat: dateTimeFormats.time
     }]"></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected parameters</h1>
