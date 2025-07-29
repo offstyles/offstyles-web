@@ -18,17 +18,17 @@
     if(debounce){
       clearTimeout(debounce);
     }
-    debounce = setTimeout(async ()=>{
-      if(currentInput.value){
-        autoCompleteResults.value = await OffstylesApi.getPlayersForAutoComplete(currentInput.value);
-        autoCompleteResults.value.sort((a,b)=>{
-          if(a.indexOf(currentInput.value[0]) === b.indexOf(currentInput.value[0])){
-            return a.localeCompare(b);
-          }
-          return a.indexOf(currentInput.value[0]) - b.indexOf(currentInput.value[0]);
-      });
-      }
-      isLoading.value = false;
+    debounce = setTimeout(async () => {
+        try {
+            autoCompleteResults.value = await OffstylesApi.getPlayersForAutoComplete(currentInput.value);
+            showAutoCompleteDropdown.value = autoCompleteResults.value.length > 0;
+        } catch (error) {
+            console.error('Error fetching autocomplete results:', error);
+            autoCompleteResults.value = [];
+            showAutoCompleteDropdown.value = false;
+        } finally {
+            isLoading.value = false;
+        }
     }, 600);
   }
   const params = computed(()=>{return urlParams.get()});
