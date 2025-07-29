@@ -33,7 +33,8 @@
       <CustomDropdown :options="[Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
        :name="'style'" :format="styleFormat.name" @dropdown-Changed="dropdownChanged"></CustomDropdown>
     </div>
-    <TimesList v-if="props.playerTimes" :times="props.playerTimes" :cols="[{
+    <TimesList v-if="props.playerTimes" :times="props.playerTimes" :cols="[
+    {
       label: 'Map',
       data: 'map',
       width:'25%',
@@ -50,7 +51,7 @@
       label: 'Date',
       data: 'date',
       width:'15%',
-      numFormat: dateTimeFormats.date
+      numFormat: dateTimeFormats.date,
       alignmentClasses: 'text-right justify-end monospace',
     },
     {
