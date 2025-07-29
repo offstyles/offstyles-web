@@ -48,13 +48,13 @@ const closeDropdown = () => {
     >
       <button
         @click="goToProfile"
-        class="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-main-600 rounded-t-lg transition-colors"
+        class="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-main-600 rounded-t-lg transition-colors cursor-pointer"
       >
         Profile
       </button>
       <button
         @click="handleLogout"
-        class="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-main-600 rounded-b-lg transition-colors"
+        class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-main-600 rounded-b-lg transition-colors cursor-pointer"
       >
         Log out
       </button>
