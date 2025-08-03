@@ -31,7 +31,7 @@
    'text-gray-500'
   "
   class="ml-1"> 
-    ({{ dateTimeFormats.timeDiff(props.time.time - wrTime) }})
+    ({{ props.time.time - wrTime > 0 ? '+' : '-' }}{{ dateTimeFormats.time(Math.abs(props.time.time - wrTime)) }})
   </span>
 </template>
 
