@@ -119,7 +119,7 @@ class OffstylesApi extends Api {
   // Moderation methods (require authentication)
   static async moderatePlayer(steamId: string, action: 'ban' | 'unban', reason: string): Promise<void> {
     const params = new URLSearchParams({
-      steamid: steamId,
+      id: steamId,
       action: action
     });
 
