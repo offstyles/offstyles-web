@@ -4,6 +4,7 @@
   import OffstylesApi from '@/api/offstylesApi';
   import loadWheel from '@/components/icons/loadWheel.vue';
   import RecentTimes from '@/components/RecentTimes.vue';
+  import urlParams from '@/utils/urlParams';
   import type { Time } from '@/types/Time';
   
   const isLoading: Ref<boolean> = ref(false);
@@ -14,7 +15,8 @@
   async function getRecentTimes(){
     isLoading.value = true;
     recentTimes.value = null;
-    const apiRecentTimes = await OffstylesApi.getRecentMatches();
+    const paramsObj = urlParams.getAsObject();
+    const apiRecentTimes = await OffstylesApi.getRecentTimes(paramsObj.style);
     if(apiRecentTimes.length){
       recentTimes.value = apiRecentTimes;
     }

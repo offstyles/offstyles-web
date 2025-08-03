@@ -1,3 +1,4 @@
+import { Style } from '@/types/Style';
 import Api from './api';
 import type { Time } from '@/types/Time';
 
@@ -60,7 +61,7 @@ class OffstylesApi extends Api {
     return await this.fetchFromUrl();
   }
 
-  static async getRecentMatches(style?: number, limit: number = 15, page: number = 1, wr: boolean = false): Promise<WRAwareRecord[]> {
+  static async getRecentTimes(style: number = Style.normal, limit: number = 15, page: number = 1, wr: boolean = true): Promise<WRAwareRecord[]> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       page: page.toString(),
