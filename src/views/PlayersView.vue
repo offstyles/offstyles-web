@@ -51,7 +51,7 @@
       <SearchBoxPlayer @updatePlayer="updatePlayer" :placeholder="'Enter a Player'"></SearchBoxPlayer>
       <PlayerDetails v-if="playerSteamId !== ''" :playerTimes="playerTimes" :playerSteamId="playerSteamId" :playerName="playerName" :isLoading="isLoading" @updatePlayer="updatePlayer"></PlayerDetails>
       <loadWheel v-if="isLoading" class="text-gray-200 mt-5"></loadWheel>
-      <h1 v-if="playerSteamId === ''" class="text-lg text-gray-100 mt-5">Select a map above to view leaderboards</h1>
+      <h1 v-if="playerSteamId === ''" class="text-lg text-gray-100 mt-5">Select a player above to view their times</h1>
     </div>
   </main>
 </template>
