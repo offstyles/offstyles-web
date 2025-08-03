@@ -117,45 +117,53 @@ class OffstylesApi extends Api {
   }
 
   // Moderation methods (require authentication)
-  static async moderatePlayer(id: string, action: string, reason: string): Promise<void> {
-    const params = new URLSearchParams({
-      id: id,
-      action: action
-    });
-
-    const response = await fetch(`${this.offstylesApiUrl}/moderate_player?${params.toString()}`, {
+  static async moderatePlayer(steamId: string, action: 'ban' | 'unban', reason: string): Promise<void> {
+    const response = await fetch(`${this.offstylesApiUrl}/moderate_player`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'text/plain',
+        'Content-Type': 'application/json',
       },
-      body: reason,
+      body: JSON.stringify({
+        steamid: steamId,
+        action: action,
+        reason: reason
+      }),
       credentials: 'include' // Include cookies for session authentication
     });
 
     if (!response.ok) {
-      const error: JsonError = await response.json();
-      throw new Error(`${error.code}: ${error.reason}`);
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
     }
   }
 
-  static async moderateRecord(id: string, action: string, reason: string): Promise<void> {
-    const params = new URLSearchParams({
-      id: id,
-      action: action
-    });
-
-    const response = await fetch(`${this.offstylesApiUrl}/moderate_record?${params.toString()}`, {
+  static async moderateRecord(recordId: string, action: 'invalidate' | 'validate', reason: string): Promise<void> {
+    const response = await fetch(`${this.offstylesApiUrl}/moderate_record`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'text/plain',
+        'Content-Type': 'application/json',
       },
-      body: reason,
+      body: JSON.stringify({
+        id: recordId,
+        action: action,
+        reason: reason
+      }),
       credentials: 'include' // Include cookies for session authentication
     });
 
     if (!response.ok) {
-      const error: JsonError = await response.json();
-      throw new Error(`${error.code}: ${error.reason}`);
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
     }
   }
 }
