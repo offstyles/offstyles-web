@@ -29,6 +29,7 @@
     <div class="flex flex-col items-center justify-center">
       <RecentTimes :recentTimes="recentTimes" :isLoading="isLoading" @updateRecentTimes="getRecentTimes"></RecentTimes>
       <loadWheel v-if="isLoading" class="text-gray-200 mt-5"></loadWheel>
+      <p v-if="!recentTimes && !isLoading">No recent times available.</p> <!-- Added message for no data -->
     </div>
   </main>
 </template>
