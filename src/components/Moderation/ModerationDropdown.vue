@@ -10,7 +10,7 @@ const props = defineProps<{
   targetId: string
   targetType: 'player' | 'record'
   targetName: string
-  isBanned?: boolean
+  is_banned?: boolean
 }>()
 
 const { user } = useAuth()
@@ -33,7 +33,7 @@ const availableActions = computed(() => {
   
   if (props.targetType === 'player') {
     if (userPermissions.value.contains(UserPermissions.BAN_PLAYERS)) {
-      if (props.isBanned) {
+      if (props.is_banned) {
         actions.push({ action: ModerationActionType.Unban, label: 'Unban Player' })
       } else {
         actions.push({ action: ModerationActionType.Ban, label: 'Ban Player' })
@@ -52,7 +52,7 @@ const availableActions = computed(() => {
 })
 
 const performAction = async (actionType: ModerationActionType, label: string) => {
-  const reason = prompt(`Enter reason for ${label.toLowerCase()}:`)
+  const reason = prompt(`Enter reason to ${label.toLowerCase()}:`)
   if (!reason || reason.trim() === '') return
   
   isLoading.value = true
@@ -66,7 +66,7 @@ const performAction = async (actionType: ModerationActionType, label: string) =>
     }
     
     // Show success message
-    alert(`Successfully ${label.toLowerCase()} for ${props.targetName}`)
+    alert(`Action ${label.toLowerCase()} for ${props.targetName} successful`)
     
     // Emit event to refresh parent component
     emit('moderationComplete')
