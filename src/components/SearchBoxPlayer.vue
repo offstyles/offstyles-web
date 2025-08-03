@@ -5,7 +5,7 @@
   import loadWheel from './icons/loadWheel.vue';
   import urlParams from '@/utils/urlParams';
   const currentInput : Ref<string> = ref('');
-  const autoCompleteResults : Ref<string[]> = ref([]);
+  const autoCompleteResults : Ref<[string, string][]> = ref([]);
   const showAutoCompleteDropdown : Ref<boolean> = ref(false);
   const isLoading : Ref<boolean> = ref(false);
   const props = defineProps<{
