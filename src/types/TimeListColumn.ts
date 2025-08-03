@@ -1,26 +1,10 @@
-
 import type { Time } from "./Time"
+
 export interface TimeListColumn {
     label: string,
-    data: 
-    "_id" |
-    "map" |
-    "steamid" |
-    "name" |
-    "time" |
-    "sync" |
-    "strafes" |
-    "jumps" |
-    "date" |
-    "replay_ref" |
-    "style" |
-    "is_invalid" |
-    "is_banned" |
-    "invalid_ref" |
-    "server" |
-    "rank",
+    data: keyof Time,
     placement?: boolean,
-    width? : string,
+    width?: string,
     classes?: string,
     alignmentClasses?: string,
     link?: ((value: Time) => string),
