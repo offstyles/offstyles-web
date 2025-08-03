@@ -116,7 +116,7 @@ class OffstylesApi extends Api {
   }
 
   // Moderation methods (require authentication)
-  static async moderatePlayer(id: string, action: 'ban' | 'unban', reason: string): Promise<void> {
+  static async moderatePlayer(id: string, action: string, reason: string): Promise<void> {
     const params = new URLSearchParams({
       id: id,
       action: action
@@ -137,7 +137,7 @@ class OffstylesApi extends Api {
     }
   }
 
-  static async moderateRecord(id: string, action: 'invalidate' | 'validate', reason: string): Promise<void> {
+  static async moderateRecord(id: string, action: string, reason: string): Promise<void> {
     const params = new URLSearchParams({
       id: id,
       action: action

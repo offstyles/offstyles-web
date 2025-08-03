@@ -6,6 +6,6 @@ export interface User {
   permissions: number;
   created_at: number;
   last_login: number;
-  is_banned: boolean;
-  ban_ref: string | null;
+  is_banned?: boolean;
+  ban_ref?: string | null;
 }

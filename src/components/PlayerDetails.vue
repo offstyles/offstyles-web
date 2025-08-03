@@ -8,6 +8,7 @@
   import { Style } from "@/types/Style";
   import urlParams from '@/utils/urlParams';
   import { useRouter } from 'vue-router';
+  import ModerationDropdown from './Moderation/ModerationDropdown.vue';
   const router = useRouter();
 
   const emit = defineEmits(['updatePlayer']);
@@ -23,12 +24,24 @@
     await router.replace({query:urlParams.update(name, value)});
     emit('updatePlayer', props.playerSteamId);
   }
-</script>
 
+  const handleModerationComplete = () => {
+    // Refresh player data after moderation action
+    emit('updatePlayer', props.playerSteamId);
+  }
+</script>
 
 <template>
   <div class="text-white w-full max-w-[800px] p-4 text-center flex flex-col justify-center rounded-lg mt-8">
-    <h1 class="text-2xl mb-3">{{ playerName }}</h1>
+    <div class="flex justify-between items-center mb-3">
+      <h1 class="text-2xl">{{ playerName }}</h1>
+      <ModerationDropdown 
+        :targetId="playerSteamId"
+        targetType="player"
+        :targetName="playerName"
+        @moderationComplete="handleModerationComplete"
+      />
+    </div>
     <div class="flex py-2">
       <CustomDropdown :options="[Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
        :name="'style'" :format="styleFormat.name" @dropdown-Changed="dropdownChanged"></CustomDropdown>
