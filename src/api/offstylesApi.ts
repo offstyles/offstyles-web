@@ -118,16 +118,17 @@ class OffstylesApi extends Api {
 
   // Moderation methods (require authentication)
   static async moderatePlayer(steamId: string, action: 'ban' | 'unban', reason: string): Promise<void> {
-    const response = await fetch(`${this.offstylesApiUrl}/moderate_player`, {
+    const params = new URLSearchParams({
+      steamid: steamId,
+      action: action
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/moderate_player?${params.toString()}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain',
       },
-      body: JSON.stringify({
-        steamid: steamId,
-        action: action,
-        reason: reason
-      }),
+      body: reason,
       credentials: 'include' // Include cookies for session authentication
     });
 
@@ -143,16 +144,17 @@ class OffstylesApi extends Api {
   }
 
   static async moderateRecord(recordId: string, action: 'invalidate' | 'validate', reason: string): Promise<void> {
-    const response = await fetch(`${this.offstylesApiUrl}/moderate_record`, {
+    const params = new URLSearchParams({
+      id: recordId,
+      action: action
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/moderate_record?${params.toString()}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain',
       },
-      body: JSON.stringify({
-        id: recordId,
-        action: action,
-        reason: reason
-      }),
+      body: reason,
       credentials: 'include' // Include cookies for session authentication
     });
 
