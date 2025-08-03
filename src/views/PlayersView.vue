@@ -1,6 +1,8 @@
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, watch } from 'vue'
+  import { useRoute } from 'vue-router';
   import type { Ref } from 'vue'
+  import urlParams from '@/utils/urlParams';
   import OffstylesApi from '@/api/offstylesApi';
   import loadWheel from '@/components/icons/loadWheel.vue';
   import PlayerDetails from '@/components/PlayerDetails.vue';
@@ -14,6 +16,7 @@
     },
   });
   
+  const route = useRoute();
   const isLoading: Ref<boolean> = ref(false);
   const playerTimes: Ref<Time[] | null> = ref(null);
   const playerSteamId: Ref<string> = ref(props.playerSteamId ?? '');
@@ -31,11 +34,16 @@
     }
   });
 
+  watch(() => route.query, () => {
+    getPlayerTimes(props.playerSteamId)
+  })
+
   async function getPlayerTimes(playerId: string){
     playerSteamId.value = playerId;
     isLoading.value = true;
     playerTimes.value = null;
-    const apiPlayerTimes = await OffstylesApi.getTimesByPlayer(playerId);
+    const paramsObj = urlParams.getAsObject();
+    const apiPlayerTimes = await OffstylesApi.getTimesByPlayer(playerId, undefined, paramsObj.style);
     if(apiPlayerTimes.length){
       playerTimes.value = apiPlayerTimes;
       playerName.value = apiPlayerTimes[0].name;

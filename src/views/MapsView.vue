@@ -1,6 +1,8 @@
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, watch } from 'vue'
+  import { useRoute } from 'vue-router';
   import type { Ref } from 'vue'
+  import urlParams from '@/utils/urlParams';
   import OffstylesApi from '@/api/offstylesApi';
   import loadWheel from '@/components/icons/loadWheel.vue';
   import MapDetails from '@/components/MapDetails.vue';
@@ -14,6 +16,7 @@
     },
   });
   
+  const route = useRoute();
   const isLoading: Ref<boolean> = ref(false);
   const mapTimes: Ref<Time[] | null> = ref(null);
   const mapName: Ref<string> = ref(props.mapName ?? '');
@@ -30,11 +33,16 @@
     }
   });
 
+  watch(() => route.query, () => {
+    getMapTimes(props.mapName!);
+  })
+
   async function getMapTimes(name: string){
     mapName.value = name;
     isLoading.value = true;
     mapTimes.value = null;
-    const apiMapTimes = await OffstylesApi.getTimesByMap(name);
+    const paramsObj = urlParams.getAsObject();
+    const apiMapTimes = await OffstylesApi.getTimesByMap(name, paramsObj.style);
     if(apiMapTimes.length){
       mapTimes.value = apiMapTimes;
     }
