@@ -1,37 +1,161 @@
 import Api from './api';
-import type { Time } from '@/types/Time.ts';
-import urlParams from '@/utils/urlParams';
-import { Style } from '@/types/Style';
+import type { Time } from '@/types/Time';
+
+// Add new interfaces based on the API spec
+export interface RankAwareRecord extends Time {
+  rank: number;
+}
+
+export interface WRAwareRecord extends Time {
+  wr_time: number;
+}
+
+export interface ReturnStyle {
+  name: string;
+  s_id: number;
+}
+
+export interface JsonError {
+  code: number;
+  reason: string;
+}
+
 class OffstylesApi extends Api {
   static offstylesApiUrl = 'https://offstyles.tommyy.dev/api';
-  static async getTimesByMap(mapName: string) : Promise<Time[]>{
-    const paramsObj = urlParams.getAsObject();
-    paramsObj.style = paramsObj.style ?? Style.normal;
-    const params = new URLSearchParams(paramsObj).toString();
-    this.url =`${this.offstylesApiUrl}/map?map=${mapName}&${params}`;
-    return this.fetchFromUrl();
+
+  // Fixed method signature to require style parameter
+  static async getTimesByMap(mapName: string, style: number = 190, steamid?: string, limit: number = 50, page: number = 1): Promise<RankAwareRecord[]> {
+    const params = new URLSearchParams({
+      map: mapName,
+      style: style.toString(),
+      limit: limit.toString(),
+      page: page.toString()
+    });
+    
+    if (steamid) {
+      params.append('steamid', steamid);
+    }
+
+    this.url = `${this.offstylesApiUrl}/map?${params.toString()}`;
+    return await this.fetchFromUrl();
   }
-  static async getTimesByPlayer(steamID: string) : Promise<Time[]>{
-    const paramsObj = urlParams.getAsObject();
-    paramsObj.style = paramsObj.style ?? Style.normal;
-    const params = new URLSearchParams(paramsObj).toString();
-    this.url =`${this.offstylesApiUrl}/times?steamid=${steamID}&${params}`;
-    return this.fetchFromUrl();
+
+  static async getTimesByPlayer(steamID: string, map?: string, style: number = 190, limit: number = 50, page: number = 1, best: boolean = false): Promise<WRAwareRecord[]> {
+    const params = new URLSearchParams({
+      steamid: steamID,
+      limit: limit.toString(),
+      page: page.toString(),
+      best: best.toString()
+    });
+
+    if (map) {
+      params.append('map', map);
+    }
+    
+    if (style !== undefined) {
+      params.append('style', style.toString());
+    }
+
+    this.url = `${this.offstylesApiUrl}/times?${params.toString()}`;
+    return await this.fetchFromUrl();
   }
-  static async getRecentMatches() : Promise<Time[]>{
-    const paramsObj = urlParams.getAsObject();
-    paramsObj.style = paramsObj.style ?? Style.normal;
-    const params = new URLSearchParams(paramsObj).toString();
-    this.url =`${this.offstylesApiUrl}/recent?${params}`;
-    return this.fetchFromUrl();
+
+  static async getRecentMatches(style?: number, limit: number = 15, page: number = 1, wr: boolean = false): Promise<WRAwareRecord[]> {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      page: page.toString(),
+      wr: wr.toString()
+    });
+
+    if (style !== undefined) {
+      params.append('style', style.toString());
+    }
+
+    this.url = `${this.offstylesApiUrl}/recent?${params.toString()}`;
+    return await this.fetchFromUrl();
   }
-  static async getMapsForAutoComplete(input: string) : Promise<string[]>{
-    this.url =`${this.offstylesApiUrl}/autocomplete_maps?text=${input}`;
-    return this.fetchFromUrl();
+
+  // New methods based on the API spec
+  static async getMapsForAutoComplete(text: string): Promise<string[]> {
+    const params = new URLSearchParams({
+      text: text
+    });
+
+    this.url = `${this.offstylesApiUrl}/autocomplete_maps?${params.toString()}`;
+    return await this.fetchFromUrl();
   }
-  static async getPlayersForAutoComplete(input: string) : Promise<string[]>{
-    this.url =`${this.offstylesApiUrl}/autocomplete_players?text=${input}`;
-    return this.fetchFromUrl();
+
+  static async getPlayersForAutoComplete(text: string): Promise<[string, string][]> {
+    const params = new URLSearchParams({
+      text: text
+    });
+
+    this.url = `${this.offstylesApiUrl}/autocomplete_players?${params.toString()}`;
+    return await this.fetchFromUrl();
+  }
+
+  static async getSingleTime(id: string): Promise<WRAwareRecord> {
+    const params = new URLSearchParams({
+      id: id
+    });
+
+    this.url = `${this.offstylesApiUrl}/time?${params.toString()}`;
+    return await this.fetchFromUrl();
+  }
+
+  static async getStyles(): Promise<ReturnStyle[]> {
+    this.url = `${this.offstylesApiUrl}/styles`;
+    return await this.fetchFromUrl();
+  }
+
+  static getReplayDownloadUrl(id: string): string {
+    const params = new URLSearchParams({
+      id: id
+    });
+    return `${this.offstylesApiUrl}/replay?${params.toString()}`;
+  }
+
+  // Moderation methods (require authentication)
+  static async moderatePlayer(id: string, action: 'ban' | 'unban', reason: string): Promise<void> {
+    const params = new URLSearchParams({
+      id: id,
+      action: action
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/moderate_player?${params.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: reason,
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const error: JsonError = await response.json();
+      throw new Error(`${error.code}: ${error.reason}`);
+    }
+  }
+
+  static async moderateRecord(id: string, action: 'invalidate' | 'validate', reason: string): Promise<void> {
+    const params = new URLSearchParams({
+      id: id,
+      action: action
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/moderate_record?${params.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: reason,
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const error: JsonError = await response.json();
+      throw new Error(`${error.code}: ${error.reason}`);
+    }
   }
 }
 
