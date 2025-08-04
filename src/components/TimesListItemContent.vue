@@ -27,7 +27,7 @@
   <span v-if="props.col.data === 'time' && wrTime" 
   :class="
     props.time.time - wrTime > 0 ? 'nonWrTimeColor opacity-70' :
-    props.time.time - wrTime <= 0 ? 'text-green-600 opacity-80' : 
+    props.time.time - wrTime < 0 ? 'text-green-600 opacity-80' : 
    'text-gray-500'
   "
   class="ml-1"> 
