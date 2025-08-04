@@ -3,11 +3,15 @@
   import dateTimeFormats from '@/utils/dateTimeFormats';
   import timeLinks from '@/utils/timeLinks';
   import type { Time } from '@/types/Time';
+  import type { User } from '@/types/User';
   import CustomDropdown from './CustomDropdown.vue';
   import styleFormat from '@/utils/styleFormat';
   import { Style } from "@/types/Style";
   import urlParams from '@/utils/urlParams';
   import { useRouter } from 'vue-router';
+  import { ref, onMounted, watch } from 'vue';
+  import type { Ref } from 'vue';
+  import OffstylesApi from '@/api/offstylesApi';
   import ModerationDropdown from './Moderation/ModerationDropdown.vue';
   const router = useRouter();
 
@@ -19,26 +23,66 @@
     playerTimes: Time[] | null,
     isLoading: boolean
   }>()
+
+  const userProfile: Ref<User | null> = ref(null);
+  const isLoadingProfile: Ref<boolean> = ref(false);
  
+  const fetchUserProfile = async () => {
+    isLoadingProfile.value = true;
+    try {
+      userProfile.value = await OffstylesApi.getUserProfile(props.playerSteamId);
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+      userProfile.value = null;
+    } finally {
+      isLoadingProfile.value = false;
+    }
+  };
+
   const dropdownChanged = async (name : string, value : number)=>{
     await router.replace({query:urlParams.update(name, value)});
     emit('updatePlayer', props.playerSteamId);
   }
 
   const handleModerationComplete = () => {
-    // Refresh player data after moderation action
+    // Refresh player data and profile after moderation action
     emit('updatePlayer', props.playerSteamId);
+    fetchUserProfile();
   }
+
+  onMounted(() => {
+    if (props.playerSteamId) {
+      fetchUserProfile();
+    }
+  });
+
+  watch(() => props.playerSteamId, () => {
+    if (props.playerSteamId) {
+      fetchUserProfile();
+    }
+  });
 </script>
 
 <template>
   <div class="text-white w-full max-w-[800px] p-4 text-center flex flex-col justify-center rounded-lg mt-8">
     <div class="flex justify-between items-center mb-3">
-      <h1 class="text-2xl">{{ playerName }}</h1>
+      <div class="flex items-center gap-3">
+        <img 
+          v-if="userProfile?.avatar_url" 
+          :src="userProfile.avatar_url" 
+          :alt="playerName"
+          class="w-12 h-12 rounded-full"
+        />
+        <div class="text-left">
+          <h1 class="text-2xl">{{ playerName }}</h1>
+          <div v-if="userProfile?.is_banned" class="text-red-400 text-sm">⚠️ Banned</div>
+        </div>
+      </div>
       <ModerationDropdown 
         :targetId="playerSteamId"
         targetType="player"
         :targetName="playerName"
+        :is_banned="userProfile?.is_banned"
         @moderationComplete="handleModerationComplete"
       />
     </div>

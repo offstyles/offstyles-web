@@ -1,6 +1,7 @@
 import { Style } from '@/types/Style';
 import Api from './api';
 import type { Time } from '@/types/Time';
+import type { User } from '@/types/User';
 
 // Add new interfaces based on the API spec
 export interface RankAwareRecord extends Time {
@@ -167,6 +168,27 @@ class OffstylesApi extends Api {
         throw new Error(`${response.status}: ${response.statusText}`);
       }
     }
+  }
+
+  // Get user profile data
+  static async getUserProfile(steamId: string): Promise<User> {
+    const params = new URLSearchParams({
+      steamid: steamId
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/profile?${params.toString()}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
   }
 }
 
