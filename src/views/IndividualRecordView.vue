@@ -169,29 +169,29 @@
         <!-- Additional Info -->
         <div class="bg-main-700 p-6 rounded-lg">
           <h3 class="text-lg font-semibold text-gray-300 mb-4">Additional Information</h3>
-          <div class="space-y-3 text-left">
+          <div class="space-y-0 text-left">
             
-            <div class="flex justify-between">
+            <div class="flex justify-between py-3 border-b border-gray-600/30">
               <span class="text-gray-400">Date:</span>
               <span class="font-mono">{{ dateTimeFormats.date(record.date) }}</span>
             </div>
 
-            <div v-if="record.rank" class="flex justify-between">
+            <div v-if="record.rank" class="flex justify-between py-3 border-b border-gray-600/30">
               <span class="text-gray-400">Rank:</span>
               <span class="font-mono text-yellow-400">#{{ record.rank }}</span>
             </div>
 
-            <div v-if="record.wr_time" class="flex justify-between">
+            <div v-if="record.wr_time" class="flex justify-between py-3 border-b border-gray-600/30">
               <span class="text-gray-400">World Record:</span>
               <span class="font-mono text-green-400">{{ dateTimeFormats.time(record.wr_time) }}</span>
             </div>
 
-            <div v-if="record.server?.server" class="flex justify-between">
+            <div v-if="record.server?.server" class="flex justify-between py-3 border-b border-gray-600/30">
               <span class="text-gray-400">Server:</span>
               <span class="font-mono">{{ record.server.server }}</span>
             </div>
 
-            <div class="flex justify-between">
+            <div class="flex justify-between py-3">
               <span class="text-gray-400">Record ID:</span>
               <span class="font-mono text-xs text-gray-500">{{ record._id }}</span>
             </div>
