@@ -48,10 +48,10 @@
   }
 
   async function downloadReplay() {
-    if (!record.value?._id) return;
+    if (!record.value?.replay_ref) return;
     
     try {
-      const response = await OffstylesApi.downloadReplay(record.value._id);
+      const response = await OffstylesApi.downloadReplay(record.value.replay_ref);
       
       // Create blob from response
       const blob = await response.blob();
@@ -60,7 +60,7 @@
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `replay_${record.value._id}.replay`;
+      a.download = `replay_${record.value.map}.replay`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
