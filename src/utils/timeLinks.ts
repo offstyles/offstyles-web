@@ -6,5 +6,8 @@ const playerLink = function(time : Time) {
 const mapLink = function(time : Time) {
   return `/maps/${time.map}/`
 }
+const recordLink = function(time : Time) {
+  return `/run/${time._id}/`;
+}
 
-export default {playerLink, mapLink};
+export default {playerLink, mapLink, recordLink};
