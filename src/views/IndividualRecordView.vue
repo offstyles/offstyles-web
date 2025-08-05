@@ -7,24 +7,17 @@
   import dateTimeFormats from '@/utils/dateTimeFormats';
   import styleFormat from '@/utils/styleFormat';
   import { useRouter } from 'vue-router';
+  import { useAuth } from '@/stores/auth';
   
   const props = defineProps<{
     id: string
   }>();
 
   const router = useRouter();
+  const { isLoggedIn } = useAuth();
   const isLoading: Ref<boolean> = ref(false);
   const record: Ref<WRAwareRecord | null> = ref(null);
   const error: Ref<string | null> = ref(null);
-
-  const isLoggedIn = computed(() => {
-    // TODO: Check actual auth state when auth is implemented
-    return false;
-  });
-
-  const replayDownloadUrl = computed(() => {
-    return record.value ? OffstylesApi.getReplayDownloadUrl(record.value._id!) : null;
-  });
 
   const playerUrl = computed(() => {
     return record.value ? `/players/${record.value.steamid}` : null;
@@ -51,6 +44,30 @@
       console.error('Failed to fetch record:', err);
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  async function downloadReplay() {
+    if (!record.value?._id) return;
+    
+    try {
+      const response = await OffstylesApi.downloadReplay(record.value._id);
+      
+      // Create blob from response
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `replay_${record.value._id}.replay`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Failed to download replay:', error);
+      alert('Failed to download replay. Please try again.');
     }
   }
 
@@ -221,14 +238,13 @@
             </a>
 
             <div v-if="record.replay_ref">
-              <a 
-                v-if="isLoggedIn && replayDownloadUrl" 
-                :href="replayDownloadUrl" 
+              <button 
+                v-if="isLoggedIn" 
+                @click="downloadReplay"
                 class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-                download
               >
                 Download Replay
-              </a>
+              </button>
               <button 
                 v-else 
                 disabled 

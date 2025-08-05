@@ -110,11 +110,26 @@ class OffstylesApi extends Api {
     return await this.fetchFromUrl();
   }
 
-  static getReplayDownloadUrl(id: string): string {
+  static async downloadReplay(id: string): Promise<Response> {
     const params = new URLSearchParams({
       id: id
     });
-    return `${this.offstylesApiUrl}/replay?${params.toString()}`;
+
+    const response = await fetch(`${this.offstylesApiUrl}/replay?${params.toString()}`, {
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return response;
   }
 
   // Moderation methods (require authentication)
