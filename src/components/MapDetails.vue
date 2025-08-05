@@ -8,6 +8,7 @@
   import { Style } from "@/types/Style";
   import urlParams from '@/utils/urlParams';
   import { useRouter } from 'vue-router';
+  import TimesListPagination from './TimesListPagination.vue';
   const router = useRouter();
 
   const emit = defineEmits(['updateMap']);
@@ -20,6 +21,10 @@
  
   const dropdownChanged = async (name : string, value : number)=>{
     await router.replace({query:urlParams.update(name, value)});
+    emit('updateMap', props.mapName);
+  }
+  const paginationChanged = async (page: number)=>{
+    await router.replace({query:urlParams.update('page', page)});
     emit('updateMap', props.mapName);
   }
 </script>
@@ -61,5 +66,6 @@
       numFormat: dateTimeFormats.time
     }]"></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected map & style</h1>
+    <TimesListPagination :limitPerPage="50" :times="props.mapTimes" :isLoading = "props.isLoading" @pagination-changed="paginationChanged"></TimesListPagination>
   </div>
 </template>

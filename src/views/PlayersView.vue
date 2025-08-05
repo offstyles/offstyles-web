@@ -43,7 +43,7 @@
     isLoading.value = true;
     playerTimes.value = null;
     const paramsObj = urlParams.getAsObject();
-    const apiPlayerTimes = await OffstylesApi.getTimesByPlayer(playerId, undefined, paramsObj.style);
+    const apiPlayerTimes = await OffstylesApi.getTimesByPlayer(playerId, undefined, paramsObj.style, undefined, paramsObj.page);
     if(apiPlayerTimes.length){
       playerTimes.value = apiPlayerTimes;
       playerName.value = apiPlayerTimes[0].name;

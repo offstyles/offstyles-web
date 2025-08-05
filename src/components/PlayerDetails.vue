@@ -13,6 +13,7 @@
   import type { Ref } from 'vue';
   import OffstylesApi from '@/api/offstylesApi';
   import ModerationDropdown from './Moderation/ModerationDropdown.vue';
+  import TimesListPagination from './TimesListPagination.vue';
   const router = useRouter();
 
   const emit = defineEmits(['updatePlayer']);
@@ -41,6 +42,10 @@
 
   const dropdownChanged = async (name : string, value : number)=>{
     await router.replace({query:urlParams.update(name, value)});
+    emit('updatePlayer', props.playerSteamId);
+  }
+  const paginationChanged = async (page: number)=>{
+    await router.replace({query:urlParams.update('page', page)});
     emit('updatePlayer', props.playerSteamId);
   }
 
@@ -119,6 +124,7 @@
       numFormat: dateTimeFormats.time
     }]"></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected player & style</h1>
+    <TimesListPagination :limitPerPage="50" :times="props.playerTimes" :isLoading = "props.isLoading" @pagination-changed="paginationChanged"></TimesListPagination>
   </div>
 </template>
 

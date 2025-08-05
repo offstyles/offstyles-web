@@ -16,7 +16,7 @@
     isLoading.value = true;
     recentTimes.value = null;
     const paramsObj = urlParams.getAsObject();
-    const apiRecentTimes = await OffstylesApi.getRecentTimes(paramsObj.style, undefined, undefined, paramsObj.wr);
+    const apiRecentTimes = await OffstylesApi.getRecentTimes(paramsObj.style, undefined, paramsObj.page, paramsObj.wr);
     if(apiRecentTimes.length){
       recentTimes.value = apiRecentTimes;
     }

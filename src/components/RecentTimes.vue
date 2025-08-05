@@ -9,6 +9,7 @@
   import urlParams from '@/utils/urlParams';
   import { useRouter } from 'vue-router';
   import CheckboxInput from './CheckboxInput.vue';
+  import TimesListPagination from './TimesListPagination.vue';
   const router = useRouter();
 
   const emit = defineEmits(['updateRecentTimes']);
@@ -20,6 +21,10 @@
  
   const dropdownChanged = async (name : string, value : number)=>{
     await router.replace({query:urlParams.update(name, value)});
+    emit('updateRecentTimes');
+  }
+  const paginationChanged = async (page: number)=>{
+    await router.replace({query:urlParams.update('page', page)});
     emit('updateRecentTimes');
   }
 </script>
@@ -68,5 +73,6 @@
       numFormat: dateTimeFormats.time
     }]"></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected parameters</h1>
+    <TimesListPagination :limitPerPage="15" :times="props.recentTimes" :isLoading = "props.isLoading" @pagination-changed="paginationChanged"></TimesListPagination>
   </div>
 </template>
