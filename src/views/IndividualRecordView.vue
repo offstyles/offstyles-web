@@ -60,7 +60,7 @@
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `replay_${record.value.map}.replay`;
+      a.download = `${record.value.map}.replay`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
