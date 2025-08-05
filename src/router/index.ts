@@ -32,6 +32,12 @@ const router = createRouter({
       name: 'single-player',
       component: () => import('../views/PlayersView.vue'),
       props: true
+    },
+    {
+      path: '/run/:id',
+      name: 'individual-record',
+      component: () => import('../views/IndividualRecordView.vue'),
+      props: true
     }
   ],
 })
