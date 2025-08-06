@@ -1,18 +1,36 @@
 <script setup lang="ts">
   import type { TimeListColumn } from '@/types/TimeListColumn';
   import { computed } from 'vue';
+  
   const props = defineProps<{
       cols: TimeListColumn[],
+      enableSelection?: boolean
     }>();
 
+  const emit = defineEmits<{
+    toggleAll: []
+  }>()
+
   const colWidthsStyle = computed(()=>{
-    return props.cols.map((v)=>v.width ? v.width : 'auto').join(' ');
+    const baseColumns = props.cols.map((v)=>v.width ? v.width : 'auto')
+    if (props.enableSelection) {
+      return ['40px', ...baseColumns].join(' ')
+    }
+    return baseColumns.join(' ')
   })
 </script>
 
 
 <template>
   <div class="grid os-grid-cols-auto p-1 px-2 bg-main-900 fw-700 text-xs py-1.5 text-gray-200">
+    <div v-if="enableSelection" class="grid-col flex items-center justify-center">
+      <input 
+        type="checkbox" 
+        @change="emit('toggleAll')"
+        class="w-4 h-4 text-blue-600 bg-main-700 border-main-500 rounded focus:ring-blue-500"
+        title="Toggle all"
+      />
+    </div>
     <div v-for="(col,index) in props.cols" :key="index" class="grid-col" :class="col.alignmentClasses">
       <div :class="col.alignmentClasses">{{ col.label }}</div>
     </div>

@@ -205,6 +205,82 @@ class OffstylesApi extends Api {
 
     return await response.json();
   }
+
+  // Get moderation logs
+  static async getModerationLogs(targetId?: string, targetType?: 'player' | 'record'): Promise<any[]> {
+    const params = new URLSearchParams();
+    
+    if (targetId) {
+      params.append('target_id', targetId);
+    }
+    if (targetType) {
+      params.append('target_type', targetType);
+    }
+
+    const response = await fetch(`${this.offstylesApiUrl}/mod_logs?${params.toString()}`, {
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
+  }
+
+  // Reverse moderation action
+  static async reverseModerationAction(actionId: string): Promise<void> {
+    const params = new URLSearchParams({
+      action_id: actionId
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/reverse_moderator_actions?${params.toString()}`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+  }
+
+  // Bulk moderate records
+  static async bulkModerateRecords(recordIds: string[], action: 'invalidate' | 'validate', reason: string): Promise<void> {
+    const response = await fetch(`${this.offstylesApiUrl}/bulk_moderate_records`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        record_ids: recordIds,
+        action: action,
+        reason: reason
+      }),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+  }
 }
 
 export default OffstylesApi;

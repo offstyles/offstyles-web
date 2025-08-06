@@ -2,9 +2,10 @@
 import { ref, computed } from 'vue'
 import type { Ref } from 'vue'
 import { useAuth } from '@/stores/auth'
-import { ModerationActionType, UserPermissions, type ModerationPostData } from '@/types/moderation'
+import { ModerationActionType, UserPermissions } from '@/types/moderation'
 import OffstylesApi from '@/api/offstylesApi'
 import IconChevronDown from '@/components/icons/IconChevronDown.vue'
+import ModerationModal from './ModerationModal.vue'
 
 const props = defineProps<{
   targetId: string
@@ -16,6 +17,9 @@ const props = defineProps<{
 const { user } = useAuth()
 const showDropdown: Ref<boolean> = ref(false)
 const isLoading: Ref<boolean> = ref(false)
+const showModal: Ref<boolean> = ref(false)
+const currentAction: Ref<ModerationActionType | null> = ref(null)
+const currentActionLabel: Ref<string> = ref('')
 
 const userPermissions = computed(() => {
   if (!user.value) return new UserPermissions(0)
@@ -51,31 +55,43 @@ const availableActions = computed(() => {
   return actions
 })
 
-const performAction = async (actionType: ModerationActionType, label: string) => {
-  const reason = prompt(`Enter reason to ${label.toLowerCase()}:`)
-  if (!reason || reason.trim() === '') return
+const startAction = (actionType: ModerationActionType, label: string) => {
+  currentAction.value = actionType
+  currentActionLabel.value = label
+  showDropdown.value = false
+  showModal.value = true
+}
+
+const performAction = async (reason: string) => {
+  if (!currentAction.value) return
   
   isLoading.value = true
-  showDropdown.value = false
   
   try {
     if (props.targetType === 'player') {
-      await OffstylesApi.moderatePlayer(props.targetId, actionType as 'ban' | 'unban', reason.trim())
+      await OffstylesApi.moderatePlayer(props.targetId, currentAction.value as 'ban' | 'unban', reason)
     } else {
-      await OffstylesApi.moderateRecord(props.targetId, actionType as 'invalidate' | 'validate', reason.trim())
+      await OffstylesApi.moderateRecord(props.targetId, currentAction.value as 'invalidate' | 'validate', reason)
     }
-    
-    // Show success message
-    alert(`Action ${label.toLowerCase()} for ${props.targetName} successful`)
     
     // Emit event to refresh parent component
     emit('moderationComplete')
+    
+    // Close modal
+    showModal.value = false
+    currentAction.value = null
   } catch (error) {
     console.error('Moderation action failed:', error)
-    alert(`Failed to ${label.toLowerCase()}: ${error}`)
+    alert(`Failed to ${currentActionLabel.value.toLowerCase()}: ${error}`)
   } finally {
     isLoading.value = false
   }
+}
+
+const closeModal = () => {
+  showModal.value = false
+  currentAction.value = null
+  isLoading.value = false
 }
 
 const emit = defineEmits(['moderationComplete'])
@@ -106,7 +122,7 @@ const closeDropdown = () => {
         <button
           v-for="action in availableActions"
           :key="action.action"
-          @click="performAction(action.action, action.label)"
+          @click="startAction(action.action, action.label)"
           class="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-main-600 transition-colors"
           :class="{
             'text-red-400': action.action === ModerationActionType.Ban || action.action === ModerationActionType.Invalidate,
@@ -126,4 +142,15 @@ const closeDropdown = () => {
     class="fixed inset-0 z-40"
     @click="closeDropdown"
   ></div>
+  
+  <!-- Moderation Modal -->
+  <ModerationModal
+    :isOpen="showModal"
+    :title="currentActionLabel"
+    :action="currentAction || ModerationActionType.Note"
+    :targetName="targetName"
+    :isLoading="isLoading"
+    @close="closeModal"
+    @confirm="performAction"
+  />
 </template>

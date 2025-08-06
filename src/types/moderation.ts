@@ -20,6 +20,21 @@ export interface ModerationAction {
   action: ModerationActionType;
 }
 
+// Moderation log entry (returned from API)
+export interface ModerationLogEntry {
+  _id: string;
+  target_id: string;
+  target_type: 'player' | 'record';
+  moderator_steam_id: string;
+  moderator_name?: string;
+  action: ModerationActionType;
+  reason: string;
+  timestamp: number;
+  reversed?: boolean;
+  reversed_by?: string;
+  reversed_at?: number;
+}
+
 // Moderation record (contains all actions for a target)
 export interface ModerationRecord {
   _id?: string; // ObjectId as string
