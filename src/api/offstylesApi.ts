@@ -207,19 +207,54 @@ class OffstylesApi extends Api {
     return await response.json();
   }
 
-  // Get moderation logs (endpoint not yet implemented, returns empty array)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static async getModerationLogs(_targetId?: string, _targetType?: 'player' | 'record'): Promise<ModerationLogEntry[]> {
-    // Endpoint not yet implemented on backend, return empty array for now
-    console.warn('getModerationLogs endpoint not yet implemented, returning empty array');
-    return [];
+  // Get moderation logs
+  static async getModerationLogs(targetId?: string, targetType?: 'player' | 'record'): Promise<ModerationLogEntry[]> {
+    const params = new URLSearchParams();
+    
+    if (targetId) {
+      params.append('target_id', targetId);
+    }
+    if (targetType) {
+      params.append('target_type', targetType);
+    }
+
+    const response = await fetch(`${this.offstylesApiUrl}/moderation_logs?${params.toString()}`, {
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
   }
 
-  // Reverse moderation action (endpoint not yet implemented, throws error)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static async reverseModerationAction(_actionId: string): Promise<void> {
-    // Endpoint not yet implemented on backend
-    throw new Error('Reverse moderation action endpoint not yet implemented');
+  // Reverse moderation action
+  static async reverseModerationAction(actionId: string): Promise<void> {
+    const params = new URLSearchParams({
+      action_id: actionId
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/reverse_moderation?${params.toString()}`, {
+      method: 'POST',
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
   }
 
   // Bulk moderate records using individual API calls

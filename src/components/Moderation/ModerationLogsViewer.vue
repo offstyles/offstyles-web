@@ -21,6 +21,11 @@ const logs: Ref<ModerationLogEntry[]> = ref([])
 const isLoading: Ref<boolean> = ref(false)
 const error: Ref<string | null> = ref(null)
 
+// Reversal confirmation modal state
+const showReversalModal: Ref<boolean> = ref(false)
+const reversalActionId: Ref<string> = ref('')
+const isReversing: Ref<boolean> = ref(false)
+
 const userPermissions = computed(() => {
   if (!user.value) return new UserPermissions(0)
   return new UserPermissions(user.value.permissions)
@@ -62,19 +67,32 @@ const loadLogs = async () => {
   }
 }
 
-const reverseAction = async (actionId: string) => {
-  if (!confirm('Are you sure you want to reverse this moderation action?')) {
-    return
-  }
+const showReversalConfirmation = (actionId: string) => {
+  reversalActionId.value = actionId
+  showReversalModal.value = true
+}
+
+const confirmReversal = async () => {
+  if (!reversalActionId.value) return
+  
+  isReversing.value = true
   
   try {
-    await OffstylesApi.reverseModerationAction(actionId)
+    await OffstylesApi.reverseModerationAction(reversalActionId.value)
     await loadLogs() // Reload logs
     emit('actionReversed')
+    showReversalModal.value = false
   } catch (err) {
     console.error('Failed to reverse action:', err)
-    alert(`Failed to reverse action: ${err}`)
+    error.value = err instanceof Error ? err.message : 'Failed to reverse action'
+  } finally {
+    isReversing.value = false
   }
+}
+
+const cancelReversal = () => {
+  showReversalModal.value = false
+  reversalActionId.value = ''
 }
 
 onMounted(() => {
@@ -196,7 +214,7 @@ onMounted(() => {
               <!-- Reverse Action Button -->
               <div v-if="canReverse && !log.reversed" class="ml-4">
                 <button
-                  @click="reverseAction(log._id)"
+                  @click="showReversalConfirmation(log._id)"
                   class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded transition-colors"
                 >
                   Reverse
@@ -214,6 +232,47 @@ onMounted(() => {
           class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
         >
           Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reversal Confirmation Modal -->
+  <div 
+    v-if="showReversalModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60"
+    @click="cancelReversal"
+  >
+    <!-- Modal Content -->
+    <div 
+      class="bg-main-800 border border-main-400 rounded-lg shadow-lg max-w-md w-full mx-4 p-6"
+      @click.stop
+    >
+      <!-- Header -->
+      <h3 class="text-lg font-semibold text-white mb-4">Confirm Reversal</h3>
+      
+      <!-- Content -->
+      <div class="mb-6">
+        <p class="text-gray-300">
+          Are you sure you want to reverse this moderation action? This action cannot be undone.
+        </p>
+      </div>
+      
+      <!-- Actions -->
+      <div class="flex justify-end gap-3">
+        <button
+          @click="cancelReversal"
+          :disabled="isReversing"
+          class="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-500 text-white rounded-md transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          @click="confirmReversal"
+          :disabled="isReversing"
+          class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-500 text-white rounded-md transition-colors"
+        >
+          {{ isReversing ? 'Reversing...' : 'Reverse Action' }}
         </button>
       </div>
     </div>
