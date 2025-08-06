@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { UserPermissions } from '@/types/moderation'
@@ -139,21 +139,11 @@ onMounted(() => {
   }
 })
 
-// Call loadLogs when isOpen changes to true
-const previousIsOpen = ref(props.isOpen)
-const watchIsOpen = () => {
-  if (props.isOpen && !previousIsOpen.value) {
+// Watch for isOpen prop changes
+watch(() => props.isOpen, (newValue) => {
+  if (newValue) {
     loadLogs()
   }
-  previousIsOpen.value = props.isOpen
-}
-
-// Watch for changes
-const unwatchIsOpen = setInterval(watchIsOpen, 100)
-onMounted(() => {
-  setTimeout(() => {
-    clearInterval(unwatchIsOpen)
-  }, 1000)
 })
 </script>
 
