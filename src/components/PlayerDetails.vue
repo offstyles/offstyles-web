@@ -36,6 +36,7 @@
   const selectedRecords: Ref<string[]> = ref([]);
   const showBulkModal: Ref<boolean> = ref(false);
   const showLogsModal: Ref<boolean> = ref(false);
+  const showPlayerLogsModal: Ref<boolean> = ref(false);
 
   const userPermissions = computed(() => {
     if (!user.value) return new UserPermissions(0)
@@ -101,6 +102,10 @@
     showLogsModal.value = true;
   }
 
+  const handleShowPlayerLogs = () => {
+    showPlayerLogsModal.value = true;
+  }
+
   const handleBulkModerationComplete = () => {
     showBulkModal.value = false;
     clearSelection();
@@ -109,6 +114,12 @@
   }
 
   const handleLogsActionReversed = () => {
+    // Refresh player data
+    emit('updatePlayer', props.playerSteamId);
+    fetchUserProfile();
+  }
+
+  const handlePlayerLogsActionReversed = () => {
     // Refresh player data
     emit('updatePlayer', props.playerSteamId);
     fetchUserProfile();
@@ -142,13 +153,24 @@
           <div v-if="userProfile?.is_banned" class="text-red-400 text-sm">⚠️ Banned</div>
         </div>
       </div>
-      <ModerationDropdown 
-        :targetId="playerSteamId"
-        targetType="player"
-        :targetName="playerName"
-        :is_banned="userProfile?.is_banned"
-        @moderationComplete="handleModerationComplete"
-      />
+      <div class="flex items-center gap-2">
+        <!-- View Player Logs Button -->
+        <button
+          v-if="isModerator && userProfile?.ban_ref"
+          @click="handleShowPlayerLogs"
+          class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors flex items-center gap-1"
+          title="View moderation logs for this player"
+        >
+          📋 Player Logs
+        </button>
+        <ModerationDropdown 
+          :targetId="playerSteamId"
+          targetType="player"
+          :targetName="playerName"
+          :is_banned="userProfile?.is_banned"
+          @moderationComplete="handleModerationComplete"
+        />
+      </div>
     </div>
     <div class="flex py-2">
       <CustomDropdown :options="[Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
@@ -219,6 +241,14 @@
       :isOpen="showLogsModal"
       @close="showLogsModal = false"
       @actionReversed="handleLogsActionReversed"
+    />
+    
+    <!-- Player Moderation Logs Modal -->
+    <ModerationLogsViewer
+      :isOpen="showPlayerLogsModal"
+      :recordId="userProfile?.ban_ref || ''"
+      @close="showPlayerLogsModal = false"
+      @actionReversed="handlePlayerLogsActionReversed"
     />
   </div>
 </template>

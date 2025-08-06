@@ -5,6 +5,10 @@
   import { computed, ref } from 'vue';
   import TimesListItemContent from './TimesListItemContent.vue';
   import TimesListItemMoreDetails from './TimesListItemMoreDetails.vue';
+  import ModerationLogsViewer from './Moderation/ModerationLogsViewer.vue';
+  import { useAuth } from '@/stores/auth';
+  import { UserPermissions } from '@/types/moderation';
+  
   const props = defineProps<{
       time: Time,
       wrTime: Time,
@@ -18,13 +22,26 @@
     toggleSelection: [recordId: string]
   }>()
 
+  const { user } = useAuth();
+  const showLogsModal: Ref<boolean> = ref(false);
+
+  const userPermissions = computed(() => {
+    if (!user.value) return new UserPermissions(0)
+    return new UserPermissions(user.value.permissions)
+  })
+
+  const canViewLogs = computed(() => {
+    return userPermissions.value.isModerator()
+  })
+
   const colWidthsStyle = computed(()=>{
     const baseColumns = props.cols.map((v)=>v.width ? v.width : 'auto')
     if (props.enableSelection) {
-      return ['40px', ...baseColumns].join(' ')
+      return ['40px', ...baseColumns, '200px'].join(' ') // Add space for moderation indicators
     }
-    return baseColumns.join(' ')
+    return [...baseColumns, '200px'].join(' ') // Add space for moderation indicators
   })
+  
   const moreDetailsCols: TimeListColumn[] = [
     {
       label:'Jumps',
@@ -44,6 +61,16 @@
 
   function toggleDetails(){
     showDetails.value = !showDetails.value;
+  }
+
+  function showModerationLogs() {
+    if (props.time.invalid_ref) {
+      showLogsModal.value = true;
+    }
+  }
+
+  function closeModerationLogs() {
+    showLogsModal.value = false;
   }
 
 </script>
@@ -77,9 +104,48 @@
           <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
         </div>
       </div>
+      
+      <!-- Moderation Status Indicators -->
+      <div class="grid-col flex items-center justify-end px-1.5 gap-1">
+        <!-- Invalid Record Badge -->
+        <span
+          v-if="time.is_invalid"
+          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700"
+          title="This record has been invalidated"
+        >
+          ❌ Invalid
+        </span>
+        
+        <!-- Banned Player Badge -->
+        <span
+          v-if="time.is_banned"
+          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-900 text-orange-200 border border-orange-700"
+          title="This player is banned"
+        >
+          🚫 Banned
+        </span>
+        
+        <!-- View Moderation Logs Button -->
+        <button
+          v-if="time.invalid_ref && canViewLogs"
+          @click.stop="showModerationLogs"
+          class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700 hover:bg-blue-800 transition-colors"
+          title="View moderation logs for this record"
+        >
+          📋 Logs
+        </button>
+      </div>
     </div>
     <TimesListItemMoreDetails v-if="showDetails" :time="props.time" :cols="moreDetailsCols"></TimesListItemMoreDetails>
   </div>
+  
+  <!-- Moderation Logs Modal -->
+  <ModerationLogsViewer
+    :is-open="showLogsModal"
+    :record-id="time.invalid_ref || ''"
+    @close="closeModerationLogs"
+    @action-reversed="closeModerationLogs"
+  />
 </template>
 
 <style scoped>

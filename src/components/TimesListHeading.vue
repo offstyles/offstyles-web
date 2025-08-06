@@ -14,9 +14,9 @@
   const colWidthsStyle = computed(()=>{
     const baseColumns = props.cols.map((v)=>v.width ? v.width : 'auto')
     if (props.enableSelection) {
-      return ['40px', ...baseColumns].join(' ')
+      return ['40px', ...baseColumns, '200px'].join(' ') // Add space for moderation indicators
     }
-    return baseColumns.join(' ')
+    return [...baseColumns, '200px'].join(' ') // Add space for moderation indicators
   })
 </script>
 
@@ -33,6 +33,10 @@
     </div>
     <div v-for="(col,index) in props.cols" :key="index" class="grid-col" :class="col.alignmentClasses">
       <div :class="col.alignmentClasses">{{ col.label }}</div>
+    </div>
+    <!-- Moderation Status Column Header -->
+    <div class="grid-col flex items-center justify-end">
+      <div class="text-xs text-gray-400">Status</div>
     </div>
   </div>
 </template>
