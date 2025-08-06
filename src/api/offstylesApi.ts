@@ -134,7 +134,7 @@ class OffstylesApi extends Api {
   }
 
   // Moderation methods (require authentication)
-  static async moderatePlayer(steamId: string, action: 'ban' | 'unban', reason: string): Promise<void> {
+  static async moderatePlayer(steamId: string, action: 'Ban' | 'Unban', reason: string): Promise<void> {
     const params = new URLSearchParams({
       id: steamId,
       action: action
@@ -160,7 +160,7 @@ class OffstylesApi extends Api {
     }
   }
 
-  static async moderateRecord(recordId: string, action: 'invalidate' | 'validate', reason: string): Promise<void> {
+  static async moderateRecord(recordId: string, action: 'Invalidate' | 'Revalidate', reason: string): Promise<void> {
     const params = new URLSearchParams({
       id: recordId,
       action: action
@@ -207,18 +207,13 @@ class OffstylesApi extends Api {
     return await response.json();
   }
 
-  // Get moderation logs
-  static async getModerationLogs(targetId?: string, targetType?: 'player' | 'record'): Promise<ModerationLogEntry[]> {
-    const params = new URLSearchParams();
-    
-    if (targetId) {
-      params.append('target_id', targetId);
-    }
-    if (targetType) {
-      params.append('target_type', targetType);
-    }
+  // Get moderation logs - Updated to use actual API endpoint
+  static async getModerationLogs(id: string): Promise<any> {
+    const params = new URLSearchParams({
+      id: id // The invalid_ref or ban_ref ID to search for
+    });
 
-    const response = await fetch(`${this.offstylesApiUrl}/moderation_logs?${params.toString()}`, {
+    const response = await fetch(`${this.offstylesApiUrl}/mod_logs?${params.toString()}`, {
       credentials: 'include' // Include cookies for session authentication
     });
 
@@ -235,14 +230,20 @@ class OffstylesApi extends Api {
     return await response.json();
   }
 
-  // Reverse moderation action
-  static async reverseModerationAction(actionId: string): Promise<void> {
-    const params = new URLSearchParams({
-      action_id: actionId
-    });
+  // Reverse moderation actions - Updated to use actual API endpoint
+  static async reverseModerationActions(moderatorSteamId: string, timeframeHours: number, reason: string): Promise<string> {
+    const requestBody = {
+      moderator_steam_id: moderatorSteamId,
+      timeframe_hours: timeframeHours,
+      reason: reason
+    };
 
-    const response = await fetch(`${this.offstylesApiUrl}/reverse_moderation?${params.toString()}`, {
+    const response = await fetch(`${this.offstylesApiUrl}/reverse_moderator_actions`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
       credentials: 'include' // Include cookies for session authentication
     });
 
@@ -255,16 +256,21 @@ class OffstylesApi extends Api {
         throw new Error(`${response.status}: ${response.statusText}`);
       }
     }
+
+    return await response.text();
   }
 
   // Bulk moderate records using individual API calls
   static async bulkModerateRecords(recordIds: string[], action: 'invalidate' | 'validate', reason: string): Promise<void> {
     const errors: string[] = [];
     
+    // Map action to correct API enum values
+    const apiAction = action === 'invalidate' ? 'Invalidate' : 'Revalidate';
+    
     // Call moderateRecord for each record individually
     for (const recordId of recordIds) {
       try {
-        await this.moderateRecord(recordId, action, reason);
+        await this.moderateRecord(recordId, apiAction, reason);
       } catch (error) {
         errors.push(`Record ${recordId}: ${error}`);
       }

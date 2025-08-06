@@ -217,8 +217,6 @@
     <!-- Moderation Logs Modal -->
     <ModerationLogsViewer
       :isOpen="showLogsModal"
-      :targetId="playerSteamId"
-      targetType="player"
       @close="showLogsModal = false"
       @actionReversed="handleLogsActionReversed"
     />

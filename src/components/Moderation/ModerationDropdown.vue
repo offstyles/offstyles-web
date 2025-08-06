@@ -69,9 +69,9 @@ const performAction = async (reason: string) => {
   
   try {
     if (props.targetType === 'player') {
-      await OffstylesApi.moderatePlayer(props.targetId, currentAction.value as 'ban' | 'unban', reason)
+      await OffstylesApi.moderatePlayer(props.targetId, currentAction.value as 'Ban' | 'Unban', reason)
     } else {
-      await OffstylesApi.moderateRecord(props.targetId, currentAction.value as 'invalidate' | 'validate', reason)
+      await OffstylesApi.moderateRecord(props.targetId, currentAction.value as 'Invalidate' | 'Revalidate', reason)
     }
     
     // Emit event to refresh parent component

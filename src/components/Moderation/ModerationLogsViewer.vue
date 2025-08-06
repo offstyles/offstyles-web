@@ -2,12 +2,34 @@
 import { ref, computed, onMounted } from 'vue'
 import type { Ref } from 'vue'
 import { useAuth } from '@/stores/auth'
-import { ModerationActionType, UserPermissions, type ModerationLogEntry } from '@/types/moderation'
+import { UserPermissions } from '@/types/moderation'
 import OffstylesApi from '@/api/offstylesApi'
 
+// Define interfaces based on the OpenAPI spec
+interface ModActionWithInfo {
+  action: string; // ModerationActionType enum value
+  mod: {
+    _id?: string;
+    steam_id: string;
+    username: string;
+    avatar_url?: string;
+    permissions: number;
+    created_at: number;
+    last_login: number;
+    is_banned: boolean;
+    ban_ref?: string;
+  };
+  notes: string;
+  timestamp: number;
+}
+
+interface ModDocWithInfo {
+  _id: string;
+  actions: ModActionWithInfo[];
+}
+
 const props = defineProps<{
-  targetId?: string
-  targetType?: 'player' | 'record'
+  recordId?: string // The invalid_ref or ban_ref ID to search for
   isOpen: boolean
 }>()
 
@@ -17,13 +39,15 @@ const emit = defineEmits<{
 }>()
 
 const { user } = useAuth()
-const logs: Ref<ModerationLogEntry[]> = ref([])
+const logs: Ref<ModDocWithInfo | null> = ref(null)
 const isLoading: Ref<boolean> = ref(false)
 const error: Ref<string | null> = ref(null)
 
 // Reversal confirmation modal state
 const showReversalModal: Ref<boolean> = ref(false)
-const reversalActionId: Ref<string> = ref('')
+const reversalModerator: Ref<string> = ref('')
+const reversalTimeframe: Ref<number> = ref(24)
+const reversalReason: Ref<string> = ref('')
 const isReversing: Ref<boolean> = ref(false)
 
 const userPermissions = computed(() => {
@@ -39,26 +63,31 @@ const formatDate = (timestamp: number) => {
   return new Date(timestamp).toLocaleString()
 }
 
-const getActionColor = (action: ModerationActionType) => {
+const getActionColor = (action: string) => {
   switch (action) {
-    case ModerationActionType.Ban:
-    case ModerationActionType.Invalidate:
+    case 'Ban':
+    case 'Invalidate':
       return 'text-red-400'
-    case ModerationActionType.Unban:
-    case ModerationActionType.Revalidate:
+    case 'Unban':
+    case 'Revalidate':
       return 'text-green-400'
-    case ModerationActionType.Note:
+    case 'Note':
     default:
       return 'text-blue-400'
   }
 }
 
 const loadLogs = async () => {
+  if (!props.recordId) {
+    error.value = 'Moderation logs require a specific invalid_ref or ban_ref ID. This feature is only available for records that have been moderated.'
+    return
+  }
+
   isLoading.value = true
   error.value = null
   
   try {
-    logs.value = await OffstylesApi.getModerationLogs(props.targetId, props.targetType)
+    logs.value = await OffstylesApi.getModerationLogs(props.recordId)
   } catch (err) {
     console.error('Failed to load moderation logs:', err)
     error.value = err instanceof Error ? err.message : 'Failed to load logs'
@@ -67,18 +96,26 @@ const loadLogs = async () => {
   }
 }
 
-const showReversalConfirmation = (actionId: string) => {
-  reversalActionId.value = actionId
+const showReversalConfirmation = (moderatorSteamId: string) => {
+  reversalModerator.value = moderatorSteamId
+  reversalTimeframe.value = 24
+  reversalReason.value = ''
   showReversalModal.value = true
 }
 
 const confirmReversal = async () => {
-  if (!reversalActionId.value) return
+  if (!reversalModerator.value || !reversalReason.value.trim()) return
   
   isReversing.value = true
   
   try {
-    await OffstylesApi.reverseModerationAction(reversalActionId.value)
+    const result = await OffstylesApi.reverseModerationActions(
+      reversalModerator.value, 
+      reversalTimeframe.value, 
+      reversalReason.value.trim()
+    )
+    console.log('Reversal result:', result)
+    
     await loadLogs() // Reload logs
     emit('actionReversed')
     showReversalModal.value = false
@@ -92,7 +129,8 @@ const confirmReversal = async () => {
 
 const cancelReversal = () => {
   showReversalModal.value = false
-  reversalActionId.value = ''
+  reversalModerator.value = ''
+  reversalReason.value = ''
 }
 
 onMounted(() => {
@@ -135,8 +173,8 @@ onMounted(() => {
       <div class="flex justify-between items-center p-6 border-b border-main-400">
         <h2 class="text-xl font-semibold text-white">
           Moderation Logs
-          <span v-if="targetId" class="text-gray-400 text-sm ml-2">
-            ({{ targetType }}: {{ targetId }})
+          <span v-if="recordId" class="text-gray-400 text-sm ml-2">
+            (Record: {{ recordId }})
           </span>
         </h2>
         <button
@@ -166,58 +204,52 @@ onMounted(() => {
         </div>
         
         <!-- No logs -->
-        <div v-else-if="logs.length === 0" class="text-center py-8">
+        <div v-else-if="!logs || logs.actions.length === 0" class="text-center py-8">
           <div class="text-gray-400">No moderation logs found</div>
         </div>
         
         <!-- Logs list -->
         <div v-else class="space-y-4">
           <div 
-            v-for="log in logs" 
-            :key="log._id"
+            v-for="action in logs.actions" 
+            :key="action.timestamp"
             class="bg-main-700 border border-main-500 rounded-lg p-4"
-            :class="{ 'opacity-50': log.reversed }"
           >
             <div class="flex justify-between items-start">
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-2">
                   <span 
-                    :class="getActionColor(log.action)"
+                    :class="getActionColor(action.action)"
                     class="font-semibold uppercase text-sm"
                   >
-                    {{ log.action }}
+                    {{ action.action }}
                   </span>
-                  <span v-if="log.reversed" class="text-yellow-500 text-sm">(REVERSED)</span>
                 </div>
                 
                 <div class="text-gray-300 mb-2">
-                  <strong>Target:</strong> {{ log.target_type }} {{ log.target_id }}
+                  <strong>Record ID:</strong> {{ recordId }}
                 </div>
                 
                 <div class="text-gray-300 mb-2">
-                  <strong>Moderator:</strong> {{ log.moderator_name || log.moderator_steam_id }}
+                  <strong>Moderator:</strong> {{ action.mod.username }} ({{ action.mod.steam_id }})
                 </div>
                 
                 <div class="text-gray-300 mb-2">
-                  <strong>Reason:</strong> {{ log.reason }}
+                  <strong>Reason:</strong> {{ action.notes }}
                 </div>
                 
                 <div class="text-gray-400 text-sm">
-                  {{ formatDate(log.timestamp) }}
-                </div>
-                
-                <div v-if="log.reversed" class="text-yellow-400 text-sm mt-1">
-                  Reversed by {{ log.reversed_by }} on {{ formatDate(log.reversed_at!) }}
+                  {{ formatDate(action.timestamp) }}
                 </div>
               </div>
               
               <!-- Reverse Action Button -->
-              <div v-if="canReverse && !log.reversed" class="ml-4">
+              <div v-if="canReverse" class="ml-4">
                 <button
-                  @click="showReversalConfirmation(log._id)"
+                  @click="showReversalConfirmation(action.mod.steam_id)"
                   class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded transition-colors"
                 >
-                  Reverse
+                  Reverse Actions
                 </button>
               </div>
             </div>
@@ -249,13 +281,50 @@ onMounted(() => {
       @click.stop
     >
       <!-- Header -->
-      <h3 class="text-lg font-semibold text-white mb-4">Confirm Reversal</h3>
+      <h3 class="text-lg font-semibold text-white mb-4">Reverse Moderator Actions</h3>
       
       <!-- Content -->
-      <div class="mb-6">
+      <div class="mb-6 space-y-4">
         <p class="text-gray-300">
-          Are you sure you want to reverse this moderation action? This action cannot be undone.
+          This will reverse all moderation actions by the selected moderator within the specified timeframe.
         </p>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Moderator Steam ID
+          </label>
+          <input
+            v-model="reversalModerator"
+            type="text"
+            class="w-full px-3 py-2 bg-main-700 border border-main-500 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            readonly
+          />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Timeframe (hours)
+          </label>
+          <input
+            v-model.number="reversalTimeframe"
+            type="number"
+            min="1"
+            max="168"
+            class="w-full px-3 py-2 bg-main-700 border border-main-500 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Reason (required)
+          </label>
+          <textarea
+            v-model="reversalReason"
+            class="w-full px-3 py-2 bg-main-700 border border-main-500 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows="3"
+            placeholder="Enter reason for reversal..."
+          ></textarea>
+        </div>
       </div>
       
       <!-- Actions -->
@@ -269,10 +338,10 @@ onMounted(() => {
         </button>
         <button
           @click="confirmReversal"
-          :disabled="isReversing"
+          :disabled="isReversing || !reversalReason.trim()"
           class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-500 text-white rounded-md transition-colors"
         >
-          {{ isReversing ? 'Reversing...' : 'Reverse Action' }}
+          {{ isReversing ? 'Reversing...' : 'Reverse Actions' }}
         </button>
       </div>
     </div>

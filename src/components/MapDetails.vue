@@ -166,7 +166,6 @@
     <!-- Moderation Logs Modal -->
     <ModerationLogsViewer
       :isOpen="showLogsModal"
-      targetType="record"
       @close="showLogsModal = false"
       @actionReversed="handleLogsActionReversed"
     />
