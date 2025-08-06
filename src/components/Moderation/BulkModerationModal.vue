@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import type { Ref } from 'vue'
 import { useAuth } from '@/stores/auth'
-import { ModerationActionType, UserPermissions } from '@/types/moderation'
+import { UserPermissions } from '@/types/moderation'
 import OffstylesApi from '@/api/offstylesApi'
 
 const props = defineProps<{

@@ -2,6 +2,7 @@ import { Style } from '@/types/Style';
 import Api from './api';
 import type { Time } from '@/types/Time';
 import type { User } from '@/types/User';
+import type { ModerationLogEntry } from '@/types/moderation';
 
 // Add new interfaces based on the API spec
 export interface RankAwareRecord extends Time {
@@ -206,79 +207,37 @@ class OffstylesApi extends Api {
     return await response.json();
   }
 
-  // Get moderation logs
-  static async getModerationLogs(targetId?: string, targetType?: 'player' | 'record'): Promise<any[]> {
-    const params = new URLSearchParams();
-    
-    if (targetId) {
-      params.append('target_id', targetId);
-    }
-    if (targetType) {
-      params.append('target_type', targetType);
-    }
-
-    const response = await fetch(`${this.offstylesApiUrl}/mod_logs?${params.toString()}`, {
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
-
-    return await response.json();
+  // Get moderation logs (endpoint not yet implemented, returns empty array)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static async getModerationLogs(_targetId?: string, _targetType?: 'player' | 'record'): Promise<ModerationLogEntry[]> {
+    // Endpoint not yet implemented on backend, return empty array for now
+    console.warn('getModerationLogs endpoint not yet implemented, returning empty array');
+    return [];
   }
 
-  // Reverse moderation action
-  static async reverseModerationAction(actionId: string): Promise<void> {
-    const params = new URLSearchParams({
-      action_id: actionId
-    });
-
-    const response = await fetch(`${this.offstylesApiUrl}/reverse_moderator_actions?${params.toString()}`, {
-      method: 'POST',
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+  // Reverse moderation action (endpoint not yet implemented, throws error)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static async reverseModerationAction(_actionId: string): Promise<void> {
+    // Endpoint not yet implemented on backend
+    throw new Error('Reverse moderation action endpoint not yet implemented');
   }
 
-  // Bulk moderate records
+  // Bulk moderate records using individual API calls
   static async bulkModerateRecords(recordIds: string[], action: 'invalidate' | 'validate', reason: string): Promise<void> {
-    const response = await fetch(`${this.offstylesApiUrl}/bulk_moderate_records`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        record_ids: recordIds,
-        action: action,
-        reason: reason
-      }),
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
+    const errors: string[] = [];
+    
+    // Call moderateRecord for each record individually
+    for (const recordId of recordIds) {
       try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
+        await this.moderateRecord(recordId, action, reason);
+      } catch (error) {
+        errors.push(`Record ${recordId}: ${error}`);
       }
+    }
+    
+    // If any errors occurred, throw a combined error message
+    if (errors.length > 0) {
+      throw new Error(`Failed to moderate ${errors.length} records:\n${errors.join('\n')}`);
     }
   }
 }

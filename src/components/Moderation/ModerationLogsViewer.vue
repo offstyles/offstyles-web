@@ -4,7 +4,6 @@ import type { Ref } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { ModerationActionType, UserPermissions, type ModerationLogEntry } from '@/types/moderation'
 import OffstylesApi from '@/api/offstylesApi'
-import IconChevronDown from '@/components/icons/IconChevronDown.vue'
 
 const props = defineProps<{
   targetId?: string
@@ -84,14 +83,7 @@ onMounted(() => {
   }
 })
 
-// Watch for prop changes
-const handleOpen = () => {
-  if (props.isOpen) {
-    loadLogs()
-  }
-}
-
-// Call handleOpen when isOpen changes to true
+// Call loadLogs when isOpen changes to true
 const previousIsOpen = ref(props.isOpen)
 const watchIsOpen = () => {
   if (props.isOpen && !previousIsOpen.value) {

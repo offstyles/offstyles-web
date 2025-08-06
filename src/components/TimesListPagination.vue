@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Ref } from 'vue';
 import type { Time } from '@/types/Time';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import urlParams from '@/utils/urlParams';
   const props = defineProps<{
     limitPerPage: number,
