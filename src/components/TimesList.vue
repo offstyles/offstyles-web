@@ -39,19 +39,20 @@ import { useModerationStore } from '@/stores/moderation';
 
 <template>
   <div>
-    <!-- Header with bulk moderation button -->
-    <div class="flex justify-between items-center mb-2">
-      <div class="flex-1">
-        <TimesListHeading :cols="props.cols"></TimesListHeading>
-      </div>
-      <div v-if="moderationStore.canInvalidateTimes.value && props.times.length > 0" class="ml-4">
-        <button
-          @click="openBulkModeration"
-          class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded transition-colors whitespace-nowrap cursor-pointer"
-        >
-          Bulk Moderate
-        </button>
-      </div>
+    <!-- Bulk moderation button above header -->
+    <div v-if="moderationStore.canInvalidateTimes.value && props.times.length > 0" 
+         class="flex justify-end mb-2">
+      <button
+        @click="openBulkModeration"
+        class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded transition-colors whitespace-nowrap cursor-pointer"
+      >
+        Bulk Moderate
+      </button>
+    </div>
+    
+    <!-- Header -->
+    <div class="mb-2">
+      <TimesListHeading :cols="props.cols"></TimesListHeading>
     </div>
     
     <!-- Times list -->

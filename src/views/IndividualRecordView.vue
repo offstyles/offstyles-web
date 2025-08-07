@@ -81,10 +81,10 @@
     <div class="text-white w-full max-w-[800px] text-center flex flex-col justify-center rounded-lg">
       
       <!-- Header -->
-      <div class="mb-6">
+      <div class="mb-4">
         <button 
           @click="goBack" 
-          class="text-blue-400 hover:text-blue-300 mb-4 flex items-center gap-2"
+          class="text-blue-400 hover:text-blue-300 mb-2 flex items-center gap-2"
         >
           ← Back
         </button>
