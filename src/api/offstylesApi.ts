@@ -159,10 +159,15 @@ class OffstylesApi extends Api {
     }
   }
 
-  static async moderateRecord(recordId: string, action: 'invalidate' | 'validate', reason: string): Promise<void> {
+  static async moderateRecord(recordId: string, action: 'invalidate' | 'revalidate', reason: string): Promise<void> {
+    return this.moderateRecords([recordId], action, reason);
+  }
+
+    // Bulk moderation method for multiple records
+  static async moderateRecords(recordIds: string[], action: 'invalidate' | 'revalidate', reason: string): Promise<void> {
     const params = new URLSearchParams({
-      id: recordId,
-      action: action
+      action: action,
+      ids: recordIds.join(',') // Comma-separated values for the ids parameter
     });
 
     const response = await fetch(`${this.offstylesApiUrl}/moderate_record?${params.toString()}`, {
@@ -230,6 +235,59 @@ class OffstylesApi extends Api {
 
   static getLogoutUrl(): string {
     return `${this.offstylesApiUrl}/logout`;
+  }
+
+  // Get moderation logs
+  static async getModerationLogs(id: string): Promise<any> {
+    const params = new URLSearchParams({
+      id: id
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/mod_logs?${params.toString()}`, {
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
+  }
+
+  // Reverse moderator actions
+  static async reverseModerationActions(moderatorSteamId: string, timeframeHours: number, reason: string): Promise<string> {
+    const data = {
+      moderator_steam_id: moderatorSteamId,
+      timeframe_hours: timeframeHours,
+      reason: reason
+    };
+
+    const response = await fetch(`${this.offstylesApiUrl}/reverse_moderator_actions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.text();
   }
 }
 

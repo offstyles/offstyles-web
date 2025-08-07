@@ -71,7 +71,9 @@
       width: '25%',
       alignmentClasses: 'text-right justify-end monospace',
       numFormat: dateTimeFormats.time
-    }]"></TimesList>
+    }]"
+    @refresh-data="emit('updateRecentTimes')"
+    ></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected parameters</h1>
     <TimesListPagination :limitPerPage="15" :times="props.recentTimes" :isLoading = "props.isLoading" @pagination-changed="paginationChanged"></TimesListPagination>
   </div>

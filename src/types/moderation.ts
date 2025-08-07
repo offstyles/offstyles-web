@@ -1,15 +1,15 @@
 // Moderation Action Types
 export enum ModerationActionType {
   // Validation / Hidden status (mainly for records)
-  Invalidate = "invalidate",
-  Revalidate = "validate",
+  Invalidate = "Invalidate",
+  Revalidate = "Revalidate",
   
   // Add/Change a note on the action (does NOT change validation or ban status)
-  Note = "note",
+  Note = "Note",
   
   // Ban Status (mainly for profile related things)
-  Ban = "ban",
-  Unban = "unban"
+  Ban = "Ban",
+  Unban = "Unban"
 }
 
 // Individual moderation action
