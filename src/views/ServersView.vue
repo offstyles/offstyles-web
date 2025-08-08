@@ -2,7 +2,7 @@
   <main>
     <div class="flex flex-col items-center justify-center">
       <div class="w-full max-w-6xl mx-auto px-4 py-8">
-        <h1 class="text-gray-100 text-xl text-center mb-8">Servers</h1>
+        <h1 class="text-white text-2xl text-center mb-8">Servers</h1>
         
         <!-- Server Statistics -->
         <div v-if="!loading && !error && servers.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
