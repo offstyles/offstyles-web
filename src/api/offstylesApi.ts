@@ -2,6 +2,7 @@ import { Style } from '@/types/Style';
 import Api from './api';
 import type { Time } from '@/types/Time';
 import type { User } from '@/types/User';
+import type { RecentModAction, ModerationTargetFilter } from '@/types/moderation';
 
 // Add new interfaces based on the API spec
 export interface RankAwareRecord extends Time {
@@ -244,6 +245,31 @@ class OffstylesApi extends Api {
     });
 
     const response = await fetch(`${this.offstylesApiUrl}/mod_logs?${params.toString()}`, {
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
+  }
+
+  // Get recent general moderation logs with optional filter
+  static async getRecentModerationLogs(filter?: ModerationTargetFilter): Promise<RecentModAction[]> {
+    const params = new URLSearchParams();
+    
+    if (filter) {
+      params.append('filter', filter);
+    }
+
+    const response = await fetch(`${this.offstylesApiUrl}/mod_logs_recent?${params.toString()}`, {
       credentials: 'include' // Include cookies for session authentication
     });
 

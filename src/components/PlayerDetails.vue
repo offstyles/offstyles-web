@@ -110,7 +110,7 @@
       <button 
         v-if="moderationStore.canModerate.value && moderationTarget"
         @click="openModerationModal"
-        class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors cursor-pointer"
+        class="flex items-center gap-2 px-4 py-2 bg-main-700 hover:bg-main-600 border border-main-500 text-gray-200 rounded transition-colors cursor-pointer"
       >
         <span>Moderate</span>
       </button>

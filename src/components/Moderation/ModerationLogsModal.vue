@@ -27,6 +27,10 @@ const loadModerationLogs = async () => {
 
   try {
     const logs = await moderationStore.getModerationLogs(props.targetId)
+    // Sort actions by timestamp descending (most recent first)
+    if (logs && logs.actions) {
+      logs.actions = logs.actions.sort((a: any, b: any) => b.timestamp - a.timestamp)
+    }
     moderationLogs.value = logs
   } catch (error) {
     console.error('Failed to load moderation logs:', error)

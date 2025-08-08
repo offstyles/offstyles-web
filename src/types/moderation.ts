@@ -81,3 +81,22 @@ export type ApiResult<T> = T | JsonError;
 export function isApiError<T>(response: ApiResult<T>): response is JsonError {
   return typeof response === 'object' && response !== null && 'error' in response;
 }
+
+// Moderation target filter for recent logs
+export enum ModerationTargetFilter {
+  Player = "Player",
+  Record = "Record"
+}
+
+// Recent moderation action for general logs
+export interface RecentModAction {
+  timestamp: number; // Unix timestamp in milliseconds
+  action: ModerationActionType;
+  moderator_name: string;
+  moderator_steam_id: string;
+  moderator_avatar_url?: string; // Optional avatar URL for the moderator
+  target_type: ModerationTarget;
+  target_name: string;
+  target_id: string;
+  notes?: string;
+}

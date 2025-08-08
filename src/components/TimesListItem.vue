@@ -89,7 +89,7 @@
       >
         <button
           @click="openModerationModal"
-          class="flex items-center gap-1 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors cursor-pointer"
+          class="flex items-center gap-1 px-2 py-1 bg-main-700 hover:bg-main-600 border border-main-500 text-gray-200 text-xs rounded transition-colors cursor-pointer"
         >
           <span>Moderate</span>
         </button>

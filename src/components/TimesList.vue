@@ -44,7 +44,7 @@ import { useModerationStore } from '@/stores/moderation';
          class="flex justify-end mb-2">
       <button
         @click="openBulkModeration"
-        class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded transition-colors whitespace-nowrap cursor-pointer"
+        class="px-3 py-1 bg-main-700 hover:bg-main-600 border border-main-500 text-gray-200 text-sm rounded transition-colors whitespace-nowrap cursor-pointer"
       >
         Bulk Moderate
       </button>

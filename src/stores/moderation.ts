@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import type { Ref } from 'vue'
 import { useAuth } from './auth'
-import { ModerationActionType, UserPermissions } from '@/types/moderation'
+import { ModerationActionType, UserPermissions, type ModerationTargetFilter } from '@/types/moderation'
 import OffstylesApi from '@/api/offstylesApi'
 
 export interface ModerationTarget {
@@ -128,6 +128,10 @@ export const useModerationStore = () => {
     return await OffstylesApi.reverseModerationActions(moderatorSteamId, timeframeHours, reason)
   }
 
+  const getRecentModerationLogs = async (filter?: ModerationTargetFilter) => {
+    return await OffstylesApi.getRecentModerationLogs(filter)
+  }
+
   return {
     // State
     isLoading: computed(() => isLoading.value),
@@ -148,6 +152,7 @@ export const useModerationStore = () => {
     performModerationAction,
     performBulkModerationAction,
     getModerationLogs,
-    reverseModerationActions
+    reverseModerationActions,
+    getRecentModerationLogs
   }
 }
