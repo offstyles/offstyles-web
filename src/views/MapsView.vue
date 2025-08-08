@@ -42,7 +42,12 @@
     isLoading.value = true;
     mapTimes.value = null;
     const paramsObj = urlParams.getAsObject();
-    const apiMapTimes = await OffstylesApi.getTimesByMap(name, paramsObj.style, undefined, undefined, paramsObj.page);
+    
+    // Convert string params to numbers with defaults
+    const style = paramsObj.style ? parseInt(paramsObj.style) : 190;
+    const page = paramsObj.page ? parseInt(paramsObj.page) : 1;
+    
+    const apiMapTimes = await OffstylesApi.getTimesByMap(name, style, undefined, undefined, page);
     if(apiMapTimes.length){
       mapTimes.value = apiMapTimes;
     }

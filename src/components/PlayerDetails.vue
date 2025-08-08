@@ -20,11 +20,16 @@
   const emit = defineEmits(['updatePlayer']);
 
   const props = defineProps<{
-    playerName : string,
-    playerSteamId : string,
+    playerName: string,
+    playerSteamId: string,
     playerTimes: Time[] | null,
     isLoading: boolean
   }>()
+
+  // Validate required props
+  if (!props.playerSteamId) {
+    console.warn('PlayerDetails: playerSteamId is required but not provided');
+  }
 
   const userProfile: Ref<User | null> = ref(null);
   const isLoadingProfile: Ref<boolean> = ref(false);
@@ -33,14 +38,46 @@
   const moderationStore = useModerationStore();
 
   const moderationTarget = computed((): ModerationTarget | null => {
-    if (!userProfile.value) return null;
-    return {
-      id: userProfile.value.steam_id,
-      type: 'player',
-      name: userProfile.value.username,
-      is_banned: userProfile.value.is_banned,
-      ban_ref: userProfile.value.ban_ref
-    };
+    // If we have a full user profile, use that data
+    if (userProfile.value) {
+      return {
+        id: userProfile.value.steam_id,
+        type: 'player',
+        name: userProfile.value.username,
+        is_banned: userProfile.value.is_banned,
+        ban_ref: userProfile.value.ban_ref
+      };
+    }
+    
+    // Fallback: Create a basic moderation target even if profile doesn't exist in DB
+    // This allows moderation of players who haven't been indexed yet
+    if (props.playerSteamId && props.playerName) {
+      return {
+        id: props.playerSteamId,
+        type: 'player',
+        name: props.playerName,
+        is_banned: false, // Default to not banned since we don't have profile data
+        ban_ref: undefined
+      };
+    }
+    
+    return null;
+  });
+
+  const playerStatus = computed(() => {
+    if (isLoadingProfile.value) {
+      return { message: 'Loading...', class: 'text-gray-400' };
+    }
+    
+    if (userProfile.value?.is_banned) {
+      return { message: '⚠️ Banned', class: 'text-red-400' };
+    }
+    
+    if (userProfile.value === null && !isLoadingProfile.value) {
+      return { message: '⚠️ Profile not found in database', class: 'text-yellow-400' };
+    }
+    
+    return null;
   });
  
   const fetchUserProfile = async () => {
@@ -48,7 +85,9 @@
     try {
       userProfile.value = await OffstylesApi.getUserProfile(props.playerSteamId);
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
+      console.warn('Player profile not found or error occurred:', error);
+      // Set to null to indicate profile doesn't exist or couldn't be loaded
+      // This will trigger the fallback moderation target
       userProfile.value = null;
     } finally {
       isLoadingProfile.value = false;
@@ -104,7 +143,7 @@
         />
         <div class="text-left">
           <h1 class="text-2xl">{{ playerName }}</h1>
-          <div v-if="userProfile?.is_banned" class="text-red-400 text-sm">⚠️ Banned</div>
+          <div v-if="playerStatus" :class="`text-sm ${playerStatus.class}`">{{ playerStatus.message }}</div>
         </div>
       </div>
       <button 

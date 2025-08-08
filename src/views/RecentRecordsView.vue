@@ -16,7 +16,13 @@
     isLoading.value = true;
     recentTimes.value = null;
     const paramsObj = urlParams.getAsObject();
-    const apiRecentTimes = await OffstylesApi.getRecentTimes(paramsObj.style, undefined, paramsObj.page, paramsObj.wr);
+    
+    // Convert string params to numbers with defaults
+    const style = paramsObj.style ? parseInt(paramsObj.style) : 190;
+    const page = paramsObj.page ? parseInt(paramsObj.page) : 1;
+    const wr = paramsObj.wr ? paramsObj.wr === 'true' : true; // Convert string to boolean
+    
+    const apiRecentTimes = await OffstylesApi.getRecentTimes(style, undefined, page, wr);
     if(apiRecentTimes.length){
       recentTimes.value = apiRecentTimes;
     }

@@ -24,9 +24,10 @@ const isLoading: Ref<boolean> = ref(false)
 const showModerationModal: Ref<boolean> = ref(false)
 const currentTarget: Ref<ModerationTarget | null> = ref(null)
 
-export const useModerationStore = () => {
-  const { user } = useAuth()
+// Get auth state once at module level
+const { user } = useAuth()
 
+export const useModerationStore = () => {
   const userPermissions = computed(() => {
     if (!user.value) return new UserPermissions(0)
     return new UserPermissions(user.value.permissions)
