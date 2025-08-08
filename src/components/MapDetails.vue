@@ -64,7 +64,9 @@
       width: '30%',
       alignmentClasses: 'text-right justify-end monospace',
       numFormat: dateTimeFormats.time
-    }]"></TimesList>
+    }]"
+    @refresh-data="() => emit('updateMap', props.mapName)"
+    ></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected map & style</h1>
     <TimesListPagination :limitPerPage="50" :times="props.mapTimes" :isLoading = "props.isLoading" @pagination-changed="paginationChanged"></TimesListPagination>
   </div>
