@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import type { Ref } from 'vue'
 import type { User } from '@/types/User'
+import OffstylesApi from '@/api/offstylesApi'
 
 const user: Ref<User | null> = ref(null)
 const isLoading: Ref<boolean> = ref(false)
@@ -15,23 +16,12 @@ const isLoggedIn = computed(() => {
 const fetchUser = async (): Promise<void> => {
   console.log('fetchUser called')
   
-  console.log('Making API call to /api/profile')
+  console.log('Making API call to get current user')
   isLoading.value = true
   try {
-    const response = await fetch('/api/profile', {
-      credentials: 'include'
-    })
-    console.log('API Response:', response.status, response.ok)
-    
-    if (response.ok) {
-      const userData = await response.json()
-      user.value = userData
-      console.log('User data set:', userData)
-    } else {
-      const errorText = await response.text()
-      user.value = null
-      console.log('API Error:', response.status, errorText)
-    }
+    const userData = await OffstylesApi.getCurrentUser()
+    user.value = userData
+    console.log('User data set:', userData)
   } catch (error) {
     console.error('Fetch error:', error)
     user.value = null
@@ -44,13 +34,13 @@ const fetchUser = async (): Promise<void> => {
 // Login - redirect to Steam auth
 const login = (): void => {
   console.log('Login called')
-  window.location.href = '/api/auth/steam'
+  window.location.href = OffstylesApi.getLoginUrl()
 }
 
 // Logout - redirect to logout endpoint
 const logout = (): void => {
   console.log('Logout called')
-  window.location.href = '/api/auth/logout'
+  window.location.href = OffstylesApi.getLogoutUrl()
 }
 
 // Initialize auth state

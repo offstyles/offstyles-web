@@ -23,7 +23,7 @@ export interface JsonError {
 }
 
 class OffstylesApi extends Api {
-  static offstylesApiUrl = 'https://offstyles.tommyy.dev/api';
+  static offstylesApiUrl = import.meta.env.DEV ? '/api' : 'https://offstyles.tommyy.dev/api';
 
   // Fixed method signature to require style parameter
   static async getTimesByMap(mapName: string, style: number = 190, steamid?: string, limit: number = 50, page: number = 1): Promise<RankAwareRecord[]> {
