@@ -38,6 +38,11 @@ const router = createRouter({
       name: 'individual-record',
       component: () => import('../views/IndividualRecordView.vue'),
       props: true
+    },
+    {
+      path: '/servers',
+      name: 'servers',
+      component: () => import('../views/ServersView.vue')
     }
   ],
 })
