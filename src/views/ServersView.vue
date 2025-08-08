@@ -125,7 +125,7 @@
                   <button
                     v-if="canManageKeys"
                     @click="openEditKeyModal(server.server)"
-                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-main-800 hover:bg-main-700 border border-main-500 hover:border-main-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer"
+                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-main-800 hover:bg-main-700 border border-main-500 hover:border-main-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer mr-3"
                     title="Edit API key"
                   >
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
