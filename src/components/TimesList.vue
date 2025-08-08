@@ -51,7 +51,7 @@ import { useModerationStore } from '@/stores/moderation';
     </div>
     
     <!-- Header -->
-    <div class="mb-2">
+    <div>
       <TimesListHeading :cols="props.cols"></TimesListHeading>
     </div>
     
