@@ -383,6 +383,60 @@ class OffstylesApi extends Api {
     const responseText = await response.text();
     return responseText === "true";
   }
+
+  static async getRecentModerationLogs(filter?: ModerationTargetFilter): Promise<RecentModAction[]> {
+    const params = new URLSearchParams();
+    
+    if (filter) {
+      params.append('filter', filter);
+    }
+
+    const response = await fetch(`${this.offstylesApiUrl}/mod_logs_recent?${params.toString()}`, {
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
+  }
+
+  // Reverse moderator actions
+  static async reverseModerationActions(moderatorSteamId: string, timeframeHours: number, reason: string): Promise<string> {
+    const data = {
+      moderator_steam_id: moderatorSteamId,
+      timeframe_hours: timeframeHours,
+      reason: reason
+    };
+
+    const response = await fetch(`${this.offstylesApiUrl}/reverse_moderator_actions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.text();
+  }
 }
 
 export default OffstylesApi;
