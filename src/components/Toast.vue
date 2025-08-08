@@ -29,13 +29,13 @@
           </div>
         </div>
         <div class="ml-3 w-0 flex-1 pt-0.5">
-          <p class="text-sm font-medium text-gray-900">{{ title }}</p>
-          <p v-if="message" class="mt-1 text-sm text-gray-500">{{ message }}</p>
+          <p class="text-sm font-medium text-gray-100">{{ title }}</p>
+          <p v-if="message" class="mt-1 text-sm text-gray-300">{{ message }}</p>
         </div>
         <div class="ml-4 flex-shrink-0 flex">
           <button
             @click="close"
-            class="rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
+            class="rounded-md inline-flex text-gray-400 hover:text-gray-200 focus:outline-none transition-colors cursor-pointer"
           >
             <span class="sr-only">Close</span>
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -71,26 +71,26 @@ const emit = defineEmits<{
 const typeClasses = computed(() => {
   switch (props.type) {
     case 'success':
-      return 'bg-green-50 border border-green-200';
+      return 'bg-main-800 border border-green-600';
     case 'error':
-      return 'bg-red-50 border border-red-200';
+      return 'bg-main-800 border border-red-600';
     case 'warning':
-      return 'bg-yellow-50 border border-yellow-200';
+      return 'bg-main-800 border border-yellow-600';
     default:
-      return 'bg-blue-50 border border-blue-200';
+      return 'bg-main-800 border border-blue-600';
   }
 });
 
 const iconClasses = computed(() => {
   switch (props.type) {
     case 'success':
-      return 'bg-green-500';
+      return 'bg-green-700';
     case 'error':
-      return 'bg-red-500';
+      return 'bg-red-700';
     case 'warning':
-      return 'bg-yellow-500';
+      return 'bg-yellow-700';
     default:
-      return 'bg-blue-500';
+      return 'bg-blue-700';
   }
 });
 

@@ -230,8 +230,22 @@
           <h3 class="text-lg font-semibold mb-4 text-green-400">Success!</h3>
           <div v-if="createdKey" class="mb-4">
             <p class="text-sm text-gray-300 mb-2">API Key created successfully:</p>
-            <div class="bg-main-900 border border-main-600 p-3 rounded-md">
-              <code class="text-sm break-all text-gray-100 monospace">{{ createdKey }}</code>
+            <div class="relative">
+              <div 
+                @click="copyCreatedKey"
+                class="w-full px-3 py-2 bg-main-900 border border-main-600 rounded-md cursor-pointer hover:bg-main-800 transition-colors group"
+                title="Click to copy API key"
+              >
+                <code class="text-sm text-gray-100 monospace blur-sm">{{ createdKey }}</code>
+              </div>
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span class="text-xs text-gray-400 bg-main-800 px-2 py-1 rounded border border-main-600 group-hover:text-gray-300 transition-colors">
+                  <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  Click to copy API key
+                </span>
+              </div>
             </div>
             <p class="text-xs text-red-400 mt-2">
               ⚠️ Save this key now! It won't be shown again.
@@ -500,9 +514,11 @@ const closeCreateKeyModal = () => {
   };
 };
 
-const closeSuccessModal = () => {
+const closeSuccessModal = async () => {
   showSuccessModal.value = false;
   createdKey.value = null;
+  // Refresh servers list after closing success modal
+  await loadServers();
 };
 
 const createKey = async () => {
@@ -580,16 +596,19 @@ const cancelDeleteKey = () => {
 const executeDeleteKey = async () => {
   if (!currentServerKeyInfo.value) return;
   
+  // Store server name before clearing the state
+  const serverName = currentServerKeyInfo.value.server;
+  
   try {
     deletingKey.value = true;
     
-    await OffstylesApi.deleteApiKey(currentServerKeyInfo.value.server);
+    await OffstylesApi.deleteApiKey(serverName);
     
     // Refresh the servers list to reflect the changes
     await loadServers();
     
     closeEditKeyModal();
-    showToastMessage('success', 'Deleted!', `API key for ${currentServerKeyInfo.value.server} has been deleted`);
+    showToastMessage('success', 'Deleted!', `API key for ${serverName} has been deleted`);
   } catch (err) {
     showToastMessage('error', 'Error', 'Failed to delete API key');
     console.error('Failed to delete API key:', err);
@@ -658,6 +677,25 @@ const copyApiKey = async () => {
       document.execCommand('copy');
       document.body.removeChild(textArea);
       showToastMessage('success', 'Copied!', `API key for ${currentServerKeyInfo.value.server} copied to clipboard`);
+    }
+  }
+};
+
+const copyCreatedKey = async () => {
+  if (createdKey.value) {
+    try {
+      await navigator.clipboard.writeText(createdKey.value);
+      showToastMessage('success', 'Copied!', 'API key copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy API key to clipboard:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = createdKey.value;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      showToastMessage('success', 'Copied!', 'API key copied to clipboard');
     }
   }
 };
