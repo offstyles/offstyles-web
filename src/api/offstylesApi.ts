@@ -205,6 +205,32 @@ class OffstylesApi extends Api {
 
     return await response.json();
   }
+
+  // Authentication methods
+  static async getCurrentUser(): Promise<User | null> {
+    try {
+      const response = await fetch(`${this.offstylesApiUrl}/profile`, {
+        credentials: 'include' // Include cookies for session authentication
+      });
+
+      if (response.ok) {
+        return await response.json();
+      } else {
+        return null; // Not authenticated or user not found
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      return null;
+    }
+  }
+
+  static getLoginUrl(): string {
+    return `${this.offstylesApiUrl}/steam`;
+  }
+
+  static getLogoutUrl(): string {
+    return `${this.offstylesApiUrl}/logout`;
+  }
 }
 
 export default OffstylesApi;
