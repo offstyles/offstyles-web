@@ -115,7 +115,7 @@
                         class="text-sm text-gray-100 monospace cursor-pointer hover:text-gray-200 hover:bg-main-600 px-1 py-0.5 rounded transition-colors"
                         :title="`Click to copy ${ip}`"
                       >{{ ip }}<span v-if="index < server.ips.length - 1" class="text-gray-400">,</span></span>
-                      <span class="text-xs text-gray-400 ml-2">(click to copy)</span>
+                      <span v-if="server.ips && server.ips.length > 0" class="text-xs text-gray-400 ml-2">(click to copy)</span>
                     </div>
                   </div>
                 </div>

@@ -84,7 +84,7 @@ const loadRecentModerationLogs = async () => {
   try {
     const logs = await moderationStore.getRecentModerationLogs(selectedFilter.value)
     // Sort by timestamp descending (most recent first)
-    recentLogs.value = logs.sort((a, b) => b.timestamp - a.timestamp)
+    recentLogs.value = logs.sort((a: any, b: any) => b.timestamp - a.timestamp)
   } catch (error) {
     console.error('Failed to load recent moderation logs:', error)
     recentLogs.value = []
