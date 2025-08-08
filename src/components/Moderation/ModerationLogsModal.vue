@@ -18,6 +18,10 @@ const moderationLogs: Ref<any> = ref(null)
 const isLoading: Ref<boolean> = ref(false)
 const errorMessage: Ref<string> = ref('')
 
+// Modal state for detailed log view
+const showLogDetailModal: Ref<boolean> = ref(false)
+const selectedLogForModal: Ref<any> = ref(null)
+
 const loadModerationLogs = async () => {
   if (!props.targetId) return
 
@@ -63,6 +67,17 @@ const getActionColor = (action: string) => {
 
 const handleClose = () => {
   emit('close')
+}
+
+// Modal functions for detailed log view
+const openLogDetailModal = (log: any) => {
+  selectedLogForModal.value = log
+  showLogDetailModal.value = true
+}
+
+const closeLogDetailModal = () => {
+  showLogDetailModal.value = false
+  selectedLogForModal.value = null
 }
 
 // Load logs when modal opens
@@ -119,7 +134,8 @@ watch(() => props.show, (newShow) => {
               <div 
                 v-for="(action, index) in moderationLogs.actions" 
                 :key="index"
-                class="border-l-4 border-main-400 pl-4 py-3 bg-main-700/50 rounded-r"
+                @click="openLogDetailModal(action)"
+                class="border-l-4 border-main-400 pl-4 py-3 bg-main-700/50 rounded-r cursor-pointer hover:bg-main-700/70 transition-colors"
               >
                 <!-- Action Header -->
                 <div class="flex justify-between items-start mb-2">
@@ -187,6 +203,88 @@ watch(() => props.show, (newShow) => {
         >
           Close
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Detail Modal -->
+  <div 
+    v-if="showLogDetailModal && selectedLogForModal"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]"
+    @click.self="closeLogDetailModal"
+  >
+    <div class="bg-main-800 border border-main-400 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden flex flex-col">
+      <!-- Header -->
+      <div class="p-4 border-b border-main-400 flex justify-between items-center">
+        <h3 class="text-lg font-medium text-gray-200">Moderation Action Details</h3>
+        <button
+          @click="closeLogDetailModal"
+          class="text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 space-y-6">
+        <!-- Action Info -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <span 
+              class="px-4 py-2 rounded text-lg font-medium"
+              :class="getActionColor(selectedLogForModal.action)"
+            >
+              {{ selectedLogForModal.action }}
+            </span>
+          </div>
+
+          <div class="text-lg text-gray-300">
+            <span class="text-gray-400">Timestamp:</span> {{ formatTimestamp(selectedLogForModal.timestamp) }}
+          </div>
+        </div>
+
+        <!-- Target Details -->
+        <div class="bg-main-700/50 rounded-lg p-4">
+          <h4 class="text-lg font-medium text-gray-200 mb-2">Target</h4>
+          <div class="space-y-2">
+            <div class="text-gray-300">
+              <span class="text-gray-400">Name:</span> <span class="font-medium">{{ targetName }}</span>
+            </div>
+            <div class="text-gray-300">
+              <span class="text-gray-400">ID:</span> <span class="font-mono text-sm">{{ targetId }}</span>
+            </div>
+            <div class="text-gray-300">
+              <span class="text-gray-400">Type:</span> {{ targetType === 'player' ? 'Player' : 'Record' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Moderator Details -->
+        <div class="bg-main-700/50 rounded-lg p-4">
+          <h4 class="text-lg font-medium text-gray-200 mb-3">Moderator</h4>
+          <div class="flex items-start gap-4">
+            <img 
+              v-if="selectedLogForModal.mod.avatar_url"
+              :src="selectedLogForModal.mod.avatar_url" 
+              :alt="selectedLogForModal.mod.username"
+              class="w-12 h-12 rounded-full"
+            />
+            <div class="space-y-2">
+              <div class="text-gray-300">
+                <span class="text-gray-400">Name:</span> <span class="font-medium">{{ selectedLogForModal.mod.username }}</span>
+              </div>
+              <div class="text-gray-300">
+                <span class="text-gray-400">Steam ID:</span> <span class="font-mono text-sm">{{ selectedLogForModal.mod.steam_id }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes/Reason -->
+        <div v-if="selectedLogForModal.notes" class="bg-main-700/50 rounded-lg p-4">
+          <h4 class="text-lg font-medium text-gray-200 mb-2">Reason/Notes</h4>
+          <div class="text-gray-300 whitespace-pre-wrap">{{ selectedLogForModal.notes }}</div>
+        </div>
       </div>
     </div>
   </div>
