@@ -23,6 +23,22 @@ export interface JsonError {
   reason: string;
 }
 
+export interface ServerActivityDocument {
+  server: string;
+  active: boolean;
+  ips: string[];
+}
+
+export interface KeyReturnJson {
+  key: string;
+}
+
+export interface ServerKeyInfo {
+  server: string;
+  key: string;
+  permissions: number;
+}
+
 class OffstylesApi extends Api {
   static offstylesApiUrl = import.meta.env.DEV ? '/api' : 'https://offstyles.tommyy.dev/api';
 
@@ -261,15 +277,26 @@ class OffstylesApi extends Api {
     return await response.json();
   }
 
-  // Get recent general moderation logs with optional filter
-  static async getRecentModerationLogs(filter?: ModerationTargetFilter): Promise<RecentModAction[]> {
-    const params = new URLSearchParams();
-    
-    if (filter) {
-      params.append('filter', filter);
+  // Server management methods
+  static async getServers(): Promise<ServerActivityDocument[]> {
+    this.url = `${this.offstylesApiUrl}/servers`;
+    const result = await this.fetchFromUrl();
+    // The API returns an array of arrays, we want to flatten it
+    return Array.isArray(result) && Array.isArray(result[0]) ? result[0] : result;
+  }
+
+  // Admin methods (require admin permissions)
+  static async createApiKey(server: string, permissions?: number): Promise<KeyReturnJson> {
+    const params = new URLSearchParams({
+      server: server
+    });
+
+    if (permissions !== undefined) {
+      params.append('permissions', permissions.toString());
     }
 
-    const response = await fetch(`${this.offstylesApiUrl}/mod_logs_recent?${params.toString()}`, {
+    const response = await fetch(`${this.offstylesApiUrl}/admin/create_key?${params.toString()}`, {
+      method: 'POST',
       credentials: 'include' // Include cookies for session authentication
     });
 
@@ -286,20 +313,14 @@ class OffstylesApi extends Api {
     return await response.json();
   }
 
-  // Reverse moderator actions
-  static async reverseModerationActions(moderatorSteamId: string, timeframeHours: number, reason: string): Promise<string> {
-    const data = {
-      moderator_steam_id: moderatorSteamId,
-      timeframe_hours: timeframeHours,
-      reason: reason
-    };
+  static async updateApiKey(server: string, permissions: number): Promise<boolean> {
+    const params = new URLSearchParams({
+      server: server,
+      permissions: permissions.toString()
+    });
 
-    const response = await fetch(`${this.offstylesApiUrl}/reverse_moderator_actions`, {
+    const response = await fetch(`${this.offstylesApiUrl}/update_key?${params.toString()}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
       credentials: 'include' // Include cookies for session authentication
     });
 
@@ -313,7 +334,54 @@ class OffstylesApi extends Api {
       }
     }
 
-    return await response.text();
+    return await response.json();
+  }
+
+  static async getServerKeyInfo(serverName: string): Promise<ServerKeyInfo> {
+    const params = new URLSearchParams({
+      name: serverName
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/server_key?${params.toString()}`, {
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
+  }
+
+  static async deleteApiKey(serverName: string): Promise<boolean> {
+    const params = new URLSearchParams({
+      name: serverName
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/delete_key?${params.toString()}`, {
+      method: 'DELETE',
+      credentials: 'include' // Include cookies for session authentication
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    // Handle plain text response "true"
+    const responseText = await response.text();
+    return responseText === "true";
   }
 }
 

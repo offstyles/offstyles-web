@@ -27,6 +27,7 @@ onMounted(async () => {
             <router-link class="hover:text-gray-100 text-nowrap" to="/">Recent Records</router-link>
             <router-link class="hover:text-gray-100 text-nowrap" to="/maps">Map Leaderboards</router-link>
             <router-link class="hover:text-gray-100 text-nowrap" to="/players">Player Lookup</router-link>
+            <router-link class="hover:text-gray-100 text-nowrap" to="/servers">Servers</router-link>
           </nav>
           <AuthButton />
         </div>
