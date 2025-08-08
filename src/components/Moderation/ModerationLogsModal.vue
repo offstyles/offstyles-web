@@ -99,7 +99,7 @@ watch(() => props.show, (newShow) => {
     <!-- Modal Content -->
     <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden flex flex-col">
       <!-- Header -->
-      <div class="p-4 border-b border-main-400 flex-shrink-0">
+      <div class="p-4 border-b border-main-400 shrink-0">
         <h3 class="text-lg font-medium text-gray-200">
           Moderation History
         </h3>
@@ -196,7 +196,7 @@ watch(() => props.show, (newShow) => {
       </div>
 
       <!-- Footer -->
-      <div class="p-4 border-t border-main-400 flex justify-end flex-shrink-0">
+      <div class="p-4 border-t border-main-400 flex justify-end shrink-0">
         <button
           @click="handleClose"
           class="px-4 py-2 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"

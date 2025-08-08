@@ -146,7 +146,7 @@ watch(() => props.show, (newShow) => {
     <!-- Modal Content -->
     <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
       <!-- Header -->
-      <div class="p-4 border-b border-main-400 flex-shrink-0">
+      <div class="p-4 border-b border-main-400 shrink-0">
         <h3 class="text-lg font-medium text-gray-200">
           Bulk Moderate Records
         </h3>
@@ -165,7 +165,7 @@ watch(() => props.show, (newShow) => {
       <!-- Form -->
       <div v-else class="flex-1 overflow-hidden flex flex-col">
         <!-- Record Selection -->
-        <div class="p-4 border-b border-main-400 flex-shrink-0">
+        <div class="p-4 border-b border-main-400 shrink-0">
           <div class="flex items-center justify-between mb-3">
             <label class="text-sm font-medium text-gray-300">
               Select Records ({{ selectedRecords.size }}/{{ validRecords.length }})
@@ -220,7 +220,7 @@ watch(() => props.show, (newShow) => {
         </div>
 
         <!-- Action Selection and Form -->
-        <div class="p-4 border-t border-main-400 space-y-4 flex-shrink-0">
+        <div class="p-4 border-t border-main-400 space-y-4 shrink-0">
           <!-- Action Selection -->
           <div>
             <label class="block text-sm font-medium text-gray-300 mb-2">
@@ -275,7 +275,7 @@ watch(() => props.show, (newShow) => {
       </div>
 
       <!-- Footer -->
-      <div v-if="!showSuccess" class="p-4 border-t border-main-400 flex justify-end gap-3 flex-shrink-0">
+      <div v-if="!showSuccess" class="p-4 border-t border-main-400 flex justify-end gap-3 shrink-0">
         <button
           @click="handleClose"
           class="px-4 py-2 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"
