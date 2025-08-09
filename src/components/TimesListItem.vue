@@ -116,8 +116,8 @@
     'bg-main-500':
     'bg-main-600 odd:bg-main-700 hover:border-gray-400 border-transparent border-gray-400 hover:border-gray-200'
   ">
-    <div class="grid os-grid-cols-auto p-1 px-1
-       cursor-pointer transition-[padding border-color background-color] duration-200  hover:pb-2 relative"
+    <div class="grid os-grid-cols-auto p-1.5 px-1
+       cursor-pointer transition-[padding border-color background-color] duration-200  hover:pb-2.5 relative"
     :class="showDetails ?
       'pb-2' : ''" 
     @click="toggleDetails()"

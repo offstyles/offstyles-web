@@ -12,7 +12,7 @@
 
 
 <template>
-  <div class="grid os-grid-cols-auto p-1 px-1 bg-main-900 fw-700 text-xs py-1.5 text-gray-200">
+  <div class="grid os-grid-cols-auto px-1 bg-main-900 fw-700 text-xs pt-1.5 pb-2 text-gray-200">
     <div v-for="(col,index) in props.cols" :key="index" class="grid-col px-1.5" :class="col.alignmentClasses">
       <div :class="col.alignmentClasses">{{ col.label }}</div>
     </div>

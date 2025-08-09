@@ -49,7 +49,8 @@
       label: 'Server',
       data: 'server',
       width: '30%',
-      alignmentClasses: 'text-left'
+      classes: 'text-sm text-gray-400',
+      alignmentClasses: 'text-left text-gray-300'
     },
     {
       label: 'Date',

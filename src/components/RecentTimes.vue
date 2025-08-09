@@ -43,6 +43,7 @@
       label: 'Player',
       data: 'name',
       width:'20%',
+      classes: 'font-semibold',
       alignmentClasses: 'text-left',
       link: timeLinks.playerLink
     }, 
@@ -50,6 +51,7 @@
       label: 'Map',
       data: 'map',
       width: '20%',
+      classes: 'text-gray-200',
       alignmentClasses: 'text-right justify-end md:justify-start md:text-left',
       link: timeLinks.mapLink
     },
@@ -57,6 +59,7 @@
       label: 'Server',
       data: 'server',
       width: '20%',
+      classes: 'text-sm text-gray-400',
       alignmentClasses: 'text-right justify-end md:justify-start md:text-left text-gray-300'
     },
     {
