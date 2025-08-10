@@ -77,7 +77,7 @@
 </script>
 
 <template>
-  <main class="flex flex-col items-center justify-center min-h-screen p-4">
+  <main class="flex flex-col items-center justify-center p-4">
     <div class="text-white w-full max-w-[800px] text-center flex flex-col justify-center rounded-lg">
       
       <!-- Header -->
@@ -88,7 +88,7 @@
         >
           ← Back
         </button>
-        <h1 class="text-3xl mb-2">Individual Record</h1>
+        <h1 class="text-2xl mb-2">Individual Record</h1>
       </div>
 
       <!-- Loading State -->
@@ -110,15 +110,15 @@
       </div>
 
       <!-- Record Details -->
-      <div v-else-if="record" class="space-y-6">
+      <div v-else-if="record" class="space-y-4">
         
         <!-- Main Record Info -->
-        <div class="bg-main-700 p-6 rounded-lg">
+        <div class="bg-main-700 p-6 py-4 rounded-lg">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
             
             <!-- Player Info -->
             <div class="space-y-2">
-              <h3 class="text-lg font-semibold text-gray-300">Player</h3>
+              <h3 class="text-base font-medium text-gray-300">Player</h3>
               <div class="text-xl">
                 <a 
                   v-if="playerUrl" 
@@ -129,12 +129,12 @@
                 </a>
                 <span v-else>{{ record.name }}</span>
               </div>
-              <div class="text-sm text-gray-400">{{ record.steamid }}</div>
+              <div class="text-sm text-gray-400 mb-1">{{ record.steamid }}</div>
             </div>
 
             <!-- Map Info -->
             <div class="space-y-2">
-              <h3 class="text-lg font-semibold text-gray-300">Map</h3>
+              <h3 class="text-base font-medium text-gray-300">Map</h3>
               <div class="text-xl">
                 <a 
                   v-if="mapLeaderboardUrl" 
@@ -145,7 +145,7 @@
                 </a>
                 <span v-else>{{ record.map }}</span>
               </div>
-              <div class="text-sm text-gray-400">
+              <div class="text-sm text-gray-400 mb-1">
                 Style: {{ styleFormat.name(record.style) }}
               </div>
             </div>
@@ -154,38 +154,35 @@
         </div>
 
         <!-- Performance Stats -->
-        <div class="bg-main-700 p-6 rounded-lg">
-          <h3 class="text-lg font-semibold text-gray-300 mb-4">Performance</h3>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            
-            <div class="bg-main-600 p-3 rounded">
-              <div class="text-sm text-gray-400">Time</div>
-              <div class="text-xl font-mono text-green-400">
-                {{ dateTimeFormats.time(record.time) }}
-              </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          
+          <div class="bg-main-700 p-3 rounded">
+            <div class="text-sm text-gray-400 mb-0.5">Time</div>
+            <div class="text-xl font-mono text-green-400">
+              {{ dateTimeFormats.time(record.time) }}
             </div>
-
-            <div class="bg-main-600 p-3 rounded">
-              <div class="text-sm text-gray-400">Sync</div>
-              <div class="text-xl font-mono">{{ record.sync }}%</div>
-            </div>
-
-            <div class="bg-main-600 p-3 rounded">
-              <div class="text-sm text-gray-400">Strafes</div>
-              <div class="text-xl font-mono">{{ record.strafes }}</div>
-            </div>
-
-            <div class="bg-main-600 p-3 rounded">
-              <div class="text-sm text-gray-400">Jumps</div>
-              <div class="text-xl font-mono">{{ record.jumps }}</div>
-            </div>
-
           </div>
+
+          <div class="bg-main-700 p-3 rounded">
+            <div class="text-sm text-gray-400 mb-0.5">Sync</div>
+            <div class="text-xl font-mono">{{ record.sync }}%</div>
+          </div>
+
+          <div class="bg-main-700 p-3 rounded">
+            <div class="text-sm text-gray-400 mb-0.5">Strafes</div>
+            <div class="text-xl font-mono">{{ record.strafes }}</div>
+          </div>
+
+          <div class="bg-main-700 p-3 rounded">
+            <div class="text-sm text-gray-400 mb-0.5">Jumps</div>
+            <div class="text-xl font-mono">{{ record.jumps }}</div>
+          </div>
+
         </div>
 
         <!-- Additional Info -->
-        <div class="bg-main-700 p-6 rounded-lg">
-          <h3 class="text-lg font-semibold text-gray-300 mb-4">Additional Information</h3>
+        <div class="bg-main-700 p-6 py-5 rounded-lg">
+          <h3 class="text-lg font-medium text-gray-300 mb-4">Additional Information</h3>
           <div class="space-y-0 text-left">
             
             <div class="flex justify-between py-3 border-b border-gray-600/30">
@@ -215,51 +212,28 @@
 
           </div>
         </div>
-
-        <!-- Actions -->
-        <div class="bg-main-700 p-6 rounded-lg">
-          <h3 class="text-lg font-semibold text-gray-300 mb-4">Actions</h3>
-          <div class="flex flex-wrap gap-3 justify-center">
-            
-            <a 
-              v-if="playerUrl" 
-              :href="playerUrl" 
+        <div class="flex flex-wrap gap-3 justify-center">
+          <div v-if="record.replay_ref">
+            <button 
+              v-if="isLoggedIn" 
+              @click="downloadReplay"
               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
             >
-              View Player Profile
-            </a>
-
-            <a 
-              v-if="mapLeaderboardUrl" 
-              :href="mapLeaderboardUrl" 
-              class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+              Download Replay
+            </button>
+            <button 
+              v-else 
+              disabled 
+              class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed"
+              title="Login with Steam required to download replays"
             >
-              View Map Leaderboard
-            </a>
-
-            <div v-if="record.replay_ref">
-              <button 
-                v-if="isLoggedIn" 
-                @click="downloadReplay"
-                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-              >
-                Download Replay
-              </button>
-              <button 
-                v-else 
-                disabled 
-                class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed"
-                title="Login with Steam required to download replays"
-              >
-                Download Replay (Login Required)
-              </button>
-            </div>
-            
-            <span v-else class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg">
-              No Replay Available
-            </span>
-
+              Download Replay (Login Required)
+            </button>
           </div>
+          
+          <span v-else class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg">
+            No Replay Available
+          </span>
         </div>
 
       </div>
