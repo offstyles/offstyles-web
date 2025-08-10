@@ -1,57 +1,59 @@
 <template>
   <main>
     <div class="flex flex-col items-center justify-center">
-      <div class="w-full max-w-6xl mx-auto px-4 py-8">
-        <h1 class="text-white text-2xl text-center mb-8">Servers</h1>
-        
+      <div class="w-full max-w-5xl mx-auto px-4 py-8">
+        <div class="mb-7">
+          <h1 class="text-white text-2xl text-center mb-2">Servers</h1>
+          <p class="text-sm text-gray-400 mb-4 text-center">Active servers that have submitted times within the last 2 weeks</p>
+        </div>
         <!-- Server Statistics -->
-        <div v-if="!loading && !error && servers.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div v-if="!loading && !error && servers.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
           <div class="bg-main-700 rounded-md p-4">
             <div class="flex items-center">
-              <div class="p-1.5 bg-main-500 rounded-md">
+              <div class="p-1.5 bg-main-400 rounded-md">
                 <svg class="w-5 h-5 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
                 </svg>
               </div>
               <div class="ml-3">
-                <h3 class="text-xs font-medium text-gray-300">Total Servers</h3>
-                <p class="text-xl font-semibold text-gray-100">{{ totalServers }}</p>
+                <h3 class="text-xs text-gray-400">Total Servers</h3>
+                <p class="text-2xl font-mono font-medium text-gray-100">{{ totalServers }}</p>
               </div>
             </div>
           </div>
           
           <div class="bg-main-700 rounded-md p-4">
             <div class="flex items-center">
-              <div class="p-1.5 bg-green-900 rounded-md">
-                <div class="w-5 h-5 bg-green-500 rounded-full"></div>
+              <div class="p-1.5 bg-green-900/50 rounded-md">
+                <div class="w-5 h-5 bg-green-500/80 rounded-full"></div>
               </div>
               <div class="ml-3">
-                <h3 class="text-xs font-medium text-gray-300">Active Servers</h3>
-                <p class="text-xl font-semibold text-green-400">{{ activeServers.length }}</p>
+                <h3 class="text-xs text-gray-400">Active Servers</h3>
+                <p class="text-2xl font-mono font-medium text-green-400">{{ activeServers.length }}</p>
               </div>
             </div>
           </div>
           
           <div class="bg-main-700 rounded-md p-4">
             <div class="flex items-center">
-              <div class="p-1.5 bg-red-900 rounded-md">
-                <div class="w-5 h-5 bg-red-500 rounded-full"></div>
+              <div class="p-1.5 bg-red-900/50 rounded-md">
+                <div class="w-5 h-5 bg-red-500/80 rounded-full"></div>
               </div>
               <div class="ml-3">
-                <h3 class="text-xs font-medium text-gray-300">Inactive Servers</h3>
-                <p class="text-xl font-semibold text-red-400">{{ inactiveServers.length }}</p>
+                <h3 class="text-xs text-gray-400">Inactive Servers</h3>
+                <p class="text-2xl font-mono font-medium text-red-400">{{ inactiveServers.length }}</p>
               </div>
             </div>
           </div>
         </div>
         
         <div class="bg-main-700 rounded-md overflow-hidden">
-          <div class="px-6 py-4 bg-main-900">
+          <div class="px-5 pr-4 py-4 bg-main-900">
             <div class="flex justify-between items-center">
               <div>
-                <h2 class="text-xl font-semibold text-gray-100">Connected Servers</h2>
-                <p class="text-sm text-gray-300 mt-1">
-                  Servers that have submitted times within the last 2 weeks
+                <h2 class="text-base  font-medium text-gray-100">Connected Servers</h2>
+                <p class="text-sm text-gray-400">
+                  
                 </p>
               </div>
               <div class="flex items-center space-x-3">
@@ -59,27 +61,39 @@
                 <button
                   v-if="canManageKeys"
                   @click="openCreateKeyModal"
-                  class="px-4 py-2 text-sm font-medium text-gray-100 bg-green-700 rounded-md hover:bg-green-600 transition-colors cursor-pointer"
+                  class="px-4 py-2 text-sm text-gray-100 bg-green-700 rounded-md hover:bg-green-600 transition-colors cursor-pointer"
                 >
                   Create Server API Key
                 </button>
                 <button
                   @click="loadServers"
                   :disabled="loading"
-                  class="px-4 py-2 text-sm font-medium text-gray-100 bg-main-600 rounded-md hover:bg-main-500 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                  class="px-2.5 py-2 text-sm text-gray-100 bg-main-400 rounded-md hover:bg-main-300 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <div v-if="loading" class="flex items-center">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-100 mr-2"></div>
-                    Loading...
+                  <div :class="loading ? 'animate-spin' : ''">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="text-gray-200"
+                    >
+                      <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+                      <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+                    </svg>
                   </div>
-                  <span v-else>Refresh</span>
                 </button>
               </div>
             </div>
           </div>
           
-          <div v-if="loading" class="p-8 text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-100 mx-auto"></div>
+          <div v-if="loading" class="p-8 text-center flex flex-col items-center align-center">
+            <loadWheel></loadWheel>
             <p class="mt-2 text-gray-300">Loading servers...</p>
           </div>
           
@@ -95,7 +109,7 @@
             <div 
               v-for="server in servers" 
               :key="server.server"
-              class="group p-6 hover:bg-main-600 transition-colors bg-main-700 odd:bg-main-800 relative"
+              class="group p-6 py-4 hover:bg-main-500 transition-colors bg-main-600 odd:bg-main-700 relative"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
@@ -106,16 +120,17 @@
                     ]"
                   ></div>
                   <div>
-                    <h3 class="text-lg font-medium text-gray-100">{{ server.server }}</h3>
+                    <h3 class="text-base font-medium text-gray-100">{{ server.server }}</h3>
                     <div class="flex items-center flex-wrap gap-1 mt-1">
                       <span
                         v-for="(ip, index) in server.ips"
                         :key="ip"
-                        @click="copyToClipboard(ip)"
-                        class="text-sm text-gray-100 monospace cursor-pointer hover:text-gray-200 hover:bg-main-600 px-1 py-0.5 rounded transition-colors"
+                        class="text-sm text-gray-200 monospace pr-1 py-0.5 "
                         :title="`Click to copy ${ip}`"
-                      >{{ ip }}<span v-if="index < server.ips.length - 1" class="text-gray-400">,</span></span>
-                      <span v-if="server.ips && server.ips.length > 0" class="text-xs text-gray-400 ml-2">(click to copy)</span>
+                      >
+                      <span @click="copyToClipboard(ip)" class="cursor-pointer hover:text-gray-200 hover:bg-main-200 transition-colors rounded p-0.5">{{ ip }}</span>
+                      <span v-if="index < server.ips.length - 1" class="text-gray-400 -ml-0.5">,</span>
+                    </span>
                     </div>
                   </div>
                 </div>
@@ -125,7 +140,7 @@
                   <button
                     v-if="canManageKeys"
                     @click="openEditKeyModal(server.server)"
-                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-main-800 hover:bg-main-700 border border-main-500 hover:border-main-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer mr-3"
+                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-main-800 hover:bg-main-700 border border-main-500 hover:border-main-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer mr-3 min-w-24"
                     title="Edit API key"
                   >
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,8 +153,8 @@
                     :class="[
                       'px-2 py-1 text-xs font-medium rounded-full',
                       server.active 
-                        ? 'bg-green-800 text-green-400' 
-                        : 'bg-red-800 text-red-400'
+                        ? 'bg-green-900 text-green-400' 
+                        : 'bg-red-900 text-red-400'
                     ]"
                   >
                     {{ server.active ? 'Active' : 'Inactive' }}
@@ -317,7 +332,7 @@
             <div v-else-if="loadingKeyInfo" class="mb-4">
               <label class="block text-sm font-medium text-gray-300 mb-2">Current API Key</label>
               <div class="w-full px-3 py-2 bg-main-900 border border-main-600 rounded-md flex items-center">
-                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-100 mr-2"></div>
+                <loadWheel class="w-4 h-4 mr-2"></loadWheel>
                 <span class="text-sm text-gray-400">Loading key information...</span>
               </div>
             </div>
@@ -428,6 +443,7 @@ import { KeyPermissions, addPermission } from '@/utils/permissions';
 import { canManageApiKeys } from '@/utils/userPermissions';
 import { useAuth } from '@/stores/auth';
 import Toast from '@/components/Toast.vue';
+import loadWheel from '@/components/icons/loadWheel.vue';
 
 // Auth
 const { user } = useAuth();
@@ -487,7 +503,7 @@ const loadServers = async () => {
   try {
     loading.value = true;
     error.value = null;
-    servers.value = await OffstylesApi.getServers();
+    servers.value = (await OffstylesApi.getServers()).sort((a,b) => Number(b.active) - Number(a.active));
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load servers';
     console.error('Failed to load servers:', err);

@@ -31,7 +31,7 @@
 
 
 <template>
-  <div class="text-white w-full max-w-[1000px] p-4 text-center flex flex-col justify-center rounded-lg mt-8">
+  <div class="text-white w-full max-w-5xl p-4 text-center flex flex-col justify-center rounded-lg mt-8">
     <h1 class="text-2xl mb-2">Recent Times</h1>
     <p class="text-sm text-gray-400 mb-4">Displaying records from the last 2 weeks</p>
     <div class="flex py-2 justify-between flex-wrap gap-3">
