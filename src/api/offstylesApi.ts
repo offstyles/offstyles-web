@@ -43,7 +43,7 @@ class OffstylesApi extends Api {
   static offstylesApiUrl = import.meta.env.DEV ? '/api' : 'https://offstyles.tommyy.dev/api';
 
   // Fixed method signature to require style parameter
-  static async getTimesByMap(mapName: string, style: number = 190, steamid?: string, limit: number = 50, page: number = 1): Promise<RankAwareRecord[]> {
+  static async getTimesByMap(mapName: string, style: number = Style.normal, steamid?: string, limit: number = 50, page: number = 1): Promise<RankAwareRecord[]> {
     const params = new URLSearchParams({
       map: mapName,
       style: style.toString(),
@@ -59,7 +59,7 @@ class OffstylesApi extends Api {
     return await this.fetchFromUrl();
   }
 
-  static async getTimesByPlayer(steamID: string, map?: string, style: number = 190, limit: number = 50, page: number = 1, best: boolean = false): Promise<WRAwareRecord[]> {
+  static async getTimesByPlayer(steamID: string, map?: string, style: number = Style.all, limit: number = 50, page: number = 1, best: boolean = false): Promise<WRAwareRecord[]> {
     const params = new URLSearchParams({
       steamid: steamID,
       limit: limit.toString(),
@@ -71,7 +71,7 @@ class OffstylesApi extends Api {
       params.append('map', map);
     }
     
-    if (style !== undefined) {
+    if (style !== undefined && style !== Style.all) {
       params.append('style', style.toString());
     }
 

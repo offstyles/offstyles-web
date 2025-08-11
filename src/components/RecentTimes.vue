@@ -36,7 +36,7 @@
     <p class="text-sm text-gray-400 mb-4">Displaying records from the last 2 weeks</p>
     <div class="flex py-2 justify-between flex-wrap gap-3">
       <CustomDropdown :options="[Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
-       :name="'style'" :format="styleFormat.name" @dropdown-Changed="dropdownChanged"></CustomDropdown>
+       :name="'style'" :format="styleFormat.name" :default="Style.normal" @dropdown-Changed="dropdownChanged"></CustomDropdown>
       <CheckboxInput @checkbox-Changed="dropdownChanged" :name="'wr'" :label="'Only show WR times'"></CheckboxInput>
     </div>
     <TimesList v-if="props.recentTimes" :times="props.recentTimes" :cols="[{

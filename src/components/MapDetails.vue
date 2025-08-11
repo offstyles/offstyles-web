@@ -35,7 +35,7 @@
     <h1 class="text-2xl mb-3">{{ mapName }}</h1>
     <div class="flex py-2">
       <CustomDropdown :options="[Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
-       :name="'style'" :format="styleFormat.name" @dropdown-Changed="dropdownChanged"></CustomDropdown>
+       :name="'style'" :format="styleFormat.name" :default="Style.normal" @dropdown-Changed="dropdownChanged"></CustomDropdown>
     </div>
     <TimesList v-if="props.mapTimes" :times="props.mapTimes" :cols="[{
       label: 'Player',

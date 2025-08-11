@@ -8,6 +8,7 @@
   import PlayerDetails from '@/components/PlayerDetails.vue';
   import type { Time } from '@/types/Time';
   import SearchBoxPlayer from '@/components/SearchBoxPlayer.vue';
+  import { Style } from '@/types/Style';
 
   const props = defineProps({
     playerSteamId: {
@@ -77,7 +78,7 @@
     const paramsObj = urlParams.getAsObject();
     
     // Convert string params to numbers with defaults
-    const style = paramsObj.style ? parseInt(paramsObj.style) : 190;
+    const style = paramsObj.style ? parseInt(paramsObj.style) : Style.all;
     const page = paramsObj.page ? parseInt(paramsObj.page) : 1;
     
     const apiPlayerTimes = await OffstylesApi.getTimesByPlayer(playerId, undefined, style, undefined, page);

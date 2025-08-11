@@ -1,4 +1,5 @@
 export enum Style {
+    all = 0,
     normal = 190,
     sideways = 191,
     wonly = 192,

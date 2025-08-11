@@ -9,12 +9,13 @@
   const emit = defineEmits(['dropdown-Changed']);
   
   const props = defineProps<{
-    options: number[], 
+    options: (number)[], 
     name: string,
-    format: (value: number) => string
+    format: (value: number) => string,
+    default: number
   }>()
 
-  const currentInput : Ref<number> = ref(urlParams.getAsObject().style ? Number(urlParams.getAsObject().style) : Style.normal);
+  const currentInput : Ref<number> = ref(urlParams.getAsObject().style ? Number(urlParams.getAsObject().style) : props.default);
   
   watch(currentInput, async() => {
     emit('dropdown-Changed', props.name, currentInput.value);

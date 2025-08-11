@@ -6,7 +6,8 @@
   import RecentTimes from '@/components/RecentTimes.vue';
   import urlParams from '@/utils/urlParams';
   import type { Time } from '@/types/Time';
-  
+  import { Style } from '@/types/Style';
+
   const isLoading: Ref<boolean> = ref(false);
   const recentTimes: Ref<Time[] | null> = ref(null);
   onMounted(async ()=>{
@@ -18,7 +19,7 @@
     const paramsObj = urlParams.getAsObject();
     
     // Convert string params to numbers with defaults
-    const style = paramsObj.style ? parseInt(paramsObj.style) : 190;
+    const style = paramsObj.style ? parseInt(paramsObj.style) : Style.normal;
     const page = paramsObj.page ? parseInt(paramsObj.page) : 1;
     const wr = paramsObj.wr ? paramsObj.wr === 'true' : true; // Convert string to boolean
     

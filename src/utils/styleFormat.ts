@@ -2,6 +2,7 @@ import { Style } from "@/types/Style";
 
 const name = function(style : Style) {
   switch(style){
+    case Style.all: return 'All';
     case Style.normal: return 'Normal';
     case Style.sideways: return 'Sideways';
     case Style.wonly: return 'W-Only';
@@ -15,6 +16,7 @@ const name = function(style : Style) {
 
 const styleFromName = function(name : string) {
   switch(name.toLowerCase()){
+    case 'all': return Style.all;
     case 'normal': return Style.normal;
     case 'sideways': return Style.sideways;
     case 'w-only': return Style.wonly;
