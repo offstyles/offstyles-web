@@ -5,6 +5,7 @@
   import type { WRAwareRecord } from '@/api/offstylesApi';
   import loadWheel from '@/components/icons/loadWheel.vue';
   import dateTimeFormats from '@/utils/dateTimeFormats';
+  import RelativeDate from '@/components/RelativeDate.vue';
   import styleFormat from '@/utils/styleFormat';
   import { useRouter } from 'vue-router';
   import { useAuth } from '@/stores/auth';
@@ -187,7 +188,7 @@
             
             <div class="flex justify-between py-3 border-b border-gray-600/30">
               <span class="text-gray-400">Date:</span>
-              <span class="font-mono">{{ dateTimeFormats.date(record.date) }}</span>
+              <RelativeDate :date="record.date" />
             </div>
 
             <div v-if="record.rank" class="flex justify-between py-3 border-b border-gray-600/30">

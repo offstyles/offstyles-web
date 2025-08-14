@@ -177,8 +177,7 @@
       label: 'Date',
       data: 'date',
       width:'15%',
-      numFormat: dateTimeFormats.date,
-      alignmentClasses: 'text-right justify-end monospace',
+      alignmentClasses: 'text-right justify-end',
     },
     {
       label: 'Time',

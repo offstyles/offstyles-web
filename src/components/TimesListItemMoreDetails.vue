@@ -3,6 +3,7 @@
   import type { TimeListColumn } from '@/types/TimeListColumn';
   import timeLinks from '@/utils/timeLinks';
   import { computed } from 'vue';
+  import RelativeDate from './RelativeDate.vue';
   const props = defineProps<{
       time: Time,
       cols: TimeListColumn[]
@@ -17,7 +18,10 @@
   <div class="grid os-subgrid-cols-auto p-2 px-2 bg-main-800" :style="{ gridTemplateColumns: colWidthsStyle }">
     <div v-for="(col, index) in props.cols" :key="index" :class="col.alignmentClasses" class="flex flex-col">
       <span class="text-gray-400 text-xs">{{ col.label }}:</span>
-      <span>{{ col.data === 'sync' ? props.time[col.data].toFixed(2) + '%' : props.time[col.data] }}</span>
+      <span v-if="col.data === 'date'">
+        <RelativeDate :date="props.time[col.data]" />
+      </span>
+      <span v-else>{{ col.data === 'sync' ? props.time[col.data].toFixed(2) + '%' : props.time[col.data] }}</span>
     </div>
     <!-- Add link to individual record -->
     <div v-if="props.time._id" class="flex flex-col justify-center">

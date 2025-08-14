@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import type { Time } from '@/types/Time';
   import dateTimeFormats from '@/utils/dateTimeFormats';
+  import RelativeDate from './RelativeDate.vue';
   import type { TimeListColumn } from '@/types/TimeListColumn';
   import ValidityIndicator from './ValidityIndicator.vue';
   import { computed } from 'vue';
@@ -17,6 +18,9 @@
     const data = computed(()=>{
       if(props.col.data === "server"){
         return props.time.server?.server || '';
+      }
+      if(props.col.data === 'date') {
+        return props.time[props.col.data];
       }
       return props.col.numFormat && typeof props.time[props.col.data] === 'number' ?
        props.col.numFormat(props.time[props.col.data] as number) : 
@@ -36,7 +40,12 @@
 <template>
   <span v-if="props.col.placement" class="inline-flex items-center justify-end text-end mr-1.5 min-w-5 text-sm text-gray-400">{{ props.time.rank }}.</span>
   <div class="flex items-center gap-1.5 w-full min-w-0">
-    <span class="truncate group-hover/timeLink:underline flex-1">{{ data }}</span>
+    <template v-if="props.col.data === 'date'">
+      <RelativeDate :date="(data ?? '') as string | number | Date" class="truncate group-hover/timeLink:underline flex-1" />
+    </template>
+    <template v-else>
+      <span class="truncate group-hover/timeLink:underline flex-1">{{ data }}</span>
+    </template>
     <!-- Show validity indicator for time column only in player lookup context -->
     <ValidityIndicator 
       v-if="props.col.data === 'time' && isPlayerLookupContext"
