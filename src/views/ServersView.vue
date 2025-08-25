@@ -123,13 +123,13 @@
                     <h3 class="text-base font-medium text-gray-100">{{ server.server }}</h3>
                     <div class="flex items-center flex-wrap gap-1 mt-1">
                       <span
-                        v-for="(ip, index) in server.ips"
+                        v-for="(ip, index) in server.ips.filter(ip => ip !== '')"
                         :key="ip"
                         class="text-sm text-gray-200 monospace pr-1 py-0.5 "
                         :title="`Click to copy ${ip}`"
                       >
                       <span @click="copyToClipboard(ip)" class="cursor-pointer hover:text-gray-200 hover:bg-main-200 transition-colors rounded p-0.5">{{ ip }}</span>
-                      <span v-if="index < server.ips.length - 1" class="text-gray-400 -ml-0.5">,</span>
+                      <span v-if="index < server.ips.filter(ip => ip !== '').length - 1" class="text-gray-400 -ml-0.5">,</span>
                     </span>
                     </div>
                   </div>
