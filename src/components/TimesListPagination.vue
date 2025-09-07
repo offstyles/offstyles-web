@@ -1,19 +1,23 @@
 <script setup lang="ts">
-import type { Ref } from 'vue';
 import type { Time } from '@/types/Time';
-import { ref, computed } from 'vue';
-import urlParams from '@/utils/urlParams';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
   const props = defineProps<{
     limitPerPage: number,
     times: Time[] | null,
     isLoading: boolean
   }>()
   const emit = defineEmits(['pagination-Changed']);
-  const currentPage : Ref<number> = ref(urlParams.getAsObject().page ? Number(urlParams.getAsObject().page) : 1);
+  const route = useRoute();
+  
+  // Make currentPage reactive to URL changes
+  const currentPage = computed(() => {
+    const pageParam = route.query.page;
+    return pageParam ? Number(pageParam) : 1;
+  });
 
   function paginationChanged(page : number){
-    currentPage.value = page;
-    emit('pagination-Changed', currentPage.value);
+    emit('pagination-Changed', page);
   }
 </script>
 
