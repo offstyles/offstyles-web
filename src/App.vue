@@ -3,6 +3,9 @@ import { RouterLink, RouterView } from 'vue-router'
 import { onMounted } from 'vue'
 import AuthButton from '@/components/AuthButton.vue'
 import AdminModerationPanel from '@/components/Moderation/AdminModerationPanel.vue'
+import IconDiscord from '@/components/icons/IconDiscord.vue'
+import IconYoutube from '@/components/icons/IconYoutube.vue'
+import IconGithub from '@/components/icons/IconGithub.vue'
 import { useAuth } from '@/stores/auth'
 
 const { initAuth } = useAuth()
@@ -34,13 +37,50 @@ onMounted(async () => {
       </div>
     </header>
     <RouterView class="mb-auto" />
-    
+
     <!-- Admin Moderation Panel -->
     <AdminModerationPanel />
-    
-    <div class="flex flex-col lg:flex-row pt-8 justify-end">
-      <div class="text-end text-gray-500 text-sm">WIP, Website by @y_mia | <a href="https://github.com/offstyles">https://github.com/offstyles</a></div>
-    </div>
+
+    <!-- Footer -->
+    <footer class="pt-8">
+      <div class="flex flex-col items-center justify-center text-center">
+        <!-- Social Media Links -->
+        <div class="flex items-center gap-6 mb-4">
+          <a
+            href="https://discord.gg/sUcuMA5Mp9"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-gray-400 hover:text-gray-200 transition-colors duration-200"
+            title="Join our Discord"
+          >
+            <IconDiscord />
+          </a>
+          <a
+            href="https://www.youtube.com/@offstyledatabase"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-gray-400 hover:text-gray-200 transition-colors duration-200"
+            title="Visit our YouTube channel"
+          >
+            <IconYoutube />
+          </a>
+          <a
+            href="https://github.com/offstyles/offstyles-web"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-gray-400 hover:text-gray-200 transition-colors duration-200"
+            title="View our GitHub"
+          >
+            <IconGithub />
+          </a>
+        </div>
+
+        <!-- Footer Text -->
+        <div class="text-gray-500 text-sm">
+          Offstyle DB © 2025
+        </div>
+      </div>
+    </footer>
 </template>
 
 <style scoped>
