@@ -7,7 +7,16 @@
           <p class="text-sm text-gray-400 mb-4 text-center">Active servers that have submitted times within the last 2 weeks</p>
         </div>
         <!-- Server Statistics -->
-        <div v-if="!loading && !error && servers.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <div v-if="!loading && !error && servers.length > 0" class="grid ginterface MixedServerDocument {
+  _id?: string;
+  key_ref?: string;
+  name?: string;
+  owner_ref?: string;
+  servers?: ServerInfo[];
+  server?: string;
+  ips?: string[];
+  active?: boolean; // Made optional since new format doesn't have it
+};1 md:grid-cols-3 gap-4 mb-5">
           <div class="bg-main-700 rounded-md p-4">
             <div class="flex items-center">
               <div class="p-1.5 bg-main-400 rounded-md">
@@ -21,7 +30,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="bg-main-700 rounded-md p-4">
             <div class="flex items-center">
               <div class="p-1.5 bg-green-900/50 rounded-md">
@@ -33,7 +42,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="bg-main-700 rounded-md p-4">
             <div class="flex items-center">
               <div class="p-1.5 bg-red-900/50 rounded-md">
@@ -46,14 +55,14 @@
             </div>
           </div>
         </div>
-        
+
         <div class="bg-main-700 rounded-md overflow-hidden">
           <div class="px-5 pr-4 py-4 bg-main-900">
             <div class="flex justify-between items-center">
               <div>
                 <h2 class="text-base  font-medium text-gray-100">Connected Servers</h2>
                 <p class="text-sm text-gray-400">
-                  
+
                 </p>
               </div>
               <div class="flex items-center space-x-3">
@@ -91,55 +100,76 @@
               </div>
             </div>
           </div>
-          
+
           <div v-if="loading" class="p-8 text-center flex flex-col items-center align-center">
             <loadWheel></loadWheel>
             <p class="mt-2 text-gray-300">Loading servers...</p>
           </div>
-          
+
           <div v-else-if="error" class="p-8 text-center text-red-400">
             <p>{{ error }}</p>
           </div>
-          
+
           <div v-else-if="servers.length === 0" class="p-8 text-center text-gray-300">
             <p>No servers found</p>
           </div>
-          
+
           <div v-else class="divide-y divide-gray-700">
-            <div 
-              v-for="server in servers" 
-              :key="server.server"
-              class="group p-6 py-4 hover:bg-main-500 transition-colors bg-main-600 odd:bg-main-700 relative"
+            <div
+              v-for="server in servers"
+              :key="server._id || server.server"
+              @click="openServerModal(server)"
+              class="group p-6 py-4 hover:bg-main-500 transition-colors bg-main-600 odd:bg-main-700 relative cursor-pointer"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <div 
+                  <div
                     :class="[
                       'w-3 h-3 rounded-full mr-6',
                       server.active ? 'bg-green-500' : 'bg-red-500'
                     ]"
                   ></div>
                   <div>
-                    <h3 class="text-base font-medium text-gray-100">{{ server.server }}</h3>
+                    <h3 class="text-base font-medium text-gray-100">{{ server.name || server.server }}</h3>
                     <div class="flex items-center flex-wrap gap-1 mt-1">
-                      <span
-                        v-for="(ip, index) in server.ips.filter(ip => ip !== '')"
-                        :key="ip"
-                        class="text-sm text-gray-200 monospace pr-1 py-0.5 "
-                        :title="`Click to copy ${ip}`"
-                      >
-                      <span @click="copyToClipboard(ip)" class="cursor-pointer hover:text-gray-200 hover:bg-main-200 transition-colors rounded p-0.5">{{ ip }}</span>
-                      <span v-if="index < server.ips.filter(ip => ip !== '').length - 1" class="text-gray-400 -ml-0.5">,</span>
-                    </span>
+                      <!-- Show server IPs if available, otherwise show legacy IPs -->
+                      <template v-if="server.servers && server.servers.length > 0">
+                        <span
+                          v-for="(subserver, index) in server.servers"
+                          :key="subserver.ip"
+                          class="text-sm text-gray-200 monospace pr-1 py-0.5"
+                          :title="`${subserver.name}: ${subserver.ip}`"
+                        >
+                          <span
+                            @click.stop="copyToClipboard(subserver.ip)"
+                            class="cursor-pointer hover:text-gray-200 hover:bg-main-200 transition-colors rounded p-0.5"
+                          >{{ subserver.ip }}</span>
+                          <span v-if="index < server.servers.length - 1" class="text-gray-400 -ml-0.5">,</span>
+                        </span>
+                      </template>
+                      <template v-else-if="server.ips">
+                        <span
+                          v-for="(ip, index) in server.ips.filter((ip: string) => ip !== '')"
+                          :key="ip"
+                          class="text-sm text-gray-200 monospace pr-1 py-0.5"
+                          :title="`Click to copy ${ip}`"
+                        >
+                          <span
+                            @click.stop="copyToClipboard(ip)"
+                            class="cursor-pointer hover:text-gray-200 hover:bg-main-200 transition-colors rounded p-0.5"
+                          >{{ ip }}</span>
+                          <span v-if="index < server.ips.filter((ip: string) => ip !== '').length - 1" class="text-gray-400 -ml-0.5">,</span>
+                        </span>
+                      </template>
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="flex items-center space-x-3">
                   <!-- Edit Key Button (shown on hover) -->
                   <button
                     v-if="canManageKeys"
-                    @click="openEditKeyModal(server.server)"
+                    @click.stop="openEditKeyModal((server.name || server.server) || '')"
                     class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-main-800 hover:bg-main-700 border border-main-500 hover:border-main-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer mr-3 min-w-24"
                     title="Edit API key"
                   >
@@ -148,12 +178,12 @@
                     </svg>
                     Edit Key
                   </button>
-                  
-                  <span 
+
+                  <span
                     :class="[
                       'px-2 py-1 text-xs font-medium rounded-full',
-                      server.active 
-                        ? 'bg-green-900 text-green-400' 
+                      server.active
+                        ? 'bg-green-900 text-green-400'
                         : 'bg-red-900 text-red-400'
                     ]"
                   >
@@ -165,7 +195,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Create Key Modal -->
       <div v-if="showCreateKeyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeCreateKeyModal">
         <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg p-6 w-[500px] max-w-[90vw] mx-4 relative" @click.stop>
@@ -179,7 +209,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
-          
+
           <h3 class="text-lg font-semibold mb-4 text-gray-100">Create Server API Key</h3>
           <form @submit.prevent="createKey">
             <div class="mb-4">
@@ -192,7 +222,7 @@
                 required
               />
             </div>
-            
+
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-300 mb-2">Permissions</label>
               <div class="space-y-2">
@@ -214,7 +244,7 @@
                 </label>
               </div>
             </div>
-            
+
             <div class="flex justify-end space-x-3">
               <button
                 type="submit"
@@ -227,7 +257,7 @@
           </form>
         </div>
       </div>
-      
+
       <!-- Success Modal -->
       <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeSuccessModal">
         <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg p-6 w-[500px] max-w-[90vw] mx-4 relative" @click.stop>
@@ -241,12 +271,12 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
-          
+
           <h3 class="text-lg font-semibold mb-4 text-green-400">Success!</h3>
           <div v-if="createdKey" class="mb-4">
             <p class="text-sm text-gray-300 mb-2">API Key created successfully:</p>
             <div class="relative">
-              <div 
+              <div
                 @click="copyCreatedKey"
                 class="w-full px-3 py-2 bg-main-900 border border-main-600 rounded-md cursor-pointer hover:bg-main-800 transition-colors group"
                 title="Click to copy API key"
@@ -279,7 +309,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Edit Key Modal -->
       <div v-if="showEditKeyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeEditKeyModal">
         <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg p-6 w-[500px] max-w-[90vw] mx-4 relative" @click.stop>
@@ -293,7 +323,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
-          
+
           <h3 class="text-lg font-semibold mb-4 text-gray-100">Edit Server API Key</h3>
           <form @submit.prevent="updateKey">
             <div class="mb-4">
@@ -305,12 +335,12 @@
                 readonly
               />
             </div>
-            
+
             <!-- API Key Display (Blurred) -->
             <div v-if="currentServerKeyInfo && !loadingKeyInfo" class="mb-4">
               <label class="block text-sm font-medium text-gray-300 mb-2">Current API Key</label>
               <div class="relative">
-                <div 
+                <div
                   @click="copyApiKey"
                   class="w-full px-3 py-2 bg-main-900 border border-main-600 rounded-md cursor-pointer hover:bg-main-800 transition-colors group"
                   title="Click to copy API key"
@@ -327,7 +357,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Loading State for Key Info -->
             <div v-else-if="loadingKeyInfo" class="mb-4">
               <label class="block text-sm font-medium text-gray-300 mb-2">Current API Key</label>
@@ -336,7 +366,7 @@
                 <span class="text-sm text-gray-400">Loading key information...</span>
               </div>
             </div>
-            
+
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-300 mb-2">Permissions</label>
               <p class="text-xs text-gray-400 mb-3">Select the permissions you want to set for this server's API key.</p>
@@ -361,7 +391,7 @@
                 </label>
               </div>
             </div>
-            
+
             <div class="flex justify-between items-center">
               <button
                 type="button"
@@ -371,7 +401,7 @@
               >
                 {{ deletingKey ? 'Deleting...' : 'Delete Key' }}
               </button>
-              
+
               <div class="flex space-x-3">
                 <button
                   type="submit"
@@ -385,7 +415,7 @@
           </form>
         </div>
       </div>
-      
+
       <!-- Delete Confirmation Modal -->
       <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="cancelDeleteKey">
         <div class="bg-main-800 border border-red-400 rounded-lg shadow-lg p-6 w-[500px] max-w-[90vw] mx-4 relative" @click.stop>
@@ -399,11 +429,11 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
-          
+
           <h3 class="text-lg font-semibold mb-4 text-red-400">⚠️ Delete API Key</h3>
           <div class="mb-4">
             <p class="text-sm text-gray-300 mb-2">
-              Are you sure you want to delete the API key for 
+              Are you sure you want to delete the API key for
               <span class="font-semibold text-gray-100">{{ currentServerKeyInfo?.server }}</span>?
             </p>
             <p class="text-xs text-red-400">
@@ -423,7 +453,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Toast Notification -->
     <Toast
       :show="showToast"
@@ -432,17 +462,27 @@
       :message="toastMessage"
       @close="closeToast"
     />
+
+    <!-- Server Details Modal -->
+    <ServerModal
+      v-if="showServerModal && selectedServer"
+      :server="selectedServer"
+      :show="showServerModal"
+      @close="closeServerModal"
+      @updated="onServerUpdated"
+    />
   </main>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import OffstylesApi from '@/api/offstylesApi';
-import type { ServerActivityDocument, ServerKeyInfo } from '@/api/offstylesApi';
+import type { ServerDataDocument, ServerKeyInfo, ServerInfo } from '@/api/offstylesApi';
 import { KeyPermissions, addPermission } from '@/utils/permissions';
 import { canManageApiKeys } from '@/utils/userPermissions';
 import { useAuth } from '@/stores/auth';
 import Toast from '@/components/Toast.vue';
+import ServerModal from '@/components/ServerModal.vue';
 import loadWheel from '@/components/icons/loadWheel.vue';
 
 // Auth
@@ -453,14 +493,30 @@ const canManageKeys = computed(() => {
   return user.value && canManageApiKeys(user.value.permissions);
 });
 
+// Mixed type to handle both old and new server data structures
+type MixedServerDocument = {
+  _id?: string;
+  key_ref?: string;
+  name?: string;
+  owner_ref?: string;
+  servers?: ServerInfo[];
+  server?: string;
+  ips?: string[];
+  active?: boolean; // Made optional since new format doesn't have it
+};
+
 // Data
-const servers = ref<ServerActivityDocument[]>([]);
+const servers = ref<MixedServerDocument[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
+// Modal state
+const showServerModal = ref(false);
+const selectedServer = ref<ServerDataDocument | null>(null);
+
 // Computed properties for server statistics
-const activeServers = computed(() => servers.value.filter(s => s.active));
-const inactiveServers = computed(() => servers.value.filter(s => !s.active));
+const activeServers = computed(() => servers.value.filter((s: MixedServerDocument) => s.active === true));
+const inactiveServers = computed(() => servers.value.filter((s: MixedServerDocument) => s.active === false));
 const totalServers = computed(() => servers.value.length);
 
 // Modal states
@@ -540,7 +596,7 @@ const closeSuccessModal = async () => {
 const createKey = async () => {
   try {
     creatingKey.value = true;
-    
+
     let permissions = 0;
     if (createKeyForm.value.submitTimes) {
       permissions = addPermission(permissions, KeyPermissions.SUBMIT_TIMES);
@@ -548,12 +604,12 @@ const createKey = async () => {
     if (createKeyForm.value.submitBulk) {
       permissions = addPermission(permissions, KeyPermissions.SUBMIT_BULK);
     }
-    
+
     const result = await OffstylesApi.createApiKey(
       createKeyForm.value.server,
       permissions
     );
-    
+
     createdKey.value = result.key;
     closeCreateKeyModal();
     showSuccessModal.value = true;
@@ -569,11 +625,11 @@ const openEditKeyModal = async (serverName: string) => {
   try {
     loadingKeyInfo.value = true;
     showEditKeyModal.value = true;
-    
+
     // Get current server key info
     const keyInfo = await OffstylesApi.getServerKeyInfo(serverName);
     currentServerKeyInfo.value = keyInfo;
-    
+
     editKeyForm.value = {
       server: serverName,
       submitTimes: (keyInfo.permissions & KeyPermissions.SUBMIT_TIMES) !== 0,
@@ -611,18 +667,18 @@ const cancelDeleteKey = () => {
 
 const executeDeleteKey = async () => {
   if (!currentServerKeyInfo.value) return;
-  
+
   // Store server name before clearing the state
   const serverName = currentServerKeyInfo.value.server;
-  
+
   try {
     deletingKey.value = true;
-    
+
     await OffstylesApi.deleteApiKey(serverName);
-    
+
     // Refresh the servers list to reflect the changes
     await loadServers();
-    
+
     closeEditKeyModal();
     showToastMessage('success', 'Deleted!', `API key for ${serverName} has been deleted`);
   } catch (err) {
@@ -636,7 +692,7 @@ const executeDeleteKey = async () => {
 const updateKey = async () => {
   try {
     updatingKey.value = true;
-    
+
     let permissions = 0;
     if (editKeyForm.value.submitTimes) {
       permissions = addPermission(permissions, KeyPermissions.SUBMIT_TIMES);
@@ -644,12 +700,12 @@ const updateKey = async () => {
     if (editKeyForm.value.submitBulk) {
       permissions = addPermission(permissions, KeyPermissions.SUBMIT_BULK);
     }
-    
+
     await OffstylesApi.updateApiKey(
       editKeyForm.value.server,
       permissions
     );
-    
+
     closeEditKeyModal();
     showSuccessModal.value = true;
     showToastMessage('success', 'Success', 'Server permissions updated successfully');
@@ -727,6 +783,46 @@ const closeToast = () => {
   showToast.value = false;
 };
 
+// Server modal methods
+const openServerModal = (server: MixedServerDocument) => {
+  // Convert the mixed server document to a proper ServerDataDocument
+  const serverDoc: ServerDataDocument = {
+    _id: server._id || `temp-${server.server}`, // Use server name as temp ID if _id is missing
+    key_ref: server.key_ref || server.server || '',
+    name: server.name || server.server || 'Unknown Server',
+    owner_ref: server.owner_ref || '',
+    servers: server.servers || (server.ips ? server.ips.map(ip => ({
+      name: `Server ${ip}`,
+      ip: ip,
+      whitelist: false
+    })) : [])
+  };
+
+  selectedServer.value = serverDoc;
+  showServerModal.value = true;
+};
+
+const closeServerModal = () => {
+  showServerModal.value = false;
+  selectedServer.value = null;
+};
+
+const onServerUpdated = (updatedServer: ServerDataDocument) => {
+  // Find and update the server in the list
+  const index = servers.value.findIndex(s => (s._id && s._id === updatedServer._id) || (s.server === updatedServer.name));
+  if (index !== -1) {
+    // Convert ServerDataDocument to MixedServerDocument format
+    servers.value[index] = {
+      _id: updatedServer._id,
+      key_ref: updatedServer.key_ref,
+      name: updatedServer.name,
+      owner_ref: updatedServer.owner_ref,
+      servers: updatedServer.servers
+    };
+  }
+  selectedServer.value = updatedServer;
+};
+
 // Lifecycle
 onMounted(() => {
   loadServers();
@@ -735,7 +831,7 @@ onMounted(() => {
 
 <style scoped>
 /* Override global focus styles to completely remove all outlines */
-input[type="text"]:focus, 
+input[type="text"]:focus,
 input[type="checkbox"]:focus,
 button:focus {
   outline: none !important;
