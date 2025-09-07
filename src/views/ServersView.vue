@@ -7,16 +7,7 @@
           <p class="text-sm text-gray-400 mb-4 text-center">Active servers that have submitted times within the last 2 weeks</p>
         </div>
         <!-- Server Statistics -->
-        <div v-if="!loading && !error && servers.length > 0" class="grid ginterface MixedServerDocument {
-  _id?: string;
-  key_ref?: string;
-  name?: string;
-  owner_ref?: string;
-  servers?: ServerInfo[];
-  server?: string;
-  ips?: string[];
-  active?: boolean; // Made optional since new format doesn't have it
-};1 md:grid-cols-3 gap-4 mb-5">
+        <div v-if="!loading && !error && servers.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
           <div class="bg-main-700 rounded-md p-4">
             <div class="flex items-center">
               <div class="p-1.5 bg-main-400 rounded-md">
@@ -117,7 +108,7 @@
           <div v-else class="divide-y divide-gray-700">
             <div
               v-for="server in servers"
-              :key="server._id || server.server"
+              :key="server._id"
               @click="openServerModal(server)"
               class="group p-6 py-4 hover:bg-main-500 transition-colors bg-main-600 odd:bg-main-700 relative cursor-pointer"
             >
@@ -130,7 +121,7 @@
                     ]"
                   ></div>
                   <div>
-                    <h3 class="text-base font-medium text-gray-100">{{ server.name || server.server }}</h3>
+                    <h3 class="text-base font-medium text-gray-100">{{ server.name }}</h3>
                     <div class="flex items-center flex-wrap gap-1 mt-1">
                       <!-- Show server IPs if available, otherwise show legacy IPs -->
                       <template v-if="server.servers && server.servers.length > 0">
@@ -147,29 +138,31 @@
                           <span v-if="index < server.servers.length - 1" class="text-gray-400 -ml-0.5">,</span>
                         </span>
                       </template>
-                      <template v-else-if="server.ips">
-                        <span
-                          v-for="(ip, index) in server.ips.filter((ip: string) => ip !== '')"
-                          :key="ip"
-                          class="text-sm text-gray-200 monospace pr-1 py-0.5"
-                          :title="`Click to copy ${ip}`"
-                        >
-                          <span
-                            @click.stop="copyToClipboard(ip)"
-                            class="cursor-pointer hover:text-gray-200 hover:bg-main-200 transition-colors rounded p-0.5"
-                          >{{ ip }}</span>
-                          <span v-if="index < server.ips.filter((ip: string) => ip !== '').length - 1" class="text-gray-400 -ml-0.5">,</span>
-                        </span>
+                      <template v-else>
+                        <span class="text-sm text-gray-400">No servers configured</span>
                       </template>
                     </div>
                   </div>
                 </div>
 
                 <div class="flex items-center space-x-3">
-                  <!-- Edit Key Button (shown on hover) -->
+                  <!-- Edit Server Button (shown on hover for server owners) -->
+                  <button
+                    v-if="canEditServer(server)"
+                    @click.stop="openServerModal(server)"
+                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-blue-700 hover:bg-blue-600 border border-blue-500 hover:border-blue-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer mr-3 min-w-24"
+                    title="Edit server details"
+                  >
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+                    </svg>
+                    Edit Server
+                  </button>
+
+                  <!-- Edit Key Button (shown on hover for admins) -->
                   <button
                     v-if="canManageKeys"
-                    @click.stop="openEditKeyModal((server.name || server.server) || '')"
+                    @click.stop="openEditKeyModal(server.name)"
                     class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-main-800 hover:bg-main-700 border border-main-500 hover:border-main-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer mr-3 min-w-24"
                     title="Edit API key"
                   >
@@ -188,6 +181,15 @@
                     ]"
                   >
                     {{ server.active ? 'Active' : 'Inactive' }}
+                  </span>
+
+                  <!-- Show "Editable" badge for servers the user can edit -->
+                  <span
+                    v-if="canEditServer(server)"
+                    class="px-2 py-1 text-xs font-medium rounded-full bg-blue-900 text-blue-400 ml-2"
+                    title="You can edit this server"
+                  >
+                    Editable
                   </span>
                 </div>
               </div>
@@ -477,7 +479,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import OffstylesApi from '@/api/offstylesApi';
-import type { ServerDataDocument, ServerKeyInfo, ServerInfo } from '@/api/offstylesApi';
+import type { ServerDataDocument, ServerKeyInfo, ServerActivityResponse } from '@/api/offstylesApi';
 import { KeyPermissions, addPermission } from '@/utils/permissions';
 import { canManageApiKeys } from '@/utils/userPermissions';
 import { useAuth } from '@/stores/auth';
@@ -493,20 +495,14 @@ const canManageKeys = computed(() => {
   return user.value && canManageApiKeys(user.value.permissions);
 });
 
-// Mixed type to handle both old and new server data structures
-type MixedServerDocument = {
-  _id?: string;
-  key_ref?: string;
-  name?: string;
-  owner_ref?: string;
-  servers?: ServerInfo[];
-  server?: string;
-  ips?: string[];
-  active?: boolean; // Made optional since new format doesn't have it
+// Check if user can edit a specific server (owner or admin)
+const canEditServer = (server: ServerActivityResponse) => {
+  if (!user.value) return false;
+  return user.value.steam_id === server.user.steam_id || user.value.permissions > 0;
 };
 
 // Data
-const servers = ref<MixedServerDocument[]>([]);
+const servers = ref<ServerActivityResponse[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
@@ -515,8 +511,8 @@ const showServerModal = ref(false);
 const selectedServer = ref<ServerDataDocument | null>(null);
 
 // Computed properties for server statistics
-const activeServers = computed(() => servers.value.filter((s: MixedServerDocument) => s.active === true));
-const inactiveServers = computed(() => servers.value.filter((s: MixedServerDocument) => s.active === false));
+const activeServers = computed(() => servers.value.filter((s: ServerActivityResponse) => s.active === true));
+const inactiveServers = computed(() => servers.value.filter((s: ServerActivityResponse) => s.active === false));
 const totalServers = computed(() => servers.value.length);
 
 // Modal states
@@ -559,7 +555,10 @@ const loadServers = async () => {
   try {
     loading.value = true;
     error.value = null;
-    servers.value = (await OffstylesApi.getServers()).sort((a,b) => Number(b.active) - Number(a.active));
+    const serverData = await OffstylesApi.getServers();
+
+    // Use ServerActivityResponse directly, no transformation needed
+    servers.value = serverData.sort((a,b) => Number(b.active) - Number(a.active));
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load servers';
     console.error('Failed to load servers:', err);
@@ -784,18 +783,15 @@ const closeToast = () => {
 };
 
 // Server modal methods
-const openServerModal = (server: MixedServerDocument) => {
-  // Convert the mixed server document to a proper ServerDataDocument
+const openServerModal = (server: ServerActivityResponse) => {
+  // Convert ServerActivityResponse to ServerDataDocument
   const serverDoc: ServerDataDocument = {
-    _id: server._id || `temp-${server.server}`, // Use server name as temp ID if _id is missing
-    key_ref: server.key_ref || server.server || '',
-    name: server.name || server.server || 'Unknown Server',
-    owner_ref: server.owner_ref || '',
-    servers: server.servers || (server.ips ? server.ips.map(ip => ({
-      name: `Server ${ip}`,
-      ip: ip,
-      whitelist: false
-    })) : [])
+    _id: server._id,
+    name: server.name,
+    servers: server.servers,
+    user: server.user,
+    permissions: server.permissions,
+    active: server.active
   };
 
   selectedServer.value = serverDoc;
@@ -809,15 +805,16 @@ const closeServerModal = () => {
 
 const onServerUpdated = (updatedServer: ServerDataDocument) => {
   // Find and update the server in the list
-  const index = servers.value.findIndex(s => (s._id && s._id === updatedServer._id) || (s.server === updatedServer.name));
-  if (index !== -1) {
-    // Convert ServerDataDocument to MixedServerDocument format
+  const index = servers.value.findIndex(s => s._id === updatedServer._id);
+  if (index !== -1 && updatedServer._id) {
+    // Convert ServerDataDocument back to ServerActivityResponse format
     servers.value[index] = {
       _id: updatedServer._id,
-      key_ref: updatedServer.key_ref,
       name: updatedServer.name,
-      owner_ref: updatedServer.owner_ref,
-      servers: updatedServer.servers
+      servers: updatedServer.servers,
+      user: updatedServer.user,
+      permissions: updatedServer.permissions || 0,
+      active: updatedServer.active || false
     };
   }
   selectedServer.value = updatedServer;

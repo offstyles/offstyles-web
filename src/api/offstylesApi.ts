@@ -29,12 +29,29 @@ export interface ServerActivityDocument {
   ips: string[];
 }
 
-export interface ServerDataDocument {
-  _id?: string; // Optional since it can be None in Rust
-  key_ref: string;
-  owner_ref?: string; // Optional since it can be None in Rust
+export interface ServerActivityOwner {
+  _id: string;
+  steam_id: string;
+  username: string;
+  avatar_url: string;
+}
+
+export interface ServerActivityResponse {
+  _id: string;
   name: string;
   servers: ServerInfo[];
+  permissions: number;
+  user: ServerActivityOwner;
+  active: boolean;
+}
+
+export interface ServerDataDocument {
+  _id?: string;
+  name: string;
+  servers: ServerInfo[];
+  user: ServerActivityOwner;
+  permissions?: number;
+  active?: boolean;
 }
 
 export interface ServerInfo {
@@ -54,7 +71,7 @@ export interface ServerKeyInfo {
 }
 
 class OffstylesApi extends Api {
-  static offstylesApiUrl = import.meta.env.DEV ? '/api' : 'https://offstyles.tommyy.dev/api';
+  static offstylesApiUrl = import.meta.env.DEV ? 'http://127.0.0.1:8000/api' : 'https://offstyles.tommyy.dev/api';
 
   // Fixed method signature to require style parameter
   static async getTimesByMap(mapName: string, style: number = Style.normal, steamid?: string, limit: number = 50, page: number = 1): Promise<RankAwareRecord[]> {
@@ -292,7 +309,7 @@ class OffstylesApi extends Api {
   }
 
   // Server management methods
-  static async getServers(): Promise<ServerActivityDocument[]> {
+  static async getServers(): Promise<ServerActivityResponse[]> {
     this.url = `${this.offstylesApiUrl}/servers`;
     const result = await this.fetchFromUrl();
     // The API returns an array of arrays, we want to flatten it

@@ -66,7 +66,15 @@
             <div>
               <h3 class="text-sm font-medium text-gray-300 mb-1">Server Owner</h3>
               <div v-if="!editing.owner" class="flex items-center">
-                <span class="text-gray-100 monospace">{{ server.owner_ref || 'Not set' }}</span>
+                <span
+                  v-if="server.user"
+                  class="text-gray-100 cursor-pointer hover:text-gray-200 hover:bg-main-700 px-2 py-1 rounded transition-colors"
+                  @click="copyToClipboard(server.user.steam_id)"
+                  :title="`Click to copy Steam ID: ${server.user.steam_id}`"
+                >
+                  {{ server.user.username || 'Unknown User' }} ({{ server.user.steam_id }})
+                </span>
+                <span v-else class="text-gray-100">Not set</span>
               </div>
               <div v-else class="flex items-center space-x-2">
                 <input
@@ -300,7 +308,7 @@ const { user } = useAuth();
 const canEdit = computed(() => {
   if (!user.value) return false;
   // Check if user is the owner or has admin permissions
-  return user.value.steam_id === props.server.owner_ref || user.value.permissions > 0;
+  return user.value.steam_id === props.server.user.steam_id || user.value.permissions > 0;
 });
 
 // Reactive data
@@ -318,7 +326,7 @@ const saving = ref({
 
 const editForm = ref({
   name: props.server.name,
-  owner: props.server.owner_ref || ''
+  owner: props.server.user?.steam_id || ''
 });
 
 // Server modal
@@ -340,7 +348,7 @@ const toastMessage = ref('');
 watch(() => props.server, (newServer) => {
   localServers.value = [...(newServer.servers || [])];
   editForm.value.name = newServer.name;
-  editForm.value.owner = newServer.owner_ref || '';
+  editForm.value.owner = newServer.user?.steam_id || '';
 }, { deep: true });
 
 // Methods
@@ -357,7 +365,7 @@ const cancelEdit = (field: 'name' | 'owner') => {
   if (field === 'name') {
     editForm.value.name = props.server.name;
   } else if (field === 'owner') {
-    editForm.value.owner = props.server.owner_ref || '';
+    editForm.value.owner = props.server.user?.steam_id || '';
   }
 };
 
