@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, computed } from 'vue';
+  import { ref } from 'vue';
   import type { Ref } from 'vue';
   import OffstylesApi from '@/api/offstylesApi';
   import loadWheel from './icons/loadWheel.vue';
@@ -31,7 +31,6 @@
         }
     }, 600);
   }
-  const params = computed(()=>{return urlParams.get()});
 </script>
 
 <template>
@@ -44,7 +43,7 @@
     class="rounded-lg bg-main-800 text-left border border-transparent focus-within:border-main-50 py-2 px-3 text-sm leading-5 text-gray-200 placeholder:text-gray-500 outline-none">
     <div class="absolute top-full w-full rounded-lg bg-main-900 border border-main-100 text-sm text-gray-300 mt-1 py-2 px-2 shadow-xl/20 hidden group-focus-within:block z-[999]" v-if="showAutoCompleteDropdown && currentInput">
       <loadWheel v-if="isLoading" class="text-gray-300 flex mx-auto w-6 h-6"></loadWheel>
-      <router-link v-else v-for="(result, index) in autoCompleteResults.slice(0, 6)" :to="{path:`/players/${result[1]}/?${params}`, query:urlParams.getAsObject()}" :key="index"
+      <router-link v-else v-for="(result, index) in autoCompleteResults.slice(0, 6)" :to="{path:`/players/${result[1]}/`, query:urlParams.clearPage()}" :key="index"
         @click="$emit('updatePlayer', result[1]); showAutoCompleteDropdown = false"
         class="py-1 px-1.5 hover:bg-main-600 rounded-sm block truncate">{{ result[0] }}
       </router-link>

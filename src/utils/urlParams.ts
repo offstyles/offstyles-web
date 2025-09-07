@@ -5,6 +5,9 @@ const update = function(name: string, value : number | string) {
   if(name === 'style' && value === Style.all){
     params.delete(name);
   }
+  if(name === 'style') {
+    params.delete('page');
+  }
   //cant use router outside of setup component, so need to return the new query and use there instead
   return Object.fromEntries(params)
 };
@@ -19,4 +22,10 @@ const getAsObject = function(){
   return Object.fromEntries(params)
 }
 
-export default {update, get, getAsObject};
+const clearPage = function() {
+  const params = new URLSearchParams(window.location.search);
+  params.delete('page');
+  return Object.fromEntries(params)
+}
+
+export default {update, get, getAsObject, clearPage};
