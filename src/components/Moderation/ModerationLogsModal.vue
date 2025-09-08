@@ -80,26 +80,34 @@ const closeLogDetailModal = () => {
   selectedLogForModal.value = null
 }
 
-// Load logs when modal opens
-import { watch } from 'vue'
+// Load logs when modal opens and handle body scroll
+import { watch, onUnmounted } from 'vue'
 watch(() => props.show, (newShow) => {
   if (newShow && props.targetId) {
     loadModerationLogs()
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
   }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  document.body.style.overflow = ''
 })
 </script>
 
 <template>
   <!-- Modal Overlay -->
-  <div 
+  <div
     v-if="show"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto"
     @click.self="handleClose"
   >
     <!-- Modal Content -->
-    <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden flex flex-col">
+    <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-full max-w-2xl min-h-[500px] my-4 mx-auto">
       <!-- Header -->
-      <div class="p-4 border-b border-main-400 shrink-0">
+      <div class="p-4 border-b border-main-400">
         <h3 class="text-lg font-medium text-gray-200">
           Moderation History
         </h3>
@@ -108,14 +116,14 @@ watch(() => props.show, (newShow) => {
       </div>
 
       <!-- Content -->
-      <div class="flex-1 overflow-hidden flex flex-col">
+      <div>
         <!-- Loading State -->
-        <div v-if="isLoading" class="flex-1 flex items-center justify-center">
+        <div v-if="isLoading" class="flex items-center justify-center p-8">
           <div class="text-gray-400">Loading moderation history...</div>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="errorMessage" class="flex-1 flex items-center justify-center">
+        <div v-else-if="errorMessage" class="flex items-center justify-center p-8">
           <div class="text-center">
             <div class="text-red-400 mb-2">{{ errorMessage }}</div>
             <button
@@ -128,11 +136,11 @@ watch(() => props.show, (newShow) => {
         </div>
 
         <!-- Logs Content -->
-        <div v-else-if="moderationLogs" class="flex-1 overflow-y-auto">
+        <div v-else-if="moderationLogs">
           <div v-if="moderationLogs.actions && moderationLogs.actions.length > 0" class="p-4">
             <div class="space-y-4">
-              <div 
-                v-for="(action, index) in moderationLogs.actions" 
+              <div
+                v-for="(action, index) in moderationLogs.actions"
                 :key="index"
                 @click="openLogDetailModal(action)"
                 class="border-l-4 border-main-400 pl-4 py-3 bg-main-700/50 rounded-r cursor-pointer hover:bg-main-700/70 transition-colors"
@@ -140,7 +148,7 @@ watch(() => props.show, (newShow) => {
                 <!-- Action Header -->
                 <div class="flex justify-between items-start mb-2">
                   <div class="flex items-center gap-2">
-                    <span 
+                    <span
                       class="px-2 py-1 rounded text-xs font-medium"
                       :class="getActionColor(action.action)"
                     >
@@ -157,9 +165,9 @@ watch(() => props.show, (newShow) => {
 
                 <!-- Moderator Info -->
                 <div class="flex items-center gap-2 mb-2">
-                  <img 
+                  <img
                     v-if="action.mod.avatar_url"
-                    :src="action.mod.avatar_url" 
+                    :src="action.mod.avatar_url"
                     :alt="action.mod.username"
                     class="w-6 h-6 rounded-full"
                   />
@@ -177,7 +185,7 @@ watch(() => props.show, (newShow) => {
           </div>
 
           <!-- No logs message -->
-          <div v-else class="flex-1 flex items-center justify-center">
+          <div v-else class="flex items-center justify-center p-8">
             <div class="text-center text-gray-400">
               <div class="text-lg mb-2">📋</div>
               <div>No moderation history found</div>
@@ -187,7 +195,7 @@ watch(() => props.show, (newShow) => {
         </div>
 
         <!-- Empty state -->
-        <div v-else class="flex-1 flex items-center justify-center">
+        <div v-else class="flex items-center justify-center p-8">
           <div class="text-center text-gray-400">
             <div class="text-lg mb-2">📋</div>
             <div>No data available</div>
@@ -196,7 +204,7 @@ watch(() => props.show, (newShow) => {
       </div>
 
       <!-- Footer -->
-      <div class="p-4 border-t border-main-400 flex justify-end shrink-0">
+      <div class="p-4 border-t border-main-400 flex justify-end">
         <button
           @click="handleClose"
           class="px-4 py-2 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"
@@ -208,12 +216,12 @@ watch(() => props.show, (newShow) => {
   </div>
 
   <!-- Log Detail Modal -->
-  <div 
+  <div
     v-if="showLogDetailModal && selectedLogForModal"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]"
+    class="fixed inset-0 bg-black/50 flex items-start justify-center z-[60] p-4 overflow-y-auto"
     @click.self="closeLogDetailModal"
   >
-    <div class="bg-main-800 border border-main-400 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden flex flex-col">
+    <div class="bg-main-800 border border-main-400 rounded-lg shadow-xl w-full max-w-2xl min-h-[400px] my-4 mx-auto">
       <!-- Header -->
       <div class="p-4 border-b border-main-400 flex justify-between items-center">
         <h3 class="text-lg font-medium text-gray-200">Moderation Action Details</h3>
@@ -230,7 +238,7 @@ watch(() => props.show, (newShow) => {
         <!-- Action Info -->
         <div class="space-y-4">
           <div class="flex items-center gap-3">
-            <span 
+            <span
               class="px-4 py-2 rounded text-lg font-medium"
               :class="getActionColor(selectedLogForModal.action)"
             >
@@ -263,9 +271,9 @@ watch(() => props.show, (newShow) => {
         <div class="bg-main-700/50 rounded-lg p-4">
           <h4 class="text-lg font-medium text-gray-200 mb-3">Moderator</h4>
           <div class="flex items-start gap-4">
-            <img 
+            <img
               v-if="selectedLogForModal.mod.avatar_url"
-              :src="selectedLogForModal.mod.avatar_url" 
+              :src="selectedLogForModal.mod.avatar_url"
               :alt="selectedLogForModal.mod.username"
               class="w-12 h-12 rounded-full"
             />

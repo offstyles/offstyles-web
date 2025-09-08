@@ -37,19 +37,19 @@ const validRecords = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return selectedRecords.value.size > 0 && 
-         selectedAction.value && 
-         reason.value.trim().length > 0 && 
+  return selectedRecords.value.size > 0 &&
+         selectedAction.value &&
+         reason.value.trim().length > 0 &&
          !isSubmitting.value
 })
 
 const allSelected = computed(() => {
-  return validRecords.value.length > 0 && 
+  return validRecords.value.length > 0 &&
          selectedRecords.value.size === validRecords.value.length
 })
 
 const someSelected = computed(() => {
-  return selectedRecords.value.size > 0 && 
+  return selectedRecords.value.size > 0 &&
          selectedRecords.value.size < validRecords.value.length
 })
 
@@ -93,15 +93,15 @@ const handleSubmit = async () => {
     // Use the moderation store's bulk action method
     const recordIds = Array.from(selectedRecords.value)
     await moderationStore.performBulkModerationAction(selectedAction.value, reason.value, recordIds)
-    
+
     showSuccess.value = true
-    
+
     // Auto close after success
     setTimeout(() => {
       emit('moderationComplete')
       emit('close')
     }, 1500)
-    
+
   } catch (error) {
     console.error('Bulk moderation failed:', error)
     errorMessage.value = error instanceof Error ? error.message : 'Unknown error occurred'
@@ -127,26 +127,36 @@ const getActionColor = (action: ModerationActionType) => {
   }
 }
 
-// Reset form when modal opens/closes
-import { watch } from 'vue'
+// Reset form when modal opens/closes and handle body scroll
+import { watch, onUnmounted } from 'vue'
+
+// Prevent body scroll when modal is open
 watch(() => props.show, (newShow) => {
   if (newShow) {
     resetForm()
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
   }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  document.body.style.overflow = ''
 })
 </script>
 
 <template>
   <!-- Modal Overlay -->
-  <div 
+  <div
     v-if="show"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto"
     @click.self="handleClose"
   >
     <!-- Modal Content -->
-    <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+    <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-full max-w-2xl min-h-[600px] my-4 mx-auto">
       <!-- Header -->
-      <div class="p-4 border-b border-main-400 shrink-0">
+      <div class="p-4 border-b border-main-400">
         <h3 class="text-lg font-medium text-gray-200">
           Bulk Moderate Records
         </h3>
@@ -154,7 +164,7 @@ watch(() => props.show, (newShow) => {
       </div>
 
       <!-- Success State -->
-      <div v-if="showSuccess" class="p-6 text-center flex-1">
+      <div v-if="showSuccess" class="p-6 text-center">
         <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
           <IconCheck class="w-6 h-6 text-white" />
         </div>
@@ -163,9 +173,9 @@ watch(() => props.show, (newShow) => {
       </div>
 
       <!-- Form -->
-      <div v-else class="flex-1 overflow-hidden flex flex-col">
+      <div v-else>
         <!-- Record Selection -->
-        <div class="p-4 border-b border-main-400 shrink-0">
+        <div class="p-4 border-b border-main-400">
           <div class="flex items-center justify-between mb-3">
             <label class="text-sm font-medium text-gray-300">
               Select Records ({{ selectedRecords.size }}/{{ validRecords.length }})
@@ -177,7 +187,7 @@ watch(() => props.show, (newShow) => {
               {{ allSelected ? 'Deselect All' : 'Select All' }}
             </button>
           </div>
-          
+
           <!-- Master checkbox -->
           <div class="flex items-center gap-2 mb-2">
             <input
@@ -192,7 +202,7 @@ watch(() => props.show, (newShow) => {
         </div>
 
         <!-- Record List -->
-        <div class="flex-1 overflow-y-auto">
+        <div class="max-h-[300px] overflow-y-auto">
           <div class="p-4 space-y-2">
             <div
               v-for="(time, index) in validRecords"
@@ -220,7 +230,7 @@ watch(() => props.show, (newShow) => {
         </div>
 
         <!-- Action Selection and Form -->
-        <div class="p-4 border-t border-main-400 space-y-4 shrink-0">
+        <div class="p-4 border-t border-main-400 space-y-4">
           <!-- Action Selection -->
           <div>
             <label class="block text-sm font-medium text-gray-300 mb-2">
@@ -241,7 +251,7 @@ watch(() => props.show, (newShow) => {
               >
                 <div class="flex items-center justify-between">
                   <span>{{ action.label }}</span>
-                  <div 
+                  <div
                     v-if="selectedAction === action.action"
                     class="w-4 h-4 bg-main-300 rounded-full flex items-center justify-center"
                   >
@@ -272,24 +282,24 @@ watch(() => props.show, (newShow) => {
             {{ errorMessage }}
           </div>
         </div>
-      </div>
 
-      <!-- Footer -->
-      <div v-if="!showSuccess" class="p-4 border-t border-main-400 flex justify-end gap-3 shrink-0">
-        <button
-          @click="handleClose"
-          class="px-4 py-2 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"
-          :disabled="isSubmitting"
-        >
-          Cancel
-        </button>
-        <button
-          @click="handleSubmit"
-          :disabled="!canSubmit"
-          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors cursor-pointer"
-        >
-          {{ isSubmitting ? 'Processing...' : `Apply to ${selectedRecords.size} record${selectedRecords.size !== 1 ? 's' : ''}` }}
-        </button>
+        <!-- Footer -->
+        <div class="p-4 border-t border-main-400 flex justify-end gap-3">
+          <button
+            @click="handleClose"
+            class="px-4 py-2 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"
+            :disabled="isSubmitting"
+          >
+            Cancel
+          </button>
+          <button
+            @click="handleSubmit"
+            :disabled="!canSubmit"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            {{ isSubmitting ? 'Processing...' : `Apply to ${selectedRecords.size} record${selectedRecords.size !== 1 ? 's' : ''}` }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
