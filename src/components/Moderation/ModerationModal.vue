@@ -52,11 +52,20 @@ const getLogsId = () => {
   }
 }
 
-// Reset form when modal opens/closes
+// Reset form when modal opens/closes and handle body scroll
 watch(() => props.show, (newShow) => {
   if (newShow) {
     resetForm()
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
   }
+})
+
+// Cleanup on unmount
+import { onUnmounted } from 'vue'
+onUnmounted(() => {
+  document.body.style.overflow = ''
 })
 
 const resetForm = () => {
@@ -82,15 +91,15 @@ const handleSubmit = async () => {
       reason.value,
       props.target
     )
-    
+
     showSuccess.value = true
-    
+
     // Auto close after success
     setTimeout(() => {
       emit('moderationComplete')
       emit('close')
     }, 1500)
-    
+
   } catch (error) {
     console.error('Moderation action failed:', error)
     errorMessage.value = error instanceof Error ? error.message : 'Unknown error occurred'
@@ -129,13 +138,13 @@ const getActionColor = (action: ModerationActionType) => {
 
 <template>
   <!-- Modal Overlay -->
-  <div 
+  <div
     v-if="show"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto"
     @click.self="handleClose"
   >
     <!-- Modal Content -->
-    <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-full max-w-md mx-4">
+    <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-full max-w-md min-h-[400px] my-4 mx-auto">
       <!-- Header -->
       <div class="p-4 border-b border-main-400">
         <div class="flex justify-between items-start">
@@ -193,7 +202,7 @@ const getActionColor = (action: ModerationActionType) => {
             >
               <div class="flex items-center justify-between">
                 <span>{{ action.label }}</span>
-                <div 
+                <div
                   v-if="selectedAction === action.action"
                   class="w-4 h-4 bg-main-300 rounded-full flex items-center justify-center"
                 >
