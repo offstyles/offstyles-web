@@ -79,14 +79,14 @@ class OffstylesApi extends Api {
     return await this.fetchFromUrl();
   }
 
-  static async getRecentTimes(style: number = Style.normal, limit: number = 15, page: number = 1, wr: boolean = true): Promise<WRAwareRecord[]> {
+  static async getRecentTimes(style: number = Style.all, limit: number = 15, page: number = 1, wr: boolean = true): Promise<WRAwareRecord[]> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       page: page.toString(),
       wr: wr.toString()
     });
 
-    if (style !== undefined) {
+    if (style !== undefined && style !== Style.all) {
       params.append('style', style.toString());
     }
 

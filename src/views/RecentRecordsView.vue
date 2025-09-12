@@ -19,7 +19,7 @@
     const paramsObj = urlParams.getAsObject();
     
     // Convert string params to numbers with defaults
-    const style = paramsObj.style ? parseInt(paramsObj.style) : Style.normal;
+    const style = paramsObj.style ? parseInt(paramsObj.style) : Style.all;
     const page = paramsObj.page ? parseInt(paramsObj.page) : 1;
     const wr = paramsObj.wr ? paramsObj.wr === 'true' : true; // Convert string to boolean
     
