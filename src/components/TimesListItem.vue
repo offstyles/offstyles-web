@@ -142,10 +142,10 @@
     @contextmenu="handleRightClick">
       <div v-for="(col,index) in props.cols" :key="index" class="flex" :class="col.alignmentClasses"
       :style="`grid-column:${col.col} / span ${col.colSpan ?? 0}; grid-row:${col.row} / span ${col.rowSpan ?? 0};`">
-        <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex w-full px-1.5" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
+        <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex max-w-full px-1.5" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
           <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
         </a>
-        <div v-else class="flex w-full px-1.5" :class="col.classes">
+        <div v-else class="flex max-w-full px-1.5" :class="col.classes">
           <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
         </div>
       </div>
