@@ -60,7 +60,7 @@
     props.time.time - wrTime < 0 ? 'text-green-600 opacity-80' : 
    'text-gray-500'
   "
-  class="ml-1"> 
+  class="ml-1 flex items-center"> 
     ({{ props.time.time - wrTime > 0 ? '+' : '-' }}{{ dateTimeFormats.time(Math.abs(props.time.time - wrTime)) }})
   </span>
 </template>

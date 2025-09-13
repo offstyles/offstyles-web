@@ -42,6 +42,7 @@
       data: 'name',
       placement: true,
       width:'25%',
+      col:1,
       alignmentClasses: 'text-left',
       link: timeLinks.playerLink
     }, 
@@ -49,6 +50,7 @@
       label: 'Server',
       data: 'server',
       width: '30%',
+      col:2,
       classes: 'text-sm text-gray-400',
       alignmentClasses: 'text-left text-gray-300'
     },
@@ -56,12 +58,14 @@
       label: 'Date',
       data: 'date',
       width:'15%',
+      col:3,
       alignmentClasses: 'text-right justify-end',
     },
     {
       label: 'Time',
       data: 'time',
       width: '30%',
+      col:4,
       alignmentClasses: 'text-right justify-end monospace',
       numFormat: dateTimeFormats.time
     }]"

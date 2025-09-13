@@ -25,14 +25,16 @@
  
   const currentStyle: Ref<number> = ref(urlParams.getAsObject().style ? Number(urlParams.getAsObject().style) : Style.all);
 
-  const showStyleColumn = computed(() => currentStyle.value === Style.all);
-
   const tableColumns = computed((): TimeListColumn[] => {
     const columns: TimeListColumn[] = [
       {
         label: 'Player',
         data: 'name',
-        width: showStyleColumn.value ? '18%' : '20%',
+        col:1,
+        colSpan:1,
+        row:1,
+        rowSpan:2,
+        width: '20%',
         classes: 'font-semibold',
         alignmentClasses: 'text-left',
         link: timeLinks.playerLink
@@ -40,47 +42,60 @@
       {
         label: 'Map',
         data: 'map',
-        width: showStyleColumn.value ? '18%' : '20%',
+        col:2,
+        colSpan:1,
+        row:1,
+        rowSpan:1,
+        width: '35%',
         classes: 'text-gray-200',
         alignmentClasses: 'text-right justify-end md:justify-start md:text-left',
         link: timeLinks.mapLink
-      }
-    ];
-
-    if (showStyleColumn.value) {
-      columns.push({
-        label: 'Style',
-        data: 'style',
-        width: '12%',
-        classes: 'text-sm text-gray-400',
-        alignmentClasses: 'text-right justify-end md:justify-start md:text-left',
-        numFormat: styleFormat.name
-      });
-    }
-
-    columns.push(
+      },
       {
         label: 'Server',
         data: 'server',
-        width: showStyleColumn.value ? '18%' : '20%',
-        classes: 'text-sm text-gray-400',
-        alignmentClasses: 'text-right justify-end md:justify-start md:text-left text-gray-300'
-      },
-      {
-        label: 'Date',
-        data: 'date',
-        width: showStyleColumn.value ? '12%' : '15%',
-        alignmentClasses: 'text-right justify-end',
-        numFormat: dateTimeFormats.date
+        col:2,
+        colSpan:1,
+        row:2,
+        rowSpan:1,
+        classes: 'text-xs text-gray-400',
+        alignmentClasses: 'justify-start text-left'
       },
       {
         label: 'Time',
         data: 'time',
-        width: showStyleColumn.value ? '22%' : '25%',
+        col:3,
+        colSpan:1,
+        row:1,
+        rowSpan:2,
+        width: '25%',
         alignmentClasses: 'text-right justify-end monospace',
         numFormat: dateTimeFormats.time
-      }
-    );
+      },
+      {
+        label: 'Style',
+        data: 'style',
+        col:4,
+        colSpan:1,
+        row:1,
+        rowSpan:1,
+        width: '20%',
+        classes: '',
+        alignmentClasses: 'text-right justify-end',
+        numFormat: styleFormat.name
+      },
+      {
+        label: 'Date',
+        data: 'date',
+        col:4,
+        colSpan:1,
+        row:2,
+        rowSpan:1,
+        classes: 'text-xs text-gray-400',
+        alignmentClasses: 'text-right justify-end',
+        numFormat: dateTimeFormats.date
+      },
+    ];
 
     return columns;
   });

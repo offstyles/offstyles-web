@@ -25,21 +25,39 @@
   const contextMenuX: Ref<number> = ref(0);
   const contextMenuY: Ref<number> = ref(0);
 
-  const colWidthsStyle = computed(()=>{
-    return props.cols.map((v)=>v.width ? v.width : 'auto').join(' ');
+
+  const totalCols = computed(()=>{
+    return Math.max(...props.cols.map((v)=>{return v.col && v.colSpan ? v.col+v.colSpan : 1}));
   })
+  const totalRows = computed(()=>{
+    return Math.max(...props.cols.map((v)=>{return v.row && v.rowSpan ? v.row+v.rowSpan : 1}));
+  })
+
+  const colWidthsStyle = computed(()=>{
+    return props.cols.filter((v)=>v.row === undefined || v.row === 1)
+    .sort((a,b)=>a.col - b.col)
+    .map((v)=>v.width ? v.width : 'auto').join(' ');
+  })
+
+  const rowWidthsStyle = computed(()=>{
+    return totalRows.value > 1 ? '1fr 0.5fr' : '1fr'; 
+  })
+
   const moreDetailsCols: TimeListColumn[] = [
     {
       label:'Jumps',
-      data:'jumps'
+      data:'jumps',
+      col:1,
     },
     {
       label: 'Strafes',
-      data:'strafes'
+      data:'strafes',
+      col:2,
     },
     {
       label: 'Sync',
-      data:'sync'
+      data:'sync',
+      col:3,
     },
   ];
 
@@ -122,8 +140,8 @@
       'pb-2' : ''" 
     @click="toggleDetails()"
     @contextmenu="handleRightClick">
-      
-      <div v-for="(col,index) in props.cols" :key="index" class="grid-col flex" :class="col.alignmentClasses">
+      <div v-for="(col,index) in props.cols" :key="index" class="flex" :class="col.alignmentClasses"
+      :style="`grid-column:${col.col} / span ${col.colSpan ?? 0}; grid-row:${col.row} / span ${col.rowSpan ?? 0};`">
         <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex w-full px-1.5" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
           <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
         </a>
@@ -163,6 +181,7 @@
 <style scoped>
   .os-grid-cols-auto{
     grid-template-columns: v-bind('colWidthsStyle');
+    grid-template-rows: v-bind('rowWidthsStyle');
   }
   @media(max-width:767px){
     .os-grid-cols-auto{
