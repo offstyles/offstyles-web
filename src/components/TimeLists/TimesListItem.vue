@@ -5,7 +5,7 @@
   import { computed, ref } from 'vue';
   import TimesListItemContent from './TimesListItemContent.vue';
   import TimesListItemMoreDetails from './TimesListItemMoreDetails.vue';
-  import ModerationModal from './Moderation/ModerationModal.vue';
+  import ModerationModal from '../Moderation/ModerationModal.vue';
   import { useModerationStore, type ModerationTarget } from '@/stores/moderation';
   
   const props = defineProps<{

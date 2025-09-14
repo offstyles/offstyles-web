@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import TimesList from './TimesList.vue';
+  import TimesList from './TimeLists/TimesList.vue';
   import dateTimeFormats from '@/utils/dateTimeFormats';
   import timeLinks from '@/utils/timeLinks';
   import type { Time } from '@/types/Time';
@@ -8,7 +8,7 @@
   import { Style } from "@/types/Style";
   import urlParams from '@/utils/urlParams';
   import { useRouter } from 'vue-router';
-  import TimesListPagination from './TimesListPagination.vue';
+  import TimesListPagination from './TimeLists/TimesListPagination.vue';
   const router = useRouter();
 
   const emit = defineEmits(['updateMap']);

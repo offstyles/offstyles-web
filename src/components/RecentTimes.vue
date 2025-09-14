@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import TimesList from './TimesList.vue';
+  import TimesList from './TimeLists/TimesList.vue';
   import dateTimeFormats from '@/utils/dateTimeFormats';
   import timeLinks from '@/utils/timeLinks';
   import type { Time } from '@/types/Time';
@@ -10,7 +10,7 @@
   import urlParams from '@/utils/urlParams';
   import { useRouter } from 'vue-router';
   import CheckboxInput from './CheckboxInput.vue';
-  import TimesListPagination from './TimesListPagination.vue';
+  import TimesListPagination from './TimeLists/TimesListPagination.vue';
   import { ref, computed } from 'vue';
   import type { Ref } from 'vue';
 

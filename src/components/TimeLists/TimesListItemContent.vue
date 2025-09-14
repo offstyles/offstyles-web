@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import type { Time } from '@/types/Time';
   import dateTimeFormats from '@/utils/dateTimeFormats';
-  import RelativeDate from './RelativeDate.vue';
+  import RelativeDate from '../RelativeDate.vue';
   import type { TimeListColumn } from '@/types/TimeListColumn';
-  import ValidityIndicator from './ValidityIndicator.vue';
+  import ValidityIndicator from '../ValidityIndicator.vue';
   import { computed } from 'vue';
   import { useRoute } from 'vue-router';
   
