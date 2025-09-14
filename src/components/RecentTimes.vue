@@ -68,8 +68,9 @@
         colSpan:1,
         row:1,
         rowSpan:2,
-        width: '25%',
-        alignmentClasses: 'text-right justify-end monospace',
+        width: '30%',
+        classes: 'monospace',
+        alignmentClasses: 'text-right justify-end lg:text-left lg:justify-start lg:ml-12',
         numFormat: dateTimeFormats.time
       },
       {
@@ -79,7 +80,7 @@
         colSpan:1,
         row:1,
         rowSpan:1,
-        width: '20%',
+        width: '15%',
         classes: '',
         alignmentClasses: 'text-right justify-end',
         numFormat: styleFormat.name
