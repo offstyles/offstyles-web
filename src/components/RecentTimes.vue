@@ -77,7 +77,7 @@
         width: '30%',
         widthMobile: '20%',
         classes: 'monospace',
-        alignmentClasses: 'text-right justify-end lg:text-left lg:justify-start lg:ml-12',
+        alignmentClasses: 'text-right justify-end lg:text-left lg:justify-start lg:ml-16',
         numFormat: dateTimeFormats.time
       },
       {
