@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type { TimeListColumn } from '@/types/TimeListColumn';
+  import TimesListHeadingColumn from './TimesListHeadingColumn.vue';
   import { computed } from 'vue';
   const props = defineProps<{
       cols: TimeListColumn[]
@@ -26,6 +27,10 @@
     return Math.max(...props.cols.map((v)=>{return v.rowMobile && v.rowSpanMobile ? v.rowMobile+v.rowSpanMobile : 1}));
   })
 
+  const firstRowCols = computed(()=>{
+    return props.cols.filter((v)=>v.row === undefined || v.row === 1);
+  })
+  
   const colWidthsStyleMobile = computed(()=>{
     return props.cols.filter((v)=>(v.rowMobile === undefined || v.rowMobile === 1)) //only first row
     .sort((a,b)=>(a.colMobile ?? 1) - (b.colMobile ?? 1)) //sort into correct col order
@@ -34,17 +39,13 @@
 
   const rowWidthsStyleMobile = computed(()=>{
     return totalRowsMobile.value > 1 ? '1fr 0.5fr' : '1fr'; 
-  })
-
+  });
 </script>
 
 
 <template>
   <div class="grid os-grid-cols-auto px-1 bg-main-900 fw-700 text-xs pt-1.5 pb-2 text-gray-200 items-center">
-    <div v-for="(col,index) in props.cols" :key="index" class="px-1.5" 
-    :style="`grid-column:${col.col} / span ${col.colSpan ?? 1}; grid-row:${col.row ?? 1} / span ${col.rowSpan ?? 1};`">
-      <div v-if="!(col.row && col.row>1)" :class="`${col.alignmentClasses} ${col.row && col.row > 1 ? 'text-gray-500 leading-[1.17em]' : ''}`">{{ col.label }}</div>
-    </div>
+    <TimesListHeadingColumn v-for="(col,index) in firstRowCols" :col="col" :key="index"></TimesListHeadingColumn>
   </div>
 </template>
 
