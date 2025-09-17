@@ -43,6 +43,8 @@
       placement: true,
       width:'25%',
       col:1,
+      colMobile:1,
+      widthMobile:'40%',
       alignmentClasses: 'text-left',
       link: timeLinks.playerLink
     }, 
@@ -51,23 +53,31 @@
       data: 'server',
       width: '30%',
       col:2,
+      colMobile:1,
+      rowMobile:2,
       classes: 'text-sm text-gray-400',
       alignmentClasses: 'text-left text-gray-300'
-    },
-    {
-      label: 'Date',
-      data: 'date',
-      width:'15%',
-      col:3,
-      alignmentClasses: 'text-right justify-end',
     },
     {
       label: 'Time',
       data: 'time',
       width: '30%',
-      col:4,
+      col:3,
+      colMobile:2,
+      colSpanMobile:2,
+      rowMobile:1,
+      widthMobile:'20%',
       alignmentClasses: 'text-right justify-end monospace',
       numFormat: dateTimeFormats.time
+    },
+    {
+      label: 'Date',
+      data: 'date',
+      width:'15%',
+      col:4,
+      colMobile:3,
+      rowMobile:2,
+      alignmentClasses: 'text-right justify-end',
     }]"
     @refresh-data="() => emit('updateMap', props.mapName)"
     ></TimesList>

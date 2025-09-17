@@ -13,7 +13,6 @@
       time: Time,
       wrTime: Time | undefined,
       col: TimeListColumn,
-      key: number | string,
     }>();
     
     const data = computed(()=>{
@@ -39,18 +38,18 @@
 
 
 <template>
-  <div class="flex time-grid-col" :class="`${col.alignmentClasses}`">
+  <div class="flex time-grid-col px-1.5" :class="`${col.alignmentClasses}`">
     <span v-if="props.col.placement" class="inline-flex items-center justify-end text-end mr-1.5 min-w-5 text-sm text-gray-400">{{ props.time.rank }}.</span>
-    <div class="flex items-center gap-1.5 w-full min-w-0">
+    <div class="flex items-center gap-1.5 max-w-full min-w-0">
       <template v-if="props.col.data === 'date'">
-        <RelativeDate :date="(data ?? '') as string | number | Date" class="truncate group-hover/timeLink:underline flex-1" />
+        <RelativeDate :date="(data ?? '') as string | number | Date" class="truncate group-hover/timeLink:underline flex-1" :class="`${col.classes}`" />
       </template>
       <template v-else>
-        <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex max-w-full px-1.5" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
+        <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex max-w-full" @click.stop :class="`${col.classes}`">
           <span class="truncate group-hover/timeLink:underline flex-1">{{ data }}</span>
         </a>
-        <div v-else class="flex max-w-full px-1.5" :class="col.classes">
-          <span class="truncate group-hover/timeLink:underline flex-1">{{ data }}</span>
+        <div v-else class="max-w-full" :class="`${col.classes}`">
+          <span class="truncate group-hover/timeLink:underline flex-1 max-w-full block">{{ data }}</span>
         </div>
       </template>
       <!-- Show validity indicator for time column only in player lookup context -->
@@ -67,7 +66,7 @@
       props.time.time - wrTime < 0 ? 'text-green-600 opacity-80' : 
     'text-gray-500'
     "
-    class="ml-1 flex items-center"> 
+    class="ml-1 flex items-center monospace text-xs"> 
       ({{ props.time.time - wrTime > 0 ? '+' : '-' }}{{ dateTimeFormats.time(Math.abs(props.time.time - wrTime)) }})
     </span>
   </div>
@@ -80,5 +79,11 @@
 .time-grid-col{
   grid-column: v-bind('`${col.col} / span ${col.colSpan ?? 1}`');
   grid-row: v-bind('`${col.row ?? 1} / span ${col.rowSpan ?? 1}`')
+}
+@media (max-width:767px) {
+  .time-grid-col{
+    grid-column: v-bind('`${col.colMobile ?? 1} / span ${col.colSpanMobile ?? 1}`');
+    grid-row: v-bind('`${col.rowMobile ?? 1} / span ${col.rowSpanMobile ?? 1}`')
+  }
 }
 </style>

@@ -5,7 +5,7 @@
       cols: TimeListColumn[]
     }>();
 
-    const totalCols = computed(()=>{
+  const totalCols = computed(()=>{
     return Math.max(...props.cols.map((v)=>{return v.col && v.colSpan ? v.col+v.colSpan : 1}));
   })
   const totalRows = computed(()=>{
@@ -21,13 +21,28 @@
   const rowWidthsStyle = computed(()=>{
     return '1fr'; 
   })
+
+    const totalRowsMobile = computed(()=>{
+    return Math.max(...props.cols.map((v)=>{return v.rowMobile && v.rowSpanMobile ? v.rowMobile+v.rowSpanMobile : 1}));
+  })
+
+  const colWidthsStyleMobile = computed(()=>{
+    return props.cols.filter((v)=>(v.rowMobile === undefined || v.rowMobile === 1)) //only first row
+    .sort((a,b)=>(a.colMobile ?? 1) - (b.colMobile ?? 1)) //sort into correct col order
+    .map((v)=>v.widthMobile ? v.widthMobile : 'auto').join(' '); //make css
+  })
+
+  const rowWidthsStyleMobile = computed(()=>{
+    return totalRowsMobile.value > 1 ? '1fr 0.5fr' : '1fr'; 
+  })
+
 </script>
 
 
 <template>
   <div class="grid os-grid-cols-auto px-1 bg-main-900 fw-700 text-xs pt-1.5 pb-2 text-gray-200 items-center">
     <div v-for="(col,index) in props.cols" :key="index" class="px-1.5" 
-    :style="`grid-column:${col.col} / span ${col.colSpan ?? 0}; grid-row:${col.row} / span ${col.rowSpan ?? 0};`">
+    :style="`grid-column:${col.col} / span ${col.colSpan ?? 1}; grid-row:${col.row ?? 1} / span ${col.rowSpan ?? 1};`">
       <div v-if="!(col.row && col.row>1)" :class="`${col.alignmentClasses} ${col.row && col.row > 1 ? 'text-gray-500 leading-[1.17em]' : ''}`">{{ col.label }}</div>
     </div>
   </div>
@@ -40,8 +55,8 @@
   }
   @media(max-width:767px){
     .os-grid-cols-auto{
-      grid-template-columns: 40% 60%;
-      grid-template-rows: repeat(2, 1fr);
+      grid-template-columns: v-bind('colWidthsStyleMobile');
+      grid-template-rows: v-bind('rowWidthsStyleMobile');
     }
     .os-grid-cols-auto>.grid-col{
       width:100%;
