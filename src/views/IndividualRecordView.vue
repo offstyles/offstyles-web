@@ -201,9 +201,9 @@
               <span class="font-mono text-green-400">{{ dateTimeFormats.time(record.wr_time) }}</span>
             </div>
 
-            <div v-if="record.server?.server" class="flex justify-between py-3 border-b border-gray-600/30">
+            <div v-if="record.server?.hostname" class="flex justify-between py-3 border-b border-gray-600/30">
               <span class="text-gray-400">Server:</span>
-              <span class="font-mono">{{ record.server.server }}</span>
+              <span class="font-mono">{{ record.server.hostname }}</span>
             </div>
 
             <div class="flex justify-between py-3">
