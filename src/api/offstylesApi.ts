@@ -29,6 +29,37 @@ export interface ServerActivityDocument {
   ips: string[];
 }
 
+export interface ServerActivityOwner {
+  _id: string;
+  steam_id: string;
+  username: string;
+  avatar_url: string;
+}
+
+export interface ServerActivityResponse {
+  _id: string;
+  name: string;
+  servers: ServerInfo[];
+  permissions: number;
+  user: ServerActivityOwner;
+  active: boolean;
+}
+
+export interface ServerDataDocument {
+  _id?: string;
+  name: string;
+  servers: ServerInfo[];
+  user: ServerActivityOwner;
+  permissions?: number;
+  active?: boolean;
+}
+
+export interface ServerInfo {
+  name: string;
+  ip: string;
+  whitelist: boolean;
+}
+
 export interface KeyReturnJson {
   key: string;
 }
@@ -40,7 +71,7 @@ export interface ServerKeyInfo {
 }
 
 class OffstylesApi extends Api {
-  static offstylesApiUrl = import.meta.env.DEV ? '/api' : 'https://offstyles.tommyy.dev/api';
+  static offstylesApiUrl = import.meta.env.DEV ? 'http://127.0.0.1:8000/api' : 'https://offstyles.tommyy.dev/api';
 
   // Fixed method signature to require style parameter
   static async getTimesByMap(mapName: string, style: number = Style.normal, steamid?: string, limit: number = 50, page: number = 1): Promise<RankAwareRecord[]> {
@@ -50,7 +81,7 @@ class OffstylesApi extends Api {
       limit: limit.toString(),
       page: page.toString()
     });
-    
+
     if (steamid) {
       params.append('steamid', steamid);
     }
@@ -70,7 +101,7 @@ class OffstylesApi extends Api {
     if (map) {
       params.append('map', map);
     }
-    
+
     if (style !== undefined && style !== Style.all) {
       params.append('style', style.toString());
     }
@@ -255,7 +286,7 @@ class OffstylesApi extends Api {
   }
 
   // Get moderation logs
-  static async getModerationLogs(id: string): Promise<any> {
+  static async getModerationLogs(id: string): Promise<RecentModAction[]> {
     const params = new URLSearchParams({
       id: id
     });
@@ -278,7 +309,7 @@ class OffstylesApi extends Api {
   }
 
   // Server management methods
-  static async getServers(): Promise<ServerActivityDocument[]> {
+  static async getServers(): Promise<ServerActivityResponse[]> {
     this.url = `${this.offstylesApiUrl}/servers`;
     const result = await this.fetchFromUrl();
     // The API returns an array of arrays, we want to flatten it
@@ -386,7 +417,7 @@ class OffstylesApi extends Api {
 
   static async getRecentModerationLogs(filter?: ModerationTargetFilter): Promise<RecentModAction[]> {
     const params = new URLSearchParams();
-    
+
     if (filter) {
       params.append('filter', filter);
     }
@@ -436,6 +467,136 @@ class OffstylesApi extends Api {
     }
 
     return await response.text();
+  }
+
+  // New server management methods
+  static async addServerSubserver(targetId: string, servers: ServerInfo[]): Promise<ServerInfo[]> {
+    const params = new URLSearchParams({
+      target: targetId
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/servers/subservers/add?${params.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(servers),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
+  }
+
+  static async removeServerSubserver(targetId: string, servers: ServerInfo[]): Promise<ServerInfo[]> {
+    const params = new URLSearchParams({
+      target: targetId
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/servers/subservers/remove?${params.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(servers),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
+  }
+
+  static async updateServerSubservers(targetId: string, servers: ServerInfo[]): Promise<ServerInfo[]> {
+    const params = new URLSearchParams({
+      target: targetId
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/servers/subservers/update?${params.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(servers),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
+  }
+
+  static async updateServerName(targetId: string, name: string): Promise<ServerDataDocument> {
+    const params = new URLSearchParams({
+      target: targetId,
+      name: name
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/servers/name?${params.toString()}`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
+  }
+
+  static async updateServerOwner(targetId: string, ownerSteamId: string): Promise<ServerDataDocument> {
+    const params = new URLSearchParams({
+      target: targetId,
+      owner: ownerSteamId
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/servers/owner?${params.toString()}`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    return await response.json();
   }
 }
 
