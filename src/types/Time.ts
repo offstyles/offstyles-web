@@ -1,7 +1,6 @@
 export interface RecordHeaders {
-  ip: string;
-  server: string;
-  internal_server_id: string;
+  hostname: string;
+  key_id: string;
 }
 
 export interface Time {
