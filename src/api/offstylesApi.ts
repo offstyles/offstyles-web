@@ -318,6 +318,54 @@ class OffstylesApi extends Api {
     return Array.isArray(result) && Array.isArray(result[0]) ? result[0] : result;
   }
 
+  static async createServer(
+    name: string,
+    owner: string | undefined,
+    servers: ServerInfo[],
+    permissions?: number
+  ): Promise<ServerDataDocument> {
+    const params = new URLSearchParams();
+
+    if (permissions !== undefined) {
+      params.append('permissions', permissions.toString());
+    }
+
+    const serverData = {
+      name: name,
+      owner: owner || null,
+      servers: servers
+    };
+
+    const response = await fetch(`${this.offstylesApiUrl}/admin/create_key?${params.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(serverData),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+
+    // The API returns the created key info
+    await response.json();
+
+    // Return a basic server document structure
+    return {
+      name: name,
+      servers: servers,
+      permissions: permissions || 0
+    };
+  }
+
   // Admin methods (require admin permissions)
   static async createApiKey(server: string, permissions?: number): Promise<KeyReturnJson> {
     const params = new URLSearchParams({
