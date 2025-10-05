@@ -250,8 +250,8 @@
             >
               <div class="flex items-center justify-between">
                 <div class="flex-1">
-                  <div class="flex items-center mb-2">
-                    <h4 class="text-base font-medium text-gray-100 mr-3">{{ server.name }}</h4>
+                  <div class="flex items-center mb-2 flex-wrap gap-2">
+                    <h4 class="text-base font-medium text-gray-100">{{ server.name }}</h4>
                     <span
                       :class="[
                         'px-2 py-1 text-xs font-medium rounded-full',
@@ -261,6 +261,20 @@
                       ]"
                     >
                       {{ server.whitelist ? 'Whitelist' : 'Public' }}
+                    </span>
+                    <span
+                      v-if="server.password"
+                      class="px-2 py-1 text-xs font-medium rounded-full bg-orange-900 text-orange-400"
+                      title="Password Protected"
+                    >
+                      Password
+                    </span>
+                    <span
+                      v-if="server.vac_secure"
+                      class="px-2 py-1 text-xs font-medium rounded-full bg-blue-900 text-blue-400"
+                      title="VAC Secure"
+                    >
+                      VAC
                     </span>
                   </div>
                   <div class="flex items-center">
@@ -340,15 +354,43 @@
           </div>
 
           <div class="mb-6">
-            <label class="flex items-center">
-              <input
-                v-model="serverForm.whitelist"
-                type="checkbox"
-                class="rounded border-main-600 text-green-500 bg-main-900 focus:outline-none focus:ring-0"
-              />
-              <span class="ml-2 text-sm text-gray-200">Whitelist Only</span>
-            </label>
-            <p class="text-xs text-gray-400 mt-1">If enabled, only whitelisted players can access this server</p>
+            <div class="space-y-3">
+              <div>
+                <label class="flex items-center">
+                  <input
+                    v-model="serverForm.whitelist"
+                    type="checkbox"
+                    class="rounded border-main-600 text-green-500 bg-main-900 focus:outline-none focus:ring-0"
+                  />
+                  <span class="ml-2 text-sm text-gray-200">Whitelist Only</span>
+                </label>
+                <p class="text-xs text-gray-400 mt-1 ml-6">If enabled, only whitelisted players can access this server</p>
+              </div>
+
+              <div>
+                <label class="flex items-center">
+                  <input
+                    v-model="serverForm.password"
+                    type="checkbox"
+                    class="rounded border-main-600 text-green-500 bg-main-900 focus:outline-none focus:ring-0"
+                  />
+                  <span class="ml-2 text-sm text-gray-200">Password Protected</span>
+                </label>
+                <p class="text-xs text-gray-400 mt-1 ml-6">Server requires a password to join</p>
+              </div>
+
+              <div>
+                <label class="flex items-center">
+                  <input
+                    v-model="serverForm.vac_secure"
+                    type="checkbox"
+                    class="rounded border-main-600 text-green-500 bg-main-900 focus:outline-none focus:ring-0"
+                  />
+                  <span class="ml-2 text-sm text-gray-200">VAC Secure</span>
+                </label>
+                <p class="text-xs text-gray-400 mt-1 ml-6">Server has Valve Anti-Cheat enabled</p>
+              </div>
+            </div>
           </div>
 
           <div class="flex justify-end space-x-3">
@@ -451,7 +493,7 @@ const { user } = useAuth();
 const canEdit = computed(() => {
   if (!user.value) return false;
   // Check if user is the owner or has admin permissions
-  return user.value.steam_id === props.server.user.steam_id || user.value.permissions > 0;
+  return (props.server.user && user.value.steam_id === props.server.user.steam_id) || user.value.permissions > 0;
 });
 
 // Check if user has admin permissions for API key management
@@ -460,7 +502,7 @@ const canManageKeys = computed(() => {
 });
 
 // Reactive data
-const localServers = ref<ServerInfo[]>([...(props.server.servers || [])]);
+const localServers = ref<ServerInfo[]>(Array.isArray(props.server.servers) ? [...props.server.servers] : []);
 const editing = ref({
   name: false,
   owner: false
@@ -483,7 +525,9 @@ const editingServerIndex = ref(-1);
 const serverForm = ref({
   name: '',
   ip: '',
-  whitelist: false
+  whitelist: false,
+  password: false,
+  vac_secure: false
 });
 
 // Toast state
@@ -508,9 +552,11 @@ const editKeyForm = ref({
 
 // Watch for server prop changes
 watch(() => props.server, (newServer) => {
-  localServers.value = [...(newServer.servers || [])];
-  editForm.value.name = newServer.name;
-  editForm.value.owner = newServer.user?.steam_id || '';
+  if (newServer) {
+    localServers.value = Array.isArray(newServer.servers) ? [...newServer.servers] : [];
+    editForm.value.name = newServer.name || '';
+    editForm.value.owner = newServer.user?.steam_id || '';
+  }
 }, { deep: true });
 
 // Methods
@@ -570,7 +616,9 @@ const addServer = () => {
   serverForm.value = {
     name: '',
     ip: '',
-    whitelist: false
+    whitelist: false,
+    password: false,
+    vac_secure: false
   };
   showServerModal.value = true;
 };
@@ -581,7 +629,9 @@ const editServer = (index: number) => {
   serverForm.value = {
     name: server.name,
     ip: server.ip,
-    whitelist: server.whitelist
+    whitelist: server.whitelist,
+    password: server.password,
+    vac_secure: server.vac_secure
   };
   showServerModal.value = true;
 };
@@ -592,7 +642,9 @@ const closeServerModal = () => {
   serverForm.value = {
     name: '',
     ip: '',
-    whitelist: false
+    whitelist: false,
+    password: false,
+    vac_secure: false
   };
 };
 

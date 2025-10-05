@@ -48,8 +48,8 @@ export interface ServerActivityResponse {
 export interface ServerDataDocument {
   _id?: string;
   name: string;
-  servers: ServerInfo[];
-  user: ServerActivityOwner;
+  servers?: ServerInfo[];
+  user?: ServerActivityOwner;
   permissions?: number;
   active?: boolean;
 }
@@ -58,6 +58,8 @@ export interface ServerInfo {
   name: string;
   ip: string;
   whitelist: boolean;
+  password: boolean;
+  vac_secure: boolean;
 }
 
 export interface KeyReturnJson {
