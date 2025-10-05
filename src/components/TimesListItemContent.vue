@@ -17,7 +17,7 @@
     
     const data = computed(()=>{
       if(props.col.data === "server"){
-        return props.time.server?.server || '';
+        return props.time.server?.hostname || '';
       }
       if(props.col.data === 'date') {
         return props.time[props.col.data];
