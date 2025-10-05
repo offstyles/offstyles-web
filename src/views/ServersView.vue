@@ -57,6 +57,18 @@
                 </p>
               </div>
               <div class="flex items-center space-x-3">
+                <!-- Create Server Button (only show for users with MANAGE_API_KEYS permission) -->
+                <button
+                  v-if="canCreateServer"
+                  @click="openCreateServerModal"
+                  class="px-3 py-2 text-sm font-medium text-gray-100 bg-green-700 hover:bg-green-600 rounded-md transition-colors cursor-pointer flex items-center"
+                  title="Create a new server with API key (Requires admin permissions)"
+                >
+                  <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                  </svg>
+                  Create Server
+                </button>
                 <button
                   @click="loadServers"
                   :disabled="loading"
@@ -199,6 +211,14 @@
       @close="closeServerModal"
       @updated="onServerUpdated"
     />
+
+    <!-- Create Server Modal -->
+    <CreateServerModal
+      v-if="showCreateServerModal"
+      :show="showCreateServerModal"
+      @close="closeCreateServerModal"
+      @created="onServerCreated"
+    />
   </main>
 </template>
 
@@ -207,8 +227,10 @@ import { ref, onMounted, computed } from 'vue';
 import OffstylesApi from '@/api/offstylesApi';
 import type { ServerDataDocument, ServerActivityResponse } from '@/api/offstylesApi';
 import { useAuth } from '@/stores/auth';
+import { canManageApiKeys } from '@/utils/userPermissions';
 import Toast from '@/components/Toast.vue';
 import ServerModal from '@/components/ServerModal.vue';
+import CreateServerModal from '@/components/CreateServerModal.vue';
 import loadWheel from '@/components/icons/loadWheel.vue';
 
 // Auth
@@ -220,6 +242,12 @@ const canEditServer = (server: ServerActivityResponse) => {
   return user.value.steam_id === server.user.steam_id || user.value.permissions > 0;
 };
 
+// Check if user can create servers (requires MANAGE_API_KEYS permission)
+const canCreateServer = computed(() => {
+  if (!user.value) return false;
+  return canManageApiKeys(user.value.permissions);
+});
+
 // Data
 const servers = ref<ServerActivityResponse[]>([]);
 const loading = ref(true);
@@ -228,6 +256,7 @@ const error = ref<string | null>(null);
 // Modal state
 const showServerModal = ref(false);
 const selectedServer = ref<ServerDataDocument | null>(null);
+const showCreateServerModal = ref(false);
 
 // Computed properties for server statistics
 const activeServers = computed(() => servers.value.filter((s: ServerActivityResponse) => s.active === true));
@@ -316,9 +345,9 @@ const closeServerModal = () => {
 const onServerUpdated = (updatedServer: ServerDataDocument) => {
   // Find and update the server in the list
   const index = servers.value.findIndex(s => s._id === updatedServer._id);
-  if (index !== -1 && updatedServer._id) {
+  if (index !== -1 && updatedServer._id && updatedServer.user && updatedServer.servers) {
     // Convert ServerDataDocument back to ServerActivityResponse format
-    servers.value[index] = {
+    const response: ServerActivityResponse = {
       _id: updatedServer._id,
       name: updatedServer.name,
       servers: updatedServer.servers,
@@ -326,8 +355,25 @@ const onServerUpdated = (updatedServer: ServerDataDocument) => {
       permissions: updatedServer.permissions || 0,
       active: updatedServer.active || false
     };
+    servers.value[index] = response;
   }
   selectedServer.value = updatedServer;
+};
+
+// Create Server Modal methods
+const openCreateServerModal = () => {
+  showCreateServerModal.value = true;
+};
+
+const closeCreateServerModal = () => {
+  showCreateServerModal.value = false;
+};
+
+const onServerCreated = (newServer: ServerDataDocument) => {
+  showToastMessage('success', 'Server Created!', `${newServer.name} has been created successfully. You can now add sub-servers.`);
+  closeCreateServerModal();
+  // Reload servers to get the new server from the API
+  loadServers();
 };
 
 // Lifecycle
