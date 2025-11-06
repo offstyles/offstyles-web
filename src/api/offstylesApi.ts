@@ -323,7 +323,7 @@ class OffstylesApi extends Api {
     owner: string | undefined,
     servers: ServerInfo[],
     permissions?: number
-  ): Promise<ServerDataDocument> {
+  ): Promise<KeyReturnJson> {
     const params = new URLSearchParams();
 
     if (permissions !== undefined) {
@@ -355,15 +355,8 @@ class OffstylesApi extends Api {
       }
     }
 
-    // The API returns the created key info
-    await response.json();
-
-    // Return a basic server document structure
-    return {
-      name: name,
-      servers: servers,
-      permissions: permissions || 0
-    };
+    // The API returns the created key info as KeyReturnJson
+    return await response.json();
   }
 
   // Admin methods (require admin permissions)

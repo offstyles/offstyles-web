@@ -1,6 +1,6 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeModal">
-    <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-[500px] max-w-[90vw] mx-4 relative" @click.stop>
+    <div class="bg-main-800 border border-main-400 rounded-lg shadow-lg w-[600px] max-w-[90vw] mx-4 relative" @click.stop>
       <!-- Close X Button -->
       <button
         @click="closeModal"
@@ -15,12 +15,12 @@
       <div class="overflow-y-auto max-h-[90vh]">
         <!-- Header -->
         <div class="px-6 py-4 bg-main-900 border-b border-main-600">
-          <h2 class="text-xl font-semibold text-gray-100 pr-8">Create New Server</h2>
-          <p class="text-sm text-gray-400 mt-1">Create a new server with an API key to manage sub-servers</p>
+          <h2 class="text-xl font-semibold text-gray-100 pr-8">Create New API Key</h2>
+          <p class="text-sm text-gray-400 mt-1">Create a new API key with server configuration</p>
         </div>
 
         <!-- Form -->
-        <form @submit.prevent="createServer" class="px-6 py-4">
+        <form @submit.prevent="createApiKey" class="px-6 py-4">
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-300 mb-2">
               Server Name <span class="text-red-400">*</span>
@@ -167,14 +167,41 @@
             <p class="text-xs text-gray-400 mt-2">Select what actions this server's API key can perform</p>
           </div>
 
+          <!-- Success Message with API Key -->
+          <div v-if="successMessage && apiKey" class="mb-4 p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
+            <p class="text-sm text-green-300 font-semibold mb-3">{{ successMessage }}</p>
+
+            <div class="mb-3">
+              <label class="block text-xs font-medium text-gray-300 mb-1">API Key:</label>
+              <div class="relative">
+                <div
+                  @click="copyApiKey"
+                  class="w-full px-3 py-2 bg-main-900 border border-green-600 rounded-md cursor-pointer hover:bg-main-800 transition-colors group"
+                  title="Click to copy API key"
+                >
+                  <code class="text-sm text-gray-100 monospace break-all">{{ apiKey }}</code>
+                </div>
+                <button
+                  type="button"
+                  @click="copyApiKey"
+                  class="absolute top-2 right-2 px-2 py-1 text-xs bg-green-700 hover:bg-green-600 text-gray-100 rounded transition-colors"
+                >
+                  <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <p class="text-xs text-yellow-300 mt-2">
+              ⚠️ <strong>Important:</strong> Save this API key now! You won't be able to see it again in plain text. You can view it in the server details later, but it will be hidden.
+            </p>
+          </div>
+
           <!-- Error Message -->
           <div v-if="errorMessage" class="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
             <p class="text-sm text-red-300">{{ errorMessage }}</p>
-          </div>
-
-          <!-- Success Message -->
-          <div v-if="successMessage" class="mb-4 p-3 bg-green-900/20 border border-green-500/30 rounded-lg">
-            <p class="text-sm text-green-300">{{ successMessage }}</p>
           </div>
 
           <!-- Actions -->
@@ -184,14 +211,15 @@
               @click="closeModal"
               class="px-4 py-2 text-sm font-medium text-gray-100 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors"
             >
-              Cancel
+              {{ successMessage ? 'Close' : 'Cancel' }}
             </button>
             <button
+              v-if="!successMessage"
               type="submit"
               :disabled="!hasPermission || isCreating || !serverName.trim()"
               class="px-4 py-2 text-sm font-medium text-gray-100 bg-green-700 hover:bg-green-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ isCreating ? 'Creating...' : 'Create Server' }}
+              {{ isCreating ? 'Creating...' : 'Create API Key' }}
             </button>
           </div>
         </form>
@@ -203,9 +231,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import OffstylesApi from '@/api/offstylesApi';
-import type { ServerDataDocument, ServerInfo } from '@/api/offstylesApi';
+import type { ServerInfo } from '@/api/offstylesApi';
 import { useAuth } from '@/stores/auth';
 import { canManageApiKeys } from '@/utils/userPermissions';
+import { KeyPermissions, addPermission } from '@/utils/permissions';
 
 // Props
 interface Props {
@@ -217,7 +246,7 @@ defineProps<Props>();
 // Emits
 interface Emits {
   (e: 'close'): void;
-  (e: 'created', server: ServerDataDocument): void;
+  (e: 'created'): void;
 }
 
 const emit = defineEmits<Emits>();
@@ -242,11 +271,12 @@ const permissions = ref({
 const isCreating = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+const apiKey = ref('');
 
 // Check permissions on mount
 onMounted(() => {
   if (!hasPermission.value) {
-    errorMessage.value = 'You do not have permission to create servers. Contact an administrator.';
+    errorMessage.value = 'You do not have permission to create API keys. Contact an administrator.';
   }
 });
 
@@ -257,8 +287,12 @@ const closeModal = () => {
 
 const calculatePermissions = (): number => {
   let perms = 0;
-  if (permissions.value.submitTimes) perms |= 1; // Submit times permission
-  if (permissions.value.submitBulk) perms |= 2; // Submit bulk permission
+  if (permissions.value.submitTimes) {
+    perms = addPermission(perms, KeyPermissions.SUBMIT_TIMES);
+  }
+  if (permissions.value.submitBulk) {
+    perms = addPermission(perms, KeyPermissions.SUBMIT_BULK);
+  }
   return perms;
 };
 
@@ -276,34 +310,52 @@ const removeSubServer = (index: number) => {
   subServers.value.splice(index, 1);
 };
 
-const createServer = async () => {
+const copyApiKey = async () => {
+  if (apiKey.value) {
+    try {
+      await navigator.clipboard.writeText(apiKey.value);
+    } catch (err) {
+      console.error('Failed to copy API key to clipboard:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = apiKey.value;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    }
+  }
+};
+
+const createApiKey = async () => {
   if (!serverName.value.trim()) return;
 
   try {
     isCreating.value = true;
     errorMessage.value = '';
     successMessage.value = '';
+    apiKey.value = '';
 
     const permissionValue = calculatePermissions();
     const owner = ownerSteamId.value.trim() || undefined;
 
-    const newServer = await OffstylesApi.createServer(
+    const result = await OffstylesApi.createServer(
       serverName.value.trim(),
       owner,
       subServers.value,
       permissionValue
     );
 
-    successMessage.value = 'Server created successfully!';
+    apiKey.value = result.key;
+    successMessage.value = 'API key created successfully!';
 
-    // Emit the created server and close after a short delay
-    setTimeout(() => {
-      emit('created', newServer);
-      emit('close');
-    }, 1000);
+    // Emit the created event to refresh the server list
+    emit('created');
+
+    // Don't close automatically - let user copy the key first
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'Failed to create server';
-    console.error('Failed to create server:', error);
+    errorMessage.value = error instanceof Error ? error.message : 'Failed to create API key';
+    console.error('Failed to create API key:', error);
   } finally {
     isCreating.value = false;
   }
