@@ -57,6 +57,18 @@
                 </p>
               </div>
               <div class="flex items-center space-x-3">
+                <!-- Create API Key Button (only show for users with MANAGE_API_KEYS permission) -->
+                <button
+                  v-if="canCreateServer"
+                  @click="openCreateApiKeyModal"
+                  class="px-3 py-2 text-sm font-medium text-gray-100 bg-green-700 hover:bg-green-600 rounded-md transition-colors cursor-pointer flex items-center"
+                  title="Create a new API key (Requires admin permissions)"
+                >
+                  <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                  </svg>
+                  Create API Key
+                </button>
                 <button
                   @click="loadServers"
                   :disabled="loading"
@@ -137,18 +149,31 @@
                   </div>
                 </div>
 
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2">
                   <!-- Edit Server Button (shown on hover for server owners) -->
                   <button
                     v-if="canEditServer(server)"
                     @click.stop="openServerModal(server)"
-                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-blue-700 hover:bg-blue-600 border border-blue-500 hover:border-blue-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer mr-3 min-w-24"
+                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-blue-700 hover:bg-blue-600 border border-blue-500 hover:border-blue-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer min-w-24"
                     title="Edit server details"
                   >
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
                     </svg>
                     Edit Server
+                  </button>
+
+                  <!-- Delete Server Button (shown on hover for server owners) -->
+                  <button
+                    v-if="canEditServer(server)"
+                    @click.stop="confirmDeleteServer(server)"
+                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-3 py-1.5 text-xs font-medium text-gray-300 bg-red-700 hover:bg-red-600 border border-red-500 hover:border-red-400 rounded-md hover:text-gray-100 transition-colors cursor-pointer min-w-24"
+                    title="Delete API key and server"
+                  >
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Delete
                   </button>
 
                   <span
@@ -199,6 +224,66 @@
       @close="closeServerModal"
       @updated="onServerUpdated"
     />
+
+    <!-- Create API Key Modal -->
+    <CreateApiKeyModal
+      v-if="showCreateApiKeyModal"
+      :show="showCreateApiKeyModal"
+      @close="closeCreateApiKeyModal"
+      @created="onApiKeyCreated"
+    />
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteConfirmModal && serverToDelete" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="cancelDeleteServer">
+      <div class="bg-main-800 border border-red-400 rounded-lg shadow-lg p-6 w-[500px] max-w-[90vw] mx-4 relative" @click.stop>
+        <!-- Close X Button -->
+        <button
+          @click="cancelDeleteServer"
+          class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"
+          title="Close"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <h3 class="text-lg font-semibold mb-4 text-red-400">⚠️ Delete API Key</h3>
+        <div class="mb-4">
+          <p class="text-sm text-gray-300 mb-2">
+            Are you sure you want to delete the API key for
+            <span class="font-semibold text-gray-100">{{ serverToDelete.name }}</span>?
+          </p>
+          <p class="text-xs text-red-400 mb-2">
+            This action cannot be undone. The server will lose access immediately and all associated data will be removed.
+          </p>
+          <div v-if="serverToDelete.servers && serverToDelete.servers.length > 0" class="mt-3 p-3 bg-main-900 rounded-md border border-main-600">
+            <p class="text-xs text-gray-400 mb-2">This will affect the following servers:</p>
+            <ul class="text-xs text-gray-300 space-y-1">
+              <li v-for="subserver in serverToDelete.servers" :key="subserver.ip" class="monospace">
+                • {{ subserver.name }} ({{ subserver.ip }})
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-3">
+          <button
+            type="button"
+            @click="cancelDeleteServer"
+            class="px-4 py-2 text-sm font-medium text-gray-100 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            @click="executeDeleteServer"
+            :disabled="isDeletingServer"
+            class="px-4 py-2 text-sm font-medium text-gray-100 bg-red-700 hover:bg-red-600 rounded-md transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {{ isDeletingServer ? 'Deleting...' : 'Yes, Delete API Key' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -207,8 +292,10 @@ import { ref, onMounted, computed } from 'vue';
 import OffstylesApi from '@/api/offstylesApi';
 import type { ServerDataDocument, ServerActivityResponse } from '@/api/offstylesApi';
 import { useAuth } from '@/stores/auth';
+import { canManageApiKeys } from '@/utils/userPermissions';
 import Toast from '@/components/Toast.vue';
 import ServerModal from '@/components/ServerModal.vue';
+import CreateApiKeyModal from '@/components/CreateApiKeyModal.vue';
 import loadWheel from '@/components/icons/loadWheel.vue';
 
 // Auth
@@ -220,6 +307,12 @@ const canEditServer = (server: ServerActivityResponse) => {
   return user.value.steam_id === server.user.steam_id || user.value.permissions > 0;
 };
 
+// Check if user can create servers (requires MANAGE_API_KEYS permission)
+const canCreateServer = computed(() => {
+  if (!user.value) return false;
+  return canManageApiKeys(user.value.permissions);
+});
+
 // Data
 const servers = ref<ServerActivityResponse[]>([]);
 const loading = ref(true);
@@ -228,6 +321,10 @@ const error = ref<string | null>(null);
 // Modal state
 const showServerModal = ref(false);
 const selectedServer = ref<ServerDataDocument | null>(null);
+const showCreateApiKeyModal = ref(false);
+const showDeleteConfirmModal = ref(false);
+const serverToDelete = ref<ServerActivityResponse | null>(null);
+const isDeletingServer = ref(false);
 
 // Computed properties for server statistics
 const activeServers = computed(() => servers.value.filter((s: ServerActivityResponse) => s.active === true));
@@ -316,9 +413,9 @@ const closeServerModal = () => {
 const onServerUpdated = (updatedServer: ServerDataDocument) => {
   // Find and update the server in the list
   const index = servers.value.findIndex(s => s._id === updatedServer._id);
-  if (index !== -1 && updatedServer._id) {
+  if (index !== -1 && updatedServer._id && updatedServer.user && updatedServer.servers) {
     // Convert ServerDataDocument back to ServerActivityResponse format
-    servers.value[index] = {
+    const response: ServerActivityResponse = {
       _id: updatedServer._id,
       name: updatedServer.name,
       servers: updatedServer.servers,
@@ -326,8 +423,60 @@ const onServerUpdated = (updatedServer: ServerDataDocument) => {
       permissions: updatedServer.permissions || 0,
       active: updatedServer.active || false
     };
+    servers.value[index] = response;
   }
   selectedServer.value = updatedServer;
+};
+
+// Create API Key Modal methods
+const openCreateApiKeyModal = () => {
+  showCreateApiKeyModal.value = true;
+};
+
+const closeCreateApiKeyModal = () => {
+  showCreateApiKeyModal.value = false;
+};
+
+const onApiKeyCreated = () => {
+  // Don't close the modal - let the user copy the API key first
+  // They can close it manually when done
+  // Reload servers to get the new server from the API
+  loadServers();
+};
+
+// Delete Server methods
+const confirmDeleteServer = (server: ServerActivityResponse) => {
+  serverToDelete.value = server;
+  showDeleteConfirmModal.value = true;
+};
+
+const cancelDeleteServer = () => {
+  showDeleteConfirmModal.value = false;
+  serverToDelete.value = null;
+};
+
+const executeDeleteServer = async () => {
+  if (!serverToDelete.value) return;
+
+  try {
+    isDeletingServer.value = true;
+
+    await OffstylesApi.deleteApiKey(serverToDelete.value.name);
+
+    showToastMessage('success', 'API Key Deleted', `API key for ${serverToDelete.value.name} has been deleted successfully.`);
+
+    // Close modal and clear state
+    showDeleteConfirmModal.value = false;
+    serverToDelete.value = null;
+
+    // Reload servers
+    loadServers();
+  } catch (error) {
+    showToastMessage('error', 'Error', error instanceof Error ? error.message : 'Failed to delete API key');
+    console.error('Failed to delete API key:', error);
+  } finally {
+    isDeletingServer.value = false;
+  }
 };
 
 // Lifecycle
