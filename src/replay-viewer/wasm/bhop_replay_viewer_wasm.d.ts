@@ -51,6 +51,14 @@ export class BspMesh {
      * Move vertex data out (avoids clone). Field becomes empty after call.
      */
     vertex_data(): Float32Array;
+    /**
+     * Number of water draw ranges (call before water_draw_data)
+     */
+    water_draw_count(): number;
+    /**
+     * Water draw ranges: same format as model_draw_data but for water faces
+     */
+    water_draw_data(): Int32Array;
 }
 
 export class ReplayData {
@@ -103,6 +111,8 @@ export interface InitOutput {
     readonly bspmesh_texture_atlas_width: (a: number) => number;
     readonly bspmesh_vertex_count: (a: number) => number;
     readonly bspmesh_vertex_data: (a: number) => [number, number];
+    readonly bspmesh_water_draw_count: (a: number) => number;
+    readonly bspmesh_water_draw_data: (a: number) => [number, number];
     readonly parse_bsp: (a: number, b: number) => [number, number, number];
     readonly __wbg_replaydata_free: (a: number, b: number) => void;
     readonly parse_replay: (a: number, b: number) => [number, number, number];

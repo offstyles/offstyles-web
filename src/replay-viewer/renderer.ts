@@ -41,6 +41,7 @@ uniform sampler2D uLightmap;
 uniform sampler2D uTexture;
 uniform vec2 uAtlasSize;
 uniform float uDebugMode;
+uniform float uAlphaOverride;
 
 const float RGBM_SCALE = 6.0;
 const float MAX_SAFE_TEXELS = 8.0; // must match TEX_PAD in bsp.rs
@@ -51,6 +52,27 @@ void main() {
 
   // Sample base texture with per-pixel tiling
   float hasTex = step(0.001, vAtlasScale.x + vAtlasScale.y);
+
+  // Missing texture: classic Source Engine black & purple checkerboard
+  if (hasTex < 0.5) {
+    vec2 checker = floor(vTexUV * 2.0);
+    float c = mod(checker.x + checker.y, 2.0);
+    vec3 missingColor = mix(vec3(0.0), vec3(0.498, 0.0, 0.498), c);
+
+    // Apply lightmap if available
+    if (uDebugMode < 0.5) {
+      vec4 lmSample = texture2D(uLightmap, vLightmapUV);
+      vec3 lightColor = lmSample.rgb * lmSample.a * RGBM_SCALE;
+      float hasLM = step(0.001, vLightmapUV.x + vLightmapUV.y);
+      vec3 light = mix(vec3(1.0), lightColor, hasLM);
+      vec3 lit = pow(missingColor, vec3(2.2)) * light;
+      missingColor = pow(lit, vec3(1.0 / 2.2));
+    }
+
+    gl_FragColor = vec4(missingColor, uAlphaOverride);
+    return;
+  }
+
   vec2 rawDdx = dFdx(vTexUV) * vAtlasScale;
   vec2 rawDdy = dFdy(vTexUV) * vAtlasScale;
 
@@ -73,14 +95,13 @@ void main() {
 
   // Debug mode 1: raw texture only (no lightmap, no gamma)
   if (uDebugMode > 0.5) {
-    vec3 c = mix(vec3(1.0, 0.0, 1.0), texColor.rgb, hasTex);
-    gl_FragColor = vec4(c, alpha);
+    gl_FragColor = vec4(texColor.rgb, alpha * uAlphaOverride);
     return;
   }
 
   // Linearize base texture (sRGB -> linear) before combining with lightmap
   vec3 texLinear = pow(texColor.rgb, vec3(2.2));
-  vec3 albedo = mix(vec3(0.18), texLinear, hasTex);
+  vec3 albedo = texLinear;
 
   // Sample lightmap (RGBM encoded, already linear)
   vec4 lmSample = texture2D(uLightmap, vLightmapUV);
@@ -92,7 +113,7 @@ void main() {
   vec3 color = albedo * light;
   color = pow(color, vec3(1.0 / 2.2));
 
-  gl_FragColor = vec4(color, alpha);
+  gl_FragColor = vec4(color, alpha * uAlphaOverride);
 }
 `;
 
@@ -284,6 +305,7 @@ export class Renderer {
   private uTexture: WebGLUniformLocation;
   private uAtlasSize: WebGLUniformLocation;
   private uDebugMode: WebGLUniformLocation;
+  private uAlphaOverride: WebGLUniformLocation;
   private atlasWidth = 0;
   private atlasHeight = 0;
   public debugTexMode = false;
@@ -314,6 +336,7 @@ export class Renderer {
   // PVS
   private bspMesh: BspMesh | null = null;
   private modelDrawRanges: ModelDrawRange[] = [];
+  private waterDrawRanges: ModelDrawRange[] = [];
 
   // Animated textures
   private animTextures: { atlasX: number; atlasY: number; width: number; height: number; frameCount: number; fps: number; dataOffset: number; currentFrame: number }[] = [];
@@ -356,6 +379,7 @@ export class Renderer {
     this.uTexture = gl.getUniformLocation(this.mapProgram, 'uTexture')!;
     this.uAtlasSize = gl.getUniformLocation(this.mapProgram, 'uAtlasSize')!;
     this.uDebugMode = gl.getUniformLocation(this.mapProgram, 'uDebugMode')!;
+    this.uAlphaOverride = gl.getUniformLocation(this.mapProgram, 'uAlphaOverride')!;
 
     // Cache attribute locations
     this.aPos = gl.getAttribLocation(this.mapProgram, 'aPosition');
@@ -404,6 +428,17 @@ export class Renderer {
         indexStart: drawData[i * 3],
         indexCount: drawData[i * 3 + 1],
         cluster: drawData[i * 3 + 2],
+      });
+    }
+    // Water draw ranges (rendered separately with transparency)
+    const waterData = mesh.water_draw_data();
+    const waterCount = mesh.water_draw_count();
+    this.waterDrawRanges = [];
+    for (let i = 0; i < waterCount; i++) {
+      this.waterDrawRanges.push({
+        indexStart: waterData[i * 3],
+        indexCount: waterData[i * 3 + 1],
+        cluster: waterData[i * 3 + 2],
       });
     }
   }
@@ -638,6 +673,7 @@ export class Renderer {
     gl.uniform1i(this.uTexture, 1);
     gl.uniform2f(this.uAtlasSize, this.atlasWidth, this.atlasHeight);
     gl.uniform1f(this.uDebugMode, this.debugTexMode ? 1.0 : 0.0);
+    gl.uniform1f(this.uAlphaOverride, 1.0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.mapVBO);
     gl.enableVertexAttribArray(this.aPos);
@@ -655,7 +691,7 @@ export class Renderer {
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mapIBO);
 
-    // PVS-based per-cluster draw calls
+    // PVS-based per-cluster draw calls (opaque geometry)
     if (this.bspMesh && this.modelDrawRanges.length > 0) {
       const camCluster = this.bspMesh.find_cluster(playerPos[0], playerPos[1], playerPos[2]);
       for (let i = 0; i < this.modelDrawRanges.length; i++) {
@@ -665,6 +701,21 @@ export class Renderer {
         if (m.cluster < 0 || this.bspMesh.is_cluster_visible(camCluster, m.cluster)) {
           gl.drawElements(gl.TRIANGLES, m.indexCount, gl.UNSIGNED_INT, m.indexStart * 4);
         }
+      }
+
+      // Water pass: render with transparency, no depth write
+      if (this.waterDrawRanges.length > 0) {
+        gl.depthMask(false);
+        gl.uniform1f(this.uAlphaOverride, 0.6);
+        for (let i = 0; i < this.waterDrawRanges.length; i++) {
+          const m = this.waterDrawRanges[i];
+          if (m.indexCount === 0) continue;
+          if (m.cluster < 0 || this.bspMesh.is_cluster_visible(camCluster, m.cluster)) {
+            gl.drawElements(gl.TRIANGLES, m.indexCount, gl.UNSIGNED_INT, m.indexStart * 4);
+          }
+        }
+        gl.depthMask(true);
+        gl.uniform1f(this.uAlphaOverride, 1.0);
       }
     } else {
       gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);

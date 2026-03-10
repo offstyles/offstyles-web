@@ -205,6 +205,24 @@ export class BspMesh {
         wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
         return v1;
     }
+    /**
+     * Number of water draw ranges (call before water_draw_data)
+     * @returns {number}
+     */
+    water_draw_count() {
+        const ret = wasm.bspmesh_water_draw_count(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Water draw ranges: same format as model_draw_data but for water faces
+     * @returns {Int32Array}
+     */
+    water_draw_data() {
+        const ret = wasm.bspmesh_water_draw_data(this.__wbg_ptr);
+        var v1 = getArrayI32FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+        return v1;
+    }
 }
 if (Symbol.dispose) BspMesh.prototype[Symbol.dispose] = BspMesh.prototype.free;
 
