@@ -31,7 +31,7 @@ const stepLabel = ref("Initializing...");
 const progress = ref<number | null>(null);
 const errorMessage = ref<string | null>(null);
 const currentStep = ref(0);
-const totalSteps = 7;
+const totalSteps = 8;
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 const controlsRef = ref<InstanceType<typeof ViewerControls> | null>(null);
@@ -103,7 +103,7 @@ async function initViewer() {
   currentStep.value = 2;
   stepLabel.value = "Downloading map...";
   progress.value = 0;
-  const bspUrl = `${apiBaseUrl}/bsp?map=${encodeURIComponent(props.mapName)}`;
+  const bspUrl = `http://localhost:8000/api/bsp?map=${encodeURIComponent(props.mapName)}`;
   const bz2Data = await fetchWithProgress(bspUrl, (received, total) => {
     if (total) {
       progress.value = received / total;
@@ -173,8 +173,91 @@ async function initViewer() {
     renderer.setupAnimatedTextures(animInfo, animData);
   }
 
-  // Step 6: Download replay
-  currentStep.value = 6;
+  // Step 6: Load external textures from CS:S VPK (via API)
+  const unresolvedJson = mesh.unresolved_textures();
+  const unresolved: Array<{
+    name: string;
+    atlas_x: number;
+    atlas_y: number;
+    width: number;
+    height: number;
+    pad: number;
+  }> = JSON.parse(unresolvedJson);
+
+  if (unresolved.length > 0) {
+    currentStep.value = 6;
+    stepLabel.value = `Loading external textures (0/${unresolved.length})...`;
+    progress.value = 0;
+    await waitForNextPaint();
+
+    const texApiBase = `http://localhost:8000/api/csspak`;
+    let loaded = 0;
+    const BATCH_SIZE = 10;
+
+    for (let i = 0; i < unresolved.length; i += BATCH_SIZE) {
+      const batch = unresolved.slice(i, i + BATCH_SIZE);
+      await Promise.allSettled(
+        batch.map(async (tex) => {
+          try {
+            let basetexture = tex.name;
+            let color = [1.0, 1.0, 1.0];
+
+            // Try fetching VMT first for proper basetexture path + color
+            try {
+              const vmtResp = await fetch(`${texApiBase}/materials/${tex.name}.vmt`);
+              if (vmtResp.ok) {
+                const vmtBytes = new Uint8Array(await vmtResp.arrayBuffer());
+                const vmtJson = wasm.parse_vmt_data(vmtBytes);
+                if (vmtJson) {
+                  const vmtInfo = JSON.parse(vmtJson);
+                  if (vmtInfo.basetexture) {
+                    basetexture = vmtInfo.basetexture;
+                    color = vmtInfo.color || [1.0, 1.0, 1.0];
+                  }
+                }
+              }
+            } catch {
+              // VMT fetch failed — try VTF with texdata name directly
+            }
+
+            // Fetch VTF
+            const vtfResp = await fetch(`${texApiBase}/materials/${basetexture}.vtf`);
+            if (!vtfResp.ok) return;
+            const vtfBytes = new Uint8Array(await vtfResp.arrayBuffer());
+
+            // Decode, downscale, tint, and create tiled version via WASM
+            const tiledData = wasm.decode_and_tile_vtf(
+              vtfBytes,
+              tex.width,
+              tex.height,
+              color[0],
+              color[1],
+              color[2],
+            );
+            if (!tiledData) return;
+
+            // Patch atlas — position is the padded region origin
+            renderer!.patchTextureAtlas(
+              tex.atlas_x - tex.pad,
+              tex.atlas_y - tex.pad,
+              tex.width + 2 * tex.pad,
+              tex.height + 2 * tex.pad,
+              tiledData,
+            );
+          } catch {
+            // Texture failed to load — keep checkerboard placeholder
+          }
+          loaded++;
+          progress.value = loaded / unresolved.length;
+          stepLabel.value = `Loading external textures (${loaded}/${unresolved.length})...`;
+        }),
+      );
+      await waitForNextPaint();
+    }
+  }
+
+  // Step 7: Download replay
+  currentStep.value = 7;
   stepLabel.value = "Downloading replay...";
   progress.value = 0;
   const replayUrl = `${apiBaseUrl}/replay?id=${encodeURIComponent(props.replayId)}`;
@@ -193,8 +276,8 @@ async function initViewer() {
     "include",
   );
 
-  // Step 7: Parse replay
-  currentStep.value = 7;
+  // Step 8: Parse replay
+  currentStep.value = 8;
   stepLabel.value = "Parsing replay...";
   progress.value = null;
   await waitForNextPaint();

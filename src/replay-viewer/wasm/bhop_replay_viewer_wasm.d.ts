@@ -46,6 +46,10 @@ export class BspMesh {
     texture_atlas_data(): Uint8Array;
     texture_atlas_height(): number;
     texture_atlas_width(): number;
+    /**
+     * JSON array of unresolved texture info: [{name, atlas_x, atlas_y, width, height, pad}, ...]
+     */
+    unresolved_textures(): string;
     vertex_count(): number;
     /**
      * Move vertex data out (avoids clone). Field becomes empty after call.
@@ -76,6 +80,12 @@ export class ReplayData {
     time(): number;
 }
 
+/**
+ * Decode a VTF file, downscale to target dimensions, apply color tint, create tiled version with padding.
+ * Returns RGBA data of size (target_w + 2*pad) × (target_h + 2*pad) × 4, ready for texSubImage2D.
+ */
+export function decode_and_tile_vtf(vtf_data: Uint8Array, target_w: number, target_h: number, color_r: number, color_g: number, color_b: number): Uint8Array | undefined;
+
 export function decompress_bz2(data: Uint8Array): Uint8Array;
 
 export function init(): void;
@@ -83,6 +93,11 @@ export function init(): void;
 export function parse_bsp(data: Uint8Array): BspMesh;
 
 export function parse_replay(data: Uint8Array): ReplayData;
+
+/**
+ * Parse a VMT file and return JSON: {"basetexture":"...", "color":[r,g,b], "fps":0, "is_water":false}
+ */
+export function parse_vmt_data(data: Uint8Array): string | undefined;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -109,11 +124,16 @@ export interface InitOutput {
     readonly bspmesh_texture_atlas_data: (a: number) => [number, number];
     readonly bspmesh_texture_atlas_height: (a: number) => number;
     readonly bspmesh_texture_atlas_width: (a: number) => number;
+    readonly bspmesh_unresolved_textures: (a: number) => [number, number];
     readonly bspmesh_vertex_count: (a: number) => number;
     readonly bspmesh_vertex_data: (a: number) => [number, number];
     readonly bspmesh_water_draw_count: (a: number) => number;
     readonly bspmesh_water_draw_data: (a: number) => [number, number];
     readonly parse_bsp: (a: number, b: number) => [number, number, number];
+    readonly decode_and_tile_vtf: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number];
+    readonly init: () => void;
+    readonly parse_vmt_data: (a: number, b: number) => [number, number];
+    readonly decompress_bz2: (a: number, b: number) => [number, number, number, number];
     readonly __wbg_replaydata_free: (a: number, b: number) => void;
     readonly parse_replay: (a: number, b: number) => [number, number, number];
     readonly replaydata_angles: (a: number) => [number, number];
@@ -125,8 +145,6 @@ export interface InitOutput {
     readonly replaydata_tick_count: (a: number) => number;
     readonly replaydata_tick_rate: (a: number) => number;
     readonly replaydata_time: (a: number) => number;
-    readonly decompress_bz2: (a: number, b: number) => [number, number, number, number];
-    readonly init: () => void;
     readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

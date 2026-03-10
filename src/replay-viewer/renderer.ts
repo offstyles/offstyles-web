@@ -517,6 +517,14 @@ export class Renderer {
     }
   }
 
+  /** Patch a region of the texture atlas (for external texture loading). Caller must include tiling padding. */
+  patchTextureAtlas(x: number, y: number, width: number, height: number, data: Uint8Array): void {
+    const gl = this.gl;
+    gl.bindTexture(gl.TEXTURE_2D, this.baseTexture);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.generateMipmap(gl.TEXTURE_2D);
+  }
+
   uploadSkybox(data: Uint8Array, faceSize: number): void {
     const gl = this.gl;
 

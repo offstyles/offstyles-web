@@ -189,6 +189,22 @@ export class BspMesh {
         return ret >>> 0;
     }
     /**
+     * JSON array of unresolved texture info: [{name, atlas_x, atlas_y, width, height, pad}, ...]
+     * @returns {string}
+     */
+    unresolved_textures() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.bspmesh_unresolved_textures(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * @returns {number}
      */
     vertex_count() {
@@ -327,6 +343,29 @@ export class ReplayData {
 if (Symbol.dispose) ReplayData.prototype[Symbol.dispose] = ReplayData.prototype.free;
 
 /**
+ * Decode a VTF file, downscale to target dimensions, apply color tint, create tiled version with padding.
+ * Returns RGBA data of size (target_w + 2*pad) × (target_h + 2*pad) × 4, ready for texSubImage2D.
+ * @param {Uint8Array} vtf_data
+ * @param {number} target_w
+ * @param {number} target_h
+ * @param {number} color_r
+ * @param {number} color_g
+ * @param {number} color_b
+ * @returns {Uint8Array | undefined}
+ */
+export function decode_and_tile_vtf(vtf_data, target_w, target_h, color_r, color_g, color_b) {
+    const ptr0 = passArray8ToWasm0(vtf_data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.decode_and_tile_vtf(ptr0, len0, target_w, target_h, color_r, color_g, color_b);
+    let v2;
+    if (ret[0] !== 0) {
+        v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    }
+    return v2;
+}
+
+/**
  * @param {Uint8Array} data
  * @returns {Uint8Array}
  */
@@ -372,6 +411,23 @@ export function parse_replay(data) {
         throw takeFromExternrefTable0(ret[1]);
     }
     return ReplayData.__wrap(ret[0]);
+}
+
+/**
+ * Parse a VMT file and return JSON: {"basetexture":"...", "color":[r,g,b], "fps":0, "is_water":false}
+ * @param {Uint8Array} data
+ * @returns {string | undefined}
+ */
+export function parse_vmt_data(data) {
+    const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.parse_vmt_data(ptr0, len0);
+    let v2;
+    if (ret[0] !== 0) {
+        v2 = getStringFromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    }
+    return v2;
 }
 
 function __wbg_get_imports() {
