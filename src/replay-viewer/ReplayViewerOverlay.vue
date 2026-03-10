@@ -8,6 +8,12 @@ import { PlaybackEngine, type PlaybackState } from "./playback";
 import { Camera } from "./camera";
 import { fetchWithProgress } from "./fetchWithProgress";
 
+async function waitForNextPaint() {
+  await nextTick();
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 const props = defineProps<{
   mapName: string;
   replayId: string;
@@ -113,11 +119,13 @@ async function initViewer() {
   currentStep.value = 3;
   stepLabel.value = "Decompressing BSP...";
   progress.value = null;
+  await waitForNextPaint();
   const bspBytes = wasm.decompress_bz2(new Uint8Array(bz2Data));
 
   // Step 4: Parse BSP
   currentStep.value = 4;
   stepLabel.value = "Parsing map geometry...";
+  await waitForNextPaint();
   const mesh = wasm.parse_bsp(bspBytes);
   const vertices = mesh.vertex_data();
   const indices = mesh.index_data();
@@ -189,6 +197,7 @@ async function initViewer() {
   currentStep.value = 7;
   stepLabel.value = "Parsing replay...";
   progress.value = null;
+  await waitForNextPaint();
   const replay = wasm.parse_replay(new Uint8Array(replayBuf));
 
   const positions = replay.positions();
