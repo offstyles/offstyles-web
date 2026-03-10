@@ -345,18 +345,21 @@ if (Symbol.dispose) ReplayData.prototype[Symbol.dispose] = ReplayData.prototype.
 /**
  * Decode a VTF file, downscale to target dimensions, apply color tint, create tiled version with padding.
  * Returns RGBA data of size (target_w + 2*pad) × (target_h + 2*pad) × 4, ready for texSubImage2D.
+ * When force_opaque is true, all alpha values are set to 255 (most Source textures use alpha
+ * for specular masks etc., not actual transparency).
  * @param {Uint8Array} vtf_data
  * @param {number} target_w
  * @param {number} target_h
  * @param {number} color_r
  * @param {number} color_g
  * @param {number} color_b
+ * @param {boolean} force_opaque
  * @returns {Uint8Array | undefined}
  */
-export function decode_and_tile_vtf(vtf_data, target_w, target_h, color_r, color_g, color_b) {
+export function decode_and_tile_vtf(vtf_data, target_w, target_h, color_r, color_g, color_b, force_opaque) {
     const ptr0 = passArray8ToWasm0(vtf_data, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.decode_and_tile_vtf(ptr0, len0, target_w, target_h, color_r, color_g, color_b);
+    const ret = wasm.decode_and_tile_vtf(ptr0, len0, target_w, target_h, color_r, color_g, color_b, force_opaque);
     let v2;
     if (ret[0] !== 0) {
         v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();

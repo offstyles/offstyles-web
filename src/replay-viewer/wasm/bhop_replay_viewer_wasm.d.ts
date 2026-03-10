@@ -83,8 +83,10 @@ export class ReplayData {
 /**
  * Decode a VTF file, downscale to target dimensions, apply color tint, create tiled version with padding.
  * Returns RGBA data of size (target_w + 2*pad) × (target_h + 2*pad) × 4, ready for texSubImage2D.
+ * When force_opaque is true, all alpha values are set to 255 (most Source textures use alpha
+ * for specular masks etc., not actual transparency).
  */
-export function decode_and_tile_vtf(vtf_data: Uint8Array, target_w: number, target_h: number, color_r: number, color_g: number, color_b: number): Uint8Array | undefined;
+export function decode_and_tile_vtf(vtf_data: Uint8Array, target_w: number, target_h: number, color_r: number, color_g: number, color_b: number, force_opaque: boolean): Uint8Array | undefined;
 
 export function decompress_bz2(data: Uint8Array): Uint8Array;
 
@@ -130,7 +132,7 @@ export interface InitOutput {
     readonly bspmesh_water_draw_count: (a: number) => number;
     readonly bspmesh_water_draw_data: (a: number) => [number, number];
     readonly parse_bsp: (a: number, b: number) => [number, number, number];
-    readonly decode_and_tile_vtf: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number];
+    readonly decode_and_tile_vtf: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
     readonly init: () => void;
     readonly parse_vmt_data: (a: number, b: number) => [number, number];
     readonly decompress_bz2: (a: number, b: number) => [number, number, number, number];
