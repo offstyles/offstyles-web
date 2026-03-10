@@ -102,7 +102,7 @@ async function initViewer() {
     if (total) {
       progress.value = received / total;
       const pct = Math.round((received / total) * 100);
-      stepLabel.value = `Downloading map... ${pct}% (${(received / 1024 / 1024).toFixed(1)}MB)`;
+      stepLabel.value = `Downloading map... ${pct}% (${(received / 1024 / 1024).toFixed(1)} / ${(total / 1024 / 1024).toFixed(1)}MB)`;
     } else {
       progress.value = null; // indeterminate
       stepLabel.value = `Downloading map... ${(received / 1024 / 1024).toFixed(1)}MB`;
@@ -176,7 +176,7 @@ async function initViewer() {
       if (total) {
         progress.value = received / total;
         const pct = Math.round((received / total) * 100);
-        stepLabel.value = `Downloading replay... ${pct}% (${(received / 1024).toFixed(0)}KB)`;
+        stepLabel.value = `Downloading replay... ${pct}% (${(received / 1024).toFixed(0)} / ${(total / 1024).toFixed(0)}KB)`;
       } else {
         progress.value = null;
         stepLabel.value = `Downloading replay... ${(received / 1024).toFixed(0)}KB`;
