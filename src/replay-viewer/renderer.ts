@@ -13,17 +13,20 @@ attribute vec2 aAtlasMin;
 attribute vec2 aAtlasScale;
 uniform mat4 uProjection;
 uniform mat4 uView;
+uniform vec3 uCameraPos;
 varying vec3 vNormal;
 varying vec2 vLightmapUV;
 varying vec2 vTexUV;
 varying vec2 vAtlasMin;
 varying vec2 vAtlasScale;
+varying float vDist;
 void main() {
   vNormal = aNormal;
   vLightmapUV = aLightmapUV;
   vTexUV = aTexUV;
   vAtlasMin = aAtlasMin;
   vAtlasScale = aAtlasScale;
+  vDist = length(aPosition - uCameraPos);
   gl_Position = uProjection * uView * vec4(aPosition, 1.0);
 }
 `;
@@ -37,11 +40,14 @@ varying vec2 vLightmapUV;
 varying vec2 vTexUV;
 varying vec2 vAtlasMin;
 varying vec2 vAtlasScale;
+varying float vDist;
 uniform sampler2D uLightmap;
 uniform sampler2D uTexture;
 uniform vec2 uAtlasSize;
 uniform float uDebugMode;
 uniform float uAlphaOverride;
+uniform float uTime;
+uniform float uIsWater;
 
 const float RGBM_SCALE = 6.0;
 const float MAX_SAFE_TEXELS = 8.0; // must match TEX_PAD in bsp.rs
@@ -53,9 +59,14 @@ void main() {
   // Sample base texture with per-pixel tiling
   float hasTex = step(0.001, vAtlasScale.x + vAtlasScale.y);
 
+  vec2 baseTexUV = vTexUV;
+  if (uIsWater > 0.5) {
+      baseTexUV += vec2(uTime * 0.05, uTime * 0.05);
+  }
+
   // Missing texture: classic Source Engine black & purple checkerboard
   if (hasTex < 0.5) {
-    vec2 checker = floor(vTexUV * 2.0);
+    vec2 checker = floor(baseTexUV * 2.0);
     float c = mod(checker.x + checker.y, 2.0);
     vec3 missingColor = mix(vec3(0.0), vec3(0.498, 0.0, 0.498), c);
 
@@ -65,6 +76,15 @@ void main() {
       vec3 lightColor = lmSample.rgb * lmSample.a * RGBM_SCALE;
       float hasLM = step(0.001, vLightmapUV.x + vLightmapUV.y);
       vec3 light = mix(vec3(1.0), lightColor, hasLM);
+      
+      // Unlit fallback
+      if (hasLM < 0.5) {
+          vec3 lightDir = normalize(vec3(0.5, 0.8, 1.0));
+          float ndotl = max(dot(n, lightDir), 0.0);
+          float ambient = 0.5;
+          light = vec3(1.0) * (ambient + (1.0 - ambient) * ndotl);
+      }
+
       vec3 lit = pow(missingColor, vec3(2.2)) * light;
       missingColor = pow(lit, vec3(1.0 / 2.2));
     }
@@ -73,8 +93,8 @@ void main() {
     return;
   }
 
-  vec2 rawDdx = dFdx(vTexUV) * vAtlasScale;
-  vec2 rawDdy = dFdy(vTexUV) * vAtlasScale;
+  vec2 rawDdx = dFdx(baseTexUV) * vAtlasScale;
+  vec2 rawDdy = dFdy(baseTexUV) * vAtlasScale;
 
   // Clamp gradients so mip level never exceeds padding coverage
   float maxGrad = MAX_SAFE_TEXELS / max(uAtlasSize.x, uAtlasSize.y);
@@ -85,7 +105,7 @@ void main() {
     rawDdy *= s;
   }
 
-  vec2 tiledUV = fract(vTexUV);
+  vec2 tiledUV = fract(baseTexUV);
   vec2 atlasUV = vAtlasMin + tiledUV * vAtlasScale;
   vec4 texColor = texture2DGradEXT(uTexture, atlasUV, rawDdx, rawDdy);
 
@@ -103,12 +123,25 @@ void main() {
   vec3 texLinear = pow(texColor.rgb, vec3(2.2));
   vec3 albedo = texLinear;
 
+  // Extract flag (negative U = prop) and absolute UV
+  float isProp = step(vLightmapUV.x, -0.00005);
+  vec2 realLmUV = vec2(abs(vLightmapUV.x), vLightmapUV.y);
+
   // Sample lightmap (RGBM encoded, already linear)
-  vec4 lmSample = texture2D(uLightmap, vLightmapUV);
+  vec4 lmSample = texture2D(uLightmap, realLmUV);
   vec3 lightColor = lmSample.rgb * lmSample.a * RGBM_SCALE;
 
-  float hasLM = step(0.001, vLightmapUV.x + vLightmapUV.y);
+  float hasLM = step(0.001, realLmUV.x + realLmUV.y);
   vec3 light = mix(vec3(1.0), lightColor, hasLM);
+
+  // Apply fake directional lighting for props or unlit geometry
+  if (isProp > 0.5 || hasLM < 0.5) {
+    vec3 lightDir = normalize(vec3(0.5, 0.8, 1.0));
+    float ndotl = max(dot(n, lightDir), 0.0);
+    float ambient = 0.5;
+    vec3 baseLight = isProp > 0.5 ? lightColor : vec3(1.0);
+    light = baseLight * (ambient + (1.0 - ambient) * ndotl);
+  }
 
   vec3 color = albedo * light;
   color = pow(color, vec3(1.0 / 2.2));
@@ -306,6 +339,11 @@ export class Renderer {
   private uAtlasSize: WebGLUniformLocation;
   private uDebugMode: WebGLUniformLocation;
   private uAlphaOverride: WebGLUniformLocation;
+  private uCameraPos: WebGLUniformLocation;
+  
+  private uTime: WebGLUniformLocation;
+  private uIsWater: WebGLUniformLocation;
+  
   private atlasWidth = 0;
   private atlasHeight = 0;
   public debugTexMode = false;
@@ -380,6 +418,10 @@ export class Renderer {
     this.uAtlasSize = gl.getUniformLocation(this.mapProgram, 'uAtlasSize')!;
     this.uDebugMode = gl.getUniformLocation(this.mapProgram, 'uDebugMode')!;
     this.uAlphaOverride = gl.getUniformLocation(this.mapProgram, 'uAlphaOverride')!;
+    this.uCameraPos = gl.getUniformLocation(this.mapProgram, 'uCameraPos')!;
+    
+    this.uTime = gl.getUniformLocation(this.mapProgram, 'uTime')!;
+    this.uIsWater = gl.getUniformLocation(this.mapProgram, 'uIsWater')!;
 
     // Cache attribute locations
     this.aPos = gl.getAttribLocation(this.mapProgram, 'aPosition');
@@ -669,6 +711,8 @@ export class Renderer {
     gl.useProgram(this.mapProgram);
     gl.uniformMatrix4fv(this.uProjection, false, this.projMatrix);
     gl.uniformMatrix4fv(this.uView, false, viewMatrix);
+    gl.uniform3f(this.uCameraPos, playerPos[0], playerPos[1], playerPos[2]);
+    gl.uniform1f(this.uTime, performance.now() / 1000.0);
 
     // Bind lightmap on unit 0
     gl.activeTexture(gl.TEXTURE0);
@@ -701,6 +745,7 @@ export class Renderer {
 
     // PVS-based per-cluster draw calls (opaque geometry)
     if (this.bspMesh && this.modelDrawRanges.length > 0) {
+      gl.uniform1f(this.uIsWater, 0.0);
       const camCluster = this.bspMesh.find_cluster(playerPos[0], playerPos[1], playerPos[2]);
       for (let i = 0; i < this.modelDrawRanges.length; i++) {
         const m = this.modelDrawRanges[i];
@@ -715,6 +760,7 @@ export class Renderer {
       if (this.waterDrawRanges.length > 0) {
         gl.depthMask(false);
         gl.uniform1f(this.uAlphaOverride, 0.6);
+        gl.uniform1f(this.uIsWater, 1.0);
         for (let i = 0; i < this.waterDrawRanges.length; i++) {
           const m = this.waterDrawRanges[i];
           if (m.indexCount === 0) continue;
@@ -724,8 +770,10 @@ export class Renderer {
         }
         gl.depthMask(true);
         gl.uniform1f(this.uAlphaOverride, 1.0);
+        gl.uniform1f(this.uIsWater, 0.0);
       }
     } else {
+      gl.uniform1f(this.uIsWater, 0.0);
       gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
     }
 
