@@ -117,6 +117,21 @@ export class PlaybackEngine {
     this.spareTime = 0;
   }
 
+  setPlaying(isPlaying: boolean): void {
+    this.isPlaying = isPlaying;
+    if (!isPlaying) {
+      this.spareTime = 0;
+    }
+  }
+
+  togglePlaying(): void {
+    this.setPlaying(!this.isPlaying);
+  }
+
+  setPlaybackRate(rate: number): void {
+    this.playbackRate = rate;
+  }
+
   update(dt: number): void {
     const tickPeriod = 1.0 / this.tickRate;
 

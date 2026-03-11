@@ -53,7 +53,7 @@ const totalTimeDisplay = computed(() => {
 })
 
 function togglePlay() {
-  props.playback.isPlaying = !props.playback.isPlaying
+  props.playback.togglePlaying()
   showControls()
 }
 
@@ -70,7 +70,9 @@ function onScrubChange() {
 
 function onSpeedChange(e: Event) {
   const val = parseFloat((e.target as HTMLSelectElement).value)
-  props.playback.playbackRate = val
+  if (!Number.isNaN(val)) {
+    props.playback.setPlaybackRate(val)
+  }
 }
 
 function toggleCamera() {
@@ -115,6 +117,7 @@ function updateScrubber() {
     scrubberValue.value = props.playback.state.tick
   }
   isPlaying.value = props.playback.isPlaying
+  selectedSpeed.value = props.playback.playbackRate.toString()
 }
 
 defineExpose({ updateScrubber })
