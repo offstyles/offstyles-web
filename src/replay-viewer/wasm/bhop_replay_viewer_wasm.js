@@ -113,6 +113,22 @@ export class BspMesh {
         return ret >>> 0;
     }
     /**
+     * JSON array of missing prop model paths: ["models/props/foo.mdl", ...]
+     * @returns {string}
+     */
+    missing_props() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.bspmesh_missing_props(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * Number of drawable models (call before model_draw_data)
      * @returns {number}
      */
@@ -396,6 +412,29 @@ export function parse_bsp(data) {
     const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.parse_bsp(ptr0, len0);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return BspMesh.__wrap(ret[0]);
+}
+
+/**
+ * Parse a BSP with extra files injected (e.g. prop models from VPK).
+ * `extras_json` is a JSON array of `{"path":"models/foo.mdl","offset":0,"length":1234}`.
+ * `extras_data` is all the file contents concatenated.
+ * @param {Uint8Array} data
+ * @param {string} extras_json
+ * @param {Uint8Array} extras_data
+ * @returns {BspMesh}
+ */
+export function parse_bsp_with_extras(data, extras_json, extras_data) {
+    const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(extras_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passArray8ToWasm0(extras_data, wasm.__wbindgen_malloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ret = wasm.parse_bsp_with_extras(ptr0, len0, ptr1, len1, ptr2, len2);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }

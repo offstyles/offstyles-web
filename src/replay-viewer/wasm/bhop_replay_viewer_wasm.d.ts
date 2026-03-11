@@ -29,6 +29,10 @@ export class BspMesh {
     lightmap_height(): number;
     lightmap_width(): number;
     /**
+     * JSON array of missing prop model paths: ["models/props/foo.mdl", ...]
+     */
+    missing_props(): string;
+    /**
      * Number of drawable models (call before model_draw_data)
      */
     model_draw_count(): number;
@@ -94,6 +98,13 @@ export function init(): void;
 
 export function parse_bsp(data: Uint8Array): BspMesh;
 
+/**
+ * Parse a BSP with extra files injected (e.g. prop models from VPK).
+ * `extras_json` is a JSON array of `{"path":"models/foo.mdl","offset":0,"length":1234}`.
+ * `extras_data` is all the file contents concatenated.
+ */
+export function parse_bsp_with_extras(data: Uint8Array, extras_json: string, extras_data: Uint8Array): BspMesh;
+
 export function parse_replay(data: Uint8Array): ReplayData;
 
 /**
@@ -117,6 +128,7 @@ export interface InitOutput {
     readonly bspmesh_lightmap_atlas_data: (a: number) => [number, number];
     readonly bspmesh_lightmap_height: (a: number) => number;
     readonly bspmesh_lightmap_width: (a: number) => number;
+    readonly bspmesh_missing_props: (a: number) => [number, number];
     readonly bspmesh_model_draw_count: (a: number) => number;
     readonly bspmesh_model_draw_data: (a: number) => [number, number];
     readonly bspmesh_sky_index_data: (a: number) => [number, number];
@@ -132,10 +144,7 @@ export interface InitOutput {
     readonly bspmesh_water_draw_count: (a: number) => number;
     readonly bspmesh_water_draw_data: (a: number) => [number, number];
     readonly parse_bsp: (a: number, b: number) => [number, number, number];
-    readonly decode_and_tile_vtf: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
-    readonly init: () => void;
-    readonly parse_vmt_data: (a: number, b: number) => [number, number];
-    readonly decompress_bz2: (a: number, b: number) => [number, number, number, number];
+    readonly parse_bsp_with_extras: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
     readonly __wbg_replaydata_free: (a: number, b: number) => void;
     readonly parse_replay: (a: number, b: number) => [number, number, number];
     readonly replaydata_angles: (a: number) => [number, number];
@@ -147,6 +156,10 @@ export interface InitOutput {
     readonly replaydata_tick_count: (a: number) => number;
     readonly replaydata_tick_rate: (a: number) => number;
     readonly replaydata_time: (a: number) => number;
+    readonly decompress_bz2: (a: number, b: number) => [number, number, number, number];
+    readonly decode_and_tile_vtf: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
+    readonly init: () => void;
+    readonly parse_vmt_data: (a: number, b: number) => [number, number];
     readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

@@ -126,7 +126,100 @@ async function initViewer() {
   currentStep.value = 4;
   stepLabel.value = "Parsing map geometry...";
   await waitForNextPaint();
-  const mesh = wasm.parse_bsp(bspBytes);
+  let mesh = wasm.parse_bsp(bspBytes);
+
+  // Step 4b: Fetch missing props from VPK and re-parse if needed
+  const missingPropsJson = mesh.missing_props();
+  const missingProps: string[] = JSON.parse(missingPropsJson);
+
+  if (missingProps.length > 0) {
+    stepLabel.value = `Loading external props (0/${missingProps.length})...`;
+    await waitForNextPaint();
+
+    const propApiBase = `http://localhost:8000/api/csspak`;
+    const extrasManifest: Array<{ path: string; offset: number; length: number }> = [];
+    const extrasChunks: Uint8Array[] = [];
+    let totalBytes = 0;
+    let propsLoaded = 0;
+
+    // Fetch MDL + VVD + VTX for each missing prop
+    const VTX_EXTENSIONS = ['.dx90.vtx', '.dx80.vtx', '.vtx', '.sw.vtx'];
+    const PROP_BATCH = 5;
+
+    for (let i = 0; i < missingProps.length; i += PROP_BATCH) {
+      const batch = missingProps.slice(i, i + PROP_BATCH);
+      await Promise.allSettled(
+        batch.map(async (mdlPath) => {
+          const basePath = mdlPath.replace(/\.mdl$/i, '');
+          const filesToFetch = [
+            mdlPath,
+            `${basePath}.vvd`,
+          ];
+          // Try VTX extensions in order — only need one
+          let vtxData: Uint8Array | null = null;
+          let vtxPath = '';
+          for (const ext of VTX_EXTENSIONS) {
+            try {
+              const resp = await fetch(`${propApiBase}/${basePath}${ext}`);
+              if (resp.ok) {
+                vtxData = new Uint8Array(await resp.arrayBuffer());
+                vtxPath = `${basePath}${ext}`;
+                break;
+              }
+            } catch { /* try next extension */ }
+          }
+
+          // Fetch MDL and VVD
+          const results = await Promise.allSettled(
+            filesToFetch.map(async (p) => {
+              const resp = await fetch(`${propApiBase}/${p}`);
+              if (!resp.ok) throw new Error(`${resp.status}`);
+              return { path: p, data: new Uint8Array(await resp.arrayBuffer()) };
+            }),
+          );
+
+          // Only add if we got all three files
+          const mdlResult = results[0].status === 'fulfilled' ? results[0].value : null;
+          const vvdResult = results[1].status === 'fulfilled' ? results[1].value : null;
+
+          if (mdlResult && vvdResult && vtxData) {
+            for (const file of [mdlResult, vvdResult, { path: vtxPath, data: vtxData }]) {
+              extrasManifest.push({
+                path: file.path,
+                offset: totalBytes,
+                length: file.data.length,
+              });
+              extrasChunks.push(file.data);
+              totalBytes += file.data.length;
+            }
+          }
+
+          propsLoaded++;
+          stepLabel.value = `Loading external props (${propsLoaded}/${missingProps.length})...`;
+        }),
+      );
+      await waitForNextPaint();
+    }
+
+    // If we fetched any props, re-parse BSP with extras
+    if (extrasChunks.length > 0) {
+      stepLabel.value = "Re-parsing with external props...";
+      await waitForNextPaint();
+
+      // Concatenate all extras into one buffer
+      const extrasData = new Uint8Array(totalBytes);
+      let writeOffset = 0;
+      for (const chunk of extrasChunks) {
+        extrasData.set(chunk, writeOffset);
+        writeOffset += chunk.length;
+      }
+
+      const extrasJson = JSON.stringify(extrasManifest);
+      mesh.free();
+      mesh = wasm.parse_bsp_with_extras(bspBytes, extrasJson, extrasData);
+    }
+  }
+
   const vertices = mesh.vertex_data();
   const indices = mesh.index_data();
 
@@ -177,6 +270,7 @@ async function initViewer() {
   const unresolvedJson = mesh.unresolved_textures();
   const unresolved: Array<{
     name: string;
+    fetch_name: string;
     atlas_x: number;
     atlas_y: number;
     width: number;
@@ -199,13 +293,13 @@ async function initViewer() {
       await Promise.allSettled(
         batch.map(async (tex) => {
           try {
-            let basetexture = tex.name;
+            let basetexture = tex.fetch_name;
             let color = [1.0, 1.0, 1.0];
             let isTranslucent = false;
 
             // Try fetching VMT first for proper basetexture path + color
             try {
-              const vmtResp = await fetch(`${texApiBase}/materials/${tex.name}.vmt`);
+              const vmtResp = await fetch(`${texApiBase}/materials/${tex.fetch_name}.vmt`);
               if (vmtResp.ok) {
                 const vmtBytes = new Uint8Array(await vmtResp.arrayBuffer());
                 const vmtJson = wasm.parse_vmt_data(vmtBytes);
