@@ -296,6 +296,7 @@ async function initViewer() {
             let basetexture = tex.fetch_name;
             let color = [1.0, 1.0, 1.0];
             let isTranslucent = false;
+            let isAlphaTest = false;
 
             // Try fetching VMT first for proper basetexture path + color
             try {
@@ -310,6 +311,7 @@ async function initViewer() {
                     color = vmtInfo.color || [1.0, 1.0, 1.0];
                   }
                   isTranslucent = vmtInfo.translucent === true;
+                  isAlphaTest = vmtInfo.alphatest === true;
                 }
               }
             } catch {
@@ -322,7 +324,9 @@ async function initViewer() {
             const vtfBytes = new Uint8Array(await vtfResp.arrayBuffer());
 
             // Decode, downscale, tint, and create tiled version via WASM
-            // Force opaque unless VMT explicitly marks material as translucent
+            // Force opaque unless VMT has $translucent or $alphatest
+            // ($alphatest needs real alpha for cutout rendering: tree leaves, fences)
+            const forceOpaque = !isTranslucent && !isAlphaTest;
             const tiledData = wasm.decode_and_tile_vtf(
               vtfBytes,
               tex.width,
@@ -330,7 +334,7 @@ async function initViewer() {
               color[0],
               color[1],
               color[2],
-              !isTranslucent,
+              forceOpaque,
             );
             if (!tiledData) return;
 
