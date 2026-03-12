@@ -103,7 +103,7 @@ async function initViewer() {
   currentStep.value = 2;
   stepLabel.value = "Downloading map...";
   progress.value = 0;
-  const bspUrl = `http://localhost:8000/api/bsp?map=${encodeURIComponent(props.mapName)}`;
+  const bspUrl = `${apiBaseUrl}/bsp?map=${encodeURIComponent(props.mapName)}`;
   const bz2Data = await fetchWithProgress(bspUrl, (received, total) => {
     if (total) {
       progress.value = received / total;
@@ -136,7 +136,7 @@ async function initViewer() {
     stepLabel.value = `Loading external props (0/${missingProps.length})...`;
     await waitForNextPaint();
 
-    const propApiBase = `http://localhost:8000/api/csspak`;
+    const propApiBase = `${apiBaseUrl}/csspak`;
     const extrasManifest: Array<{ path: string; offset: number; length: number }> = [];
     const extrasChunks: Uint8Array[] = [];
     let totalBytes = 0;
@@ -284,7 +284,7 @@ async function initViewer() {
     progress.value = 0;
     await waitForNextPaint();
 
-    const texApiBase = `http://localhost:8000/api/csspak`;
+    const texApiBase = `${apiBaseUrl}/csspak`;
     let loaded = 0;
     const BATCH_SIZE = 10;
 
