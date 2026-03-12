@@ -218,10 +218,19 @@
         <div class="flex flex-wrap gap-3 justify-center">
           <div v-if="record.replay_ref" class="flex flex-wrap gap-3">
             <button
+              v-if="isLoggedIn"
               @click="showReplayViewer = true"
               class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
             >
               View Replay
+            </button>
+            <button
+              v-else
+              disabled
+              class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed"
+              title="Login with Steam required to view replays"
+            >
+              View Replay (Login Required)
             </button>
             <button
               v-if="isLoggedIn"
