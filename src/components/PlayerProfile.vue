@@ -2,8 +2,8 @@
   <div class="moderation-dropdown">
     <button @click="showDropdown = !showDropdown">Moderation Actions</button>
     <div v-if="showDropdown" class="dropdown-menu">
-      <div v-for="action in actions" :key="action.action">
-        <button @click="performAction(action)">{{ action.action }}</button>
+      <div v-for="action in actions" :key="action">
+        <button @click="performAction(action)">{{ action }}</button>
       </div>
     </div>
   </div>
@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { ModerationActionType, ModerationPostData } from '@/types/moderation';
+import { ModerationActionType, type ModerationPostData } from '@/types/moderation';
 
 const showDropdown = ref(false);
 const actions = Object.values(ModerationActionType);

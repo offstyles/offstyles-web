@@ -12,6 +12,12 @@ export enum ModerationActionType {
   Unban = "Unban"
 }
 
+export interface ModeratorInfo {
+  steam_id: string;
+  username: string;
+  avatar_url?: string;
+}
+
 // Individual moderation action
 export interface ModerationAction {
   mod_steam_id: string;
@@ -20,10 +26,22 @@ export interface ModerationAction {
   action: ModerationActionType;
 }
 
+export interface ModerationLogAction {
+  timestamp: number; // Unix timestamp in milliseconds
+  action: ModerationActionType;
+  notes?: string;
+  mod: ModeratorInfo;
+}
+
 // Moderation record (contains all actions for a target)
 export interface ModerationRecord {
   _id?: string; // ObjectId as string
   actions: ModerationAction[];
+}
+
+export interface ModerationLogResponse {
+  _id?: string; // ObjectId as string
+  actions: ModerationLogAction[];
 }
 
 // Target types for moderation
