@@ -1,8 +1,8 @@
-import { Style } from "@/types/Style";
-import Api from "./api";
-import type { Time } from "@/types/Time";
-import type { User } from "@/types/User";
-import type { RecentModAction, ModerationTargetFilter } from "@/types/moderation";
+import { Style } from '@/types/Style';
+import Api from './api';
+import type { Time } from '@/types/Time';
+import type { User } from '@/types/User';
+import type { RecentModAction, ModerationTargetFilter, ModerationAction } from '@/types/moderation';
 
 // Add new interfaces based on the API spec
 export interface RankAwareRecord extends Time {
@@ -70,6 +70,20 @@ export interface ServerKeyInfo {
   server: string;
   key: string;
   permissions: number;
+}
+
+export interface ModerationLogModerator {
+  steam_id: string;
+  username: string;
+  avatar_url?: string;
+}
+
+export interface ModerationLogAction extends ModerationAction {
+  mod: ModerationLogModerator;
+}
+
+export interface ModerationLogResponse {
+  actions: ModerationLogAction[];
 }
 
 class OffstylesApi extends Api {
@@ -318,7 +332,7 @@ class OffstylesApi extends Api {
   }
 
   // Get moderation logs
-  static async getModerationLogs(id: string): Promise<RecentModAction[]> {
+  static async getModerationLogs(id: string): Promise<ModerationLogResponse> {
     const params = new URLSearchParams({
       id: id,
     });
