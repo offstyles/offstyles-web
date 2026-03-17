@@ -12,25 +12,30 @@
   import IconChevronDown from '@/components/icons/IconChevronDown.vue';
   import loadWheel from '@/components/icons/loadWheel.vue';
 
+  interface ComboBoxOptionItem {
+    id?: number | string,
+    name: string,
+  }
+
   const props = defineProps<{
-    select_options: object[],
-    selected_option: { id?:number, name?:string },
+    select_options: ComboBoxOptionItem[],
+    selected_option: ComboBoxOptionItem | null,
     type: string,
     is_loading?: boolean,
   }>()
 
-  const selected = ref<object>(props.selected_option);
+  const selected = ref<ComboBoxOptionItem | null>(props.selected_option);
 
   //update selected when parent selected_option changes
-  const selectedProp = computed(()=>{return props.selected_option});
-  watch(selectedProp, async()=>{
-    if(props.selected_option !== selected.value){
+  const selectedProp = computed(() => props.selected_option);
+  watch(selectedProp, async () => {
+    if (props.selected_option !== selected.value) {
       selected.value = props.selected_option;
     }
   });
 
   const emit = defineEmits(['select-Changed']);
-  watch(selected, async() => {
+  watch(selected, async () => {
     emit('select-Changed', selected.value !== null ? selected.value : {});
   });
 
@@ -55,7 +60,7 @@
             <ComboboxInput
               class="w-full py-2 pl-3 pr-10 text-sm leading-5 text-gray-200 placeholder:text-gray-300"
               :placeholder="'Enter a '+props.type"
-              :displayValue="(option) => option?.name"
+              :displayValue="(option: unknown) => ((option as ComboBoxOptionItem | null)?.name ?? '')"
               @change="query = $event.target.value;"
               
             />
