@@ -71,17 +71,24 @@
   async function getPlayerTimes(playerId: string){
     // Don't proceed if playerId is undefined or empty
     if (!playerId) return;
-    
+
     playerSteamId.value = playerId;
     isLoading.value = true;
     playerTimes.value = null;
     const paramsObj = urlParams.getAsObject();
-    
-    // Convert string params to numbers with defaults
+
     const style = paramsObj.style ? parseInt(paramsObj.style) : Style.all;
     const page = paramsObj.page ? parseInt(paramsObj.page) : 1;
-    
-    const apiPlayerTimes = await OffstylesApi.getTimesByPlayer(playerId, undefined, style, undefined, page);
+    const best = paramsObj.best !== undefined ? paramsObj.best === 'true' : true;
+
+    const apiPlayerTimes = await OffstylesApi.getTimes({
+      steamid: playerId,
+      style,
+      sort: 'Newest',
+      best,
+      limit: 50,
+      page,
+    });
     if(apiPlayerTimes.length){
       playerTimes.value = apiPlayerTimes;
       playerName.value = apiPlayerTimes[0].name;

@@ -4,6 +4,19 @@ import type { Time } from '@/types/Time';
 import type { User } from '@/types/User';
 import type { RecentModAction, ModerationTargetFilter, ModerationAction } from '@/types/moderation';
 
+export type SortType = 'Fastest' | 'Slowest' | 'Newest' | 'Oldest';
+
+export interface TimesQuery {
+  style?: number;
+  map?: string;
+  steamid?: string;
+  best?: boolean;
+  wr?: boolean;
+  sort?: SortType;
+  limit?: number;
+  page?: number;
+}
+
 // Add new interfaces based on the API spec
 export interface RankAwareRecord extends Time {
   rank: number;
@@ -88,6 +101,38 @@ export interface ModerationLogResponse {
 
 class OffstylesApi extends Api {
   static offstylesApiUrl = import.meta.env.DEV ? "/api" : "https://offstyles.tommyy.dev/api";
+
+  static async getTimes(query: TimesQuery = {}): Promise<WRAwareRecord[]> {
+    const params = new URLSearchParams();
+
+    if (query.style !== undefined && query.style !== Style.all) {
+      params.set('style', query.style.toString());
+    }
+    if (query.map) {
+      params.set('map', query.map);
+    }
+    if (query.steamid) {
+      params.set('steamid', query.steamid);
+    }
+    if (query.best !== undefined) {
+      params.set('best', query.best.toString());
+    }
+    if (query.wr !== undefined) {
+      params.set('wr', query.wr.toString());
+    }
+    if (query.sort) {
+      params.set('sort', query.sort);
+    }
+    if (query.limit !== undefined) {
+      params.set('limit', query.limit.toString());
+    }
+    if (query.page !== undefined) {
+      params.set('page', query.page.toString());
+    }
+
+    this.url = `${this.offstylesApiUrl}/times?${params.toString()}`;
+    return await this.fetchFromUrl();
+  }
 
   // Fixed method signature to require style parameter
   static async getTimesByMap(

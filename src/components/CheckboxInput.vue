@@ -3,11 +3,15 @@
   import type { Ref } from 'vue';
   import urlParams from '@/utils/urlParams';
   const emit = defineEmits(['checkbox-Changed']);
-  const props = defineProps<{
+  const props = withDefaults(defineProps<{
     name: string,
     label: string,
-  }>()
-  const currentInput : Ref<boolean> = ref(urlParams.getAsObject().wr ? urlParams.getAsObject().wr === 'true' : true);
+    defaultValue?: boolean,
+  }>(), {
+    defaultValue: true,
+  });
+  const paramValue = urlParams.getAsObject()[props.name];
+  const currentInput : Ref<boolean> = ref(paramValue !== undefined ? paramValue === 'true' : props.defaultValue);
   
   watch(currentInput, async() => {
     emit('checkbox-Changed', props.name, currentInput.value);

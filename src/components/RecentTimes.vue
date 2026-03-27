@@ -24,6 +24,7 @@
   }>()
  
   const currentStyle: Ref<number> = ref(urlParams.getAsObject().style ? Number(urlParams.getAsObject().style) : Style.all);
+  const isRecent: Ref<boolean> = ref(urlParams.getAsObject().recent !== undefined ? urlParams.getAsObject().recent === 'true' : true);
 
   const showStyleColumn = computed(() => currentStyle.value === Style.all);
 
@@ -85,11 +86,14 @@
     return columns;
   });
 
-  const dropdownChanged = async (name : string, value : number)=>{
+  const dropdownChanged = async (name : string, value : number | boolean)=>{
     if (name === 'style') {
-      currentStyle.value = value;
+      currentStyle.value = value as number;
     }
-    await router.replace({query:urlParams.update(name, value)});
+    if (name === 'recent') {
+      isRecent.value = value as boolean;
+    }
+    await router.replace({query:urlParams.update(name, value as number)});
     emit('updateRecentTimes');
   }
   const paginationChanged = async (page: number)=>{
@@ -101,12 +105,16 @@
 
 <template>
   <div class="text-white w-full max-w-5xl p-4 text-center flex flex-col justify-center rounded-lg mt-8">
-    <h1 class="text-2xl mb-2">Recent Times</h1>
-    <p class="text-sm text-gray-400 mb-4">Displaying records from the last 2 weeks</p>
+    <h1 class="text-2xl mb-2">{{ isRecent ? 'Recent Times' : 'All Times' }}</h1>
+    <p class="text-sm text-gray-400 mb-4">{{ isRecent ? 'Displaying records from the last 2 weeks' : 'Displaying all records' }}</p>
     <div class="flex py-2 justify-between flex-wrap gap-3">
       <CustomDropdown :options="[Style.all, Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
        :name="'style'" :format="styleFormat.name" :default="Style.all" @dropdown-Changed="dropdownChanged"></CustomDropdown>
-      <CheckboxInput @checkbox-Changed="dropdownChanged" :name="'wr'" :label="'Only show WR times'"></CheckboxInput>
+      <div class="flex flex-wrap gap-3">
+        <CheckboxInput @checkbox-Changed="dropdownChanged" :name="'recent'" :label="'Recent only'"></CheckboxInput>
+        <CheckboxInput @checkbox-Changed="dropdownChanged" :name="'best'" :label="'Best times only'"></CheckboxInput>
+        <CheckboxInput @checkbox-Changed="dropdownChanged" :name="'wr'" :label="'Only show WR times'"></CheckboxInput>
+      </div>
     </div>
     <TimesList v-if="props.recentTimes" :times="props.recentTimes" :cols="tableColumns"
     @refresh-data="emit('updateRecentTimes')"

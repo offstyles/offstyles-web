@@ -43,13 +43,22 @@
     isLoading.value = true;
     mapTimes.value = null;
     const paramsObj = urlParams.getAsObject();
-    
-    // Convert string params to numbers with defaults
+
     const style = paramsObj.style ? parseInt(paramsObj.style) : Style.normal;
     const page = paramsObj.page ? parseInt(paramsObj.page) : 1;
-    
-    const apiMapTimes = await OffstylesApi.getTimesByMap(name, style, undefined, undefined, page);
+    const limit = 50;
+
+    const apiMapTimes = await OffstylesApi.getTimes({
+      map: name,
+      style,
+      sort: 'Fastest',
+      best: true,
+      limit,
+      page,
+    });
     if(apiMapTimes.length){
+      // Compute rank client-side since /api/times doesn't return rank
+      apiMapTimes.forEach((t, i) => { t.rank = (page - 1) * limit + i + 1; });
       mapTimes.value = apiMapTimes;
     }
     isLoading.value = false;

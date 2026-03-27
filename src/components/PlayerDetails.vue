@@ -5,6 +5,7 @@
   import type { Time } from '@/types/Time';
   import type { User } from '@/types/User';
   import CustomDropdown from './CustomDropdown.vue';
+  import CheckboxInput from './CheckboxInput.vue';
   import styleFormat from '@/utils/styleFormat';
   import { Style } from "@/types/Style";
   import urlParams from '@/utils/urlParams';
@@ -154,9 +155,10 @@
         <span>Moderate</span>
       </button>
     </div>
-    <div class="flex py-2">
+    <div class="flex py-2 justify-between flex-wrap gap-3">
       <CustomDropdown :options="[Style.all, Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
        :name="'style'" :format="styleFormat.name" :default="Style.all" @dropdown-Changed="dropdownChanged"></CustomDropdown>
+      <CheckboxInput @checkbox-Changed="dropdownChanged" :name="'best'" :label="'Best times only'"></CheckboxInput>
     </div>
     <TimesList v-if="props.playerTimes" :times="props.playerTimes" :cols="[
     {
