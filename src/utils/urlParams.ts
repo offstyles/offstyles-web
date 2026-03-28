@@ -5,7 +5,7 @@ const update = function(name: string, value : number | string) {
   if(name === 'style' && value === Style.all){
     params.delete(name);
   }
-  if(['style', 'best', 'sort', 'recent', 'wr'].includes(name)) {
+  if(['style', 'best', 'sort', 'wr'].includes(name)) {
     params.delete('page');
   }
   //cant use router outside of setup component, so need to return the new query and use there instead

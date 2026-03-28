@@ -12,6 +12,7 @@ export interface TimesQuery {
   steamid?: string;
   best?: boolean;
   wr?: boolean;
+  recent?: boolean;
   sort?: SortType;
   limit?: number;
   page?: number;
@@ -120,6 +121,9 @@ class OffstylesApi extends Api {
     if (query.wr !== undefined) {
       params.set('wr', query.wr.toString());
     }
+    if (query.recent !== undefined) {
+      params.set('recent', query.recent.toString());
+    }
     if (query.sort) {
       params.set('sort', query.sort);
     }
@@ -189,11 +193,13 @@ class OffstylesApi extends Api {
     limit: number = 15,
     page: number = 1,
     wr: boolean = true,
+    best: boolean = true,
   ): Promise<WRAwareRecord[]> {
     const params = new URLSearchParams({
       limit: limit.toString(),
       page: page.toString(),
       wr: wr.toString(),
+      best: best.toString(),
     });
 
     if (style !== undefined && style !== Style.all) {
