@@ -24,7 +24,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://offstyles.tommyy.dev',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: true,
         cookieDomainRewrite: 'localhost',
