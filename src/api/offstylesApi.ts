@@ -87,7 +87,7 @@ export interface ModerationLogResponse {
 }
 
 class OffstylesApi extends Api {
-  static offstylesApiUrl = import.meta.env.DEV ? "/api" : "https://offstyles.tommyy.dev/api";
+  static offstylesApiUrl = "/api";
 
   // Fixed method signature to require style parameter
   static async getTimesByMap(
