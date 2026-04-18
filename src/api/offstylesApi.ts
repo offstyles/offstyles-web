@@ -84,8 +84,19 @@ class OffstylesApi extends Api {
   static async getTimes(filter: TimesFilter): Promise<TimesPage> {
     const params = new URLSearchParams();
 
-    if (filter.map) params.append("map", filter.map);
-    if (filter.steamid) params.append("steamid", filter.steamid);
+    switch (filter.scope.kind) {
+      case 'map':
+        params.append("map", filter.scope.map);
+        break;
+      case 'player':
+        params.append("steamid", filter.scope.steamid);
+        break;
+      case 'globals':
+        if (filter.scope.recent) params.append("recent", "true");
+        if (filter.scope.wr !== undefined) params.append("wr", filter.scope.wr.toString());
+        break;
+    }
+
     if (filter.style !== undefined && filter.style !== Style.all) {
       params.append("style", filter.style.toString());
     }
@@ -95,8 +106,6 @@ class OffstylesApi extends Api {
     if (filter.invalidated !== undefined) {
       params.append("invalidated", filter.invalidated.toString());
     }
-    if (filter.wr !== undefined) params.append("wr", filter.wr.toString());
-    if (filter.recent) params.append("recent", "true");
     params.append("page", filter.page.toString());
     params.append("limit", filter.limit.toString());
 

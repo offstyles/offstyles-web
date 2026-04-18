@@ -47,12 +47,12 @@
     mapTimes.value = null;
     loadError.value = null;
 
-    const filter = timesFilterFromQuery.fromQuery(
+    const filter = timesFilterFromQuery.forMap(
       urlParams.getAsObject(),
+      name,
       { style: Style.normal, sort: 'Fastest', best: true, limit: 50 },
       moderationStore.canInvalidateTimes.value,
     );
-    filter.map = name;
 
     try {
       const result = await OffstylesApi.getTimes(filter);

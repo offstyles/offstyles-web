@@ -7,7 +7,7 @@
   import RecentTimes from '@/components/RecentTimes.vue';
   import urlParams from '@/utils/urlParams';
   import type { Time } from '@/types/Time';
-  import type { TimesFilter } from '@/types/TimesFilter';
+  import timesFilterFromQuery from '@/utils/timesFilterFromQuery';
   import { Style } from '@/types/Style';
 
   const route = useRoute();
@@ -24,18 +24,12 @@
     isLoading.value = true;
     recentTimes.value = null;
     loadError.value = null;
-    const paramsObj = urlParams.getAsObject();
 
-    const styleRaw = paramsObj.style ? parseInt(paramsObj.style) : Style.all;
-    const pageRaw = paramsObj.page ? parseInt(paramsObj.page) : 1;
-    const filter: TimesFilter = {
-      style: styleRaw === Style.all || Number.isNaN(styleRaw) ? undefined : styleRaw,
-      page: Number.isFinite(pageRaw) && pageRaw >= 1 ? pageRaw : 1,
-      limit: 15,
-      wr: paramsObj.wr !== undefined ? paramsObj.wr === 'true' : true,
-      recent: true,
-      best: false,
-    };
+    const filter = timesFilterFromQuery.forGlobals(
+      urlParams.getAsObject(),
+      { style: Style.all, sort: 'Newest', best: false, limit: 15 },
+      { recent: true, wr: true },
+    );
 
     try {
       const result = await OffstylesApi.getTimes(filter);
