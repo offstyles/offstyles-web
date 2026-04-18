@@ -46,7 +46,7 @@
     return widths.join(' ');
   })
 
-  const rowWidthsStyle = computed(()=>totalRows.value > 1 ? '1fr 0.5fr' : '1fr');
+  const rowWidthsStyle = computed(()=>'auto');
 
   const totalRowsMobile = computed(()=>{
     return Math.max(...props.cols.map((v)=>(v.rowMobile ?? 1) + (v.rowSpanMobile ?? 1) - 1));
@@ -61,7 +61,7 @@
     return widths.join(' ');
   })
 
-  const rowWidthsStyleMobile = computed(()=>totalRowsMobile.value > 1 ? '1fr 0.5fr' : '1fr');
+  const rowWidthsStyleMobile = computed(()=>'auto');
 
   const moreDetailsCols: TimeListColumn[] = [
     { label: 'Jumps', data: 'jumps', col: 1 },
