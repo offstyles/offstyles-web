@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import TimesList from './TimesList.vue';
+  import TimesList from './TimeLists/TimesList.vue';
   import dateTimeFormats from '@/utils/dateTimeFormats';
   import timeLinks from '@/utils/timeLinks';
   import type { Time } from '@/types/Time';
@@ -10,7 +10,7 @@
   import urlParams from '@/utils/urlParams';
   import { useRouter } from 'vue-router';
   import CheckboxInput from './CheckboxInput.vue';
-  import TimesListPagination from './TimesListPagination.vue';
+  import TimesListPagination from './TimeLists/TimesListPagination.vue';
   import { ref, computed } from 'vue';
   import type { Ref } from 'vue';
 
@@ -23,67 +23,118 @@
     isLoading: boolean,
     total: number,
   }>()
- 
+
   const currentStyle: Ref<number> = ref(urlParams.getAsObject().style ? Number(urlParams.getAsObject().style) : Style.all);
 
   const showStyleColumn = computed(() => currentStyle.value === Style.all);
 
   const tableColumns = computed((): TimeListColumn[] => {
-    const columns: TimeListColumn[] = [
-      {
-        label: 'Player',
-        data: 'name',
-        width: showStyleColumn.value ? '18%' : '20%',
-        classes: 'font-semibold',
-        alignmentClasses: 'text-left',
-        link: timeLinks.playerLink
-      },
-      {
-        label: 'Map',
-        data: 'map',
-        width: showStyleColumn.value ? '18%' : '20%',
-        classes: 'text-gray-200',
-        alignmentClasses: 'text-right justify-end md:justify-start md:text-left',
-        link: timeLinks.mapLink
-      }
-    ];
+    const playerCol: TimeListColumn = {
+      label: 'Player',
+      data: 'name',
+      col: 1,
+      row: 1,
+      rowSpan: 2,
+      colMobile: 1,
+      rowMobile: 1,
+      width: showStyleColumn.value ? '20%' : '25%',
+      widthMobile: '30%',
+      classes: 'font-semibold',
+      alignmentClasses: 'text-left justify-start',
+      link: timeLinks.playerLink,
+    };
+
+    const mapCol: TimeListColumn = {
+      label: 'Map',
+      data: 'map',
+      col: 2,
+      row: 1,
+      colMobile: 1,
+      colSpanMobile: 2,
+      rowMobile: 2,
+      width: showStyleColumn.value ? '35%' : '45%',
+      classes: 'text-gray-200',
+      alignmentClasses: 'text-left justify-start',
+      link: timeLinks.mapLink,
+    };
+
+    const serverCol: TimeListColumn = {
+      label: 'Server',
+      data: 'server',
+      col: 2,
+      row: 2,
+      colMobile: 1,
+      colSpanMobile: 2,
+      rowMobile: 3,
+      classes: 'text-xs text-gray-400',
+      alignmentClasses: 'text-left justify-start text-gray-300',
+    };
+
+    const timeCol: TimeListColumn = {
+      label: 'Time',
+      data: 'time',
+      col: 3,
+      row: 1,
+      rowSpan: 2,
+      colMobile: 2,
+      colSpanMobile: 2,
+      rowMobile: 1,
+      width: showStyleColumn.value ? '30%' : '30%',
+      widthMobile: '20%',
+      classes: 'monospace',
+      alignmentClasses: 'text-right justify-end lg:text-left lg:justify-start lg:ml-16',
+      numFormat: dateTimeFormats.time,
+    };
 
     if (showStyleColumn.value) {
-      columns.push({
-        label: 'Style',
-        data: 'style',
-        width: '12%',
-        classes: 'text-sm text-gray-400',
-        alignmentClasses: 'text-right justify-end md:justify-start md:text-left',
-        numFormat: styleFormat.name
-      });
+      return [
+        playerCol,
+        mapCol,
+        serverCol,
+        timeCol,
+        {
+          label: 'Style',
+          data: 'style',
+          col: 4,
+          row: 1,
+          colMobile: 3,
+          rowMobile: 2,
+          width: '15%',
+          classes: 'text-sm text-gray-400',
+          alignmentClasses: 'text-right justify-end',
+          numFormat: styleFormat.name,
+        },
+        {
+          label: 'Date',
+          data: 'date',
+          col: 4,
+          row: 2,
+          colMobile: 3,
+          rowMobile: 3,
+          classes: 'text-xs text-gray-400',
+          alignmentClasses: 'text-right justify-end',
+          numFormat: dateTimeFormats.date,
+        },
+      ];
     }
 
-    columns.push(
-      {
-        label: 'Server',
-        data: 'server',
-        width: showStyleColumn.value ? '18%' : '20%',
-        classes: 'text-sm text-gray-400',
-        alignmentClasses: 'text-right justify-end md:justify-start md:text-left text-gray-300'
-      },
+    return [
+      playerCol,
+      mapCol,
+      serverCol,
+      timeCol,
       {
         label: 'Date',
         data: 'date',
-        width: showStyleColumn.value ? '12%' : '15%',
+        col: 3,
+        row: 2,
+        colMobile: 2,
+        rowMobile: 3,
+        classes: 'text-xs text-gray-400',
         alignmentClasses: 'text-right justify-end',
-        numFormat: dateTimeFormats.date
+        numFormat: dateTimeFormats.date,
       },
-      {
-        label: 'Time',
-        data: 'time',
-        width: showStyleColumn.value ? '22%' : '25%',
-        alignmentClasses: 'text-right justify-end monospace',
-        numFormat: dateTimeFormats.time
-      }
-    );
-
-    return columns;
+    ];
   });
 
   const dropdownChanged = async (name : string, value : number)=>{

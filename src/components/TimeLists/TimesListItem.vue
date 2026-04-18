@@ -2,12 +2,12 @@
   import type { Time } from '@/types/Time';
   import type { TimeListColumn } from '@/types/TimeListColumn';
   import type { Ref } from 'vue';
-  import { computed, ref } from 'vue';
-  import TimesListItemContent from './TimesListItemContent.vue';
+  import { computed, ref, onMounted, onUnmounted } from 'vue';
+  import TimesListItemColumn from './TimesListItemColumn.vue';
   import TimesListItemMoreDetails from './TimesListItemMoreDetails.vue';
-  import ModerationModal from './Moderation/ModerationModal.vue';
+  import ModerationModal from '../Moderation/ModerationModal.vue';
   import { useModerationStore, type ModerationTarget } from '@/stores/moderation';
-  
+
   const props = defineProps<{
       time: Time,
       wrTime: Time,
@@ -25,22 +25,48 @@
   const contextMenuX: Ref<number> = ref(0);
   const contextMenuY: Ref<number> = ref(0);
 
-  const colWidthsStyle = computed(()=>{
-    return props.cols.map((v)=>v.width ? v.width : 'auto').join(' ');
+  const totalRows = computed(()=>{
+    return Math.max(...props.cols.map((v)=>(v.row ?? 1) + (v.rowSpan ?? 1) - 1));
   })
+
+  const maxCol = computed(()=>{
+    return Math.max(...props.cols.map((v)=>v.col + (v.colSpan ?? 1) - 1));
+  })
+
+  const maxColMobile = computed(()=>{
+    return Math.max(...props.cols.map((v)=>(v.colMobile ?? 1) + (v.colSpanMobile ?? 1) - 1));
+  })
+
+  const colWidthsStyle = computed(()=>{
+    const widths: string[] = [];
+    for (let i = 1; i <= maxCol.value; i++) {
+      const match = props.cols.find((c)=>c.col === i && c.width);
+      widths.push(match?.width ?? 'auto');
+    }
+    return widths.join(' ');
+  })
+
+  const rowWidthsStyle = computed(()=>'auto');
+
+  const totalRowsMobile = computed(()=>{
+    return Math.max(...props.cols.map((v)=>(v.rowMobile ?? 1) + (v.rowSpanMobile ?? 1) - 1));
+  })
+
+  const colWidthsStyleMobile = computed(()=>{
+    const widths: string[] = [];
+    for (let i = 1; i <= maxColMobile.value; i++) {
+      const match = props.cols.find((c)=>(c.colMobile ?? 1) === i && c.widthMobile);
+      widths.push(match?.widthMobile ?? 'auto');
+    }
+    return widths.join(' ');
+  })
+
+  const rowWidthsStyleMobile = computed(()=>'auto');
+
   const moreDetailsCols: TimeListColumn[] = [
-    {
-      label:'Jumps',
-      data:'jumps'
-    },
-    {
-      label: 'Strafes',
-      data:'strafes'
-    },
-    {
-      label: 'Sync',
-      data:'sync'
-    },
+    { label: 'Jumps', data: 'jumps', col: 1 },
+    { label: 'Strafes', data: 'strafes', col: 2 },
+    { label: 'Sync', data: 'sync', col: 3 },
   ];
 
   const showDetails: Ref<boolean> = ref(false);
@@ -71,7 +97,6 @@
     showModerationModal.value = false;
   }
 
-  // Context menu functions
   const handleRightClick = (event: MouseEvent) => {
     if (moderationStore.canModerate.value && props.time._id) {
       event.preventDefault();
@@ -90,15 +115,12 @@
     closeContextMenu();
   }
 
-  // Close context menu when clicking elsewhere
   const handleDocumentClick = () => {
     if (showContextMenu.value) {
       closeContextMenu();
     }
   }
 
-  // Add document click listener
-  import { onMounted, onUnmounted } from 'vue';
   onMounted(() => {
     document.addEventListener('click', handleDocumentClick);
   });
@@ -106,7 +128,6 @@
   onUnmounted(() => {
     document.removeEventListener('click', handleDocumentClick);
   });
-
 </script>
 
 
@@ -119,18 +140,10 @@
     <div class="grid os-grid-cols-auto p-1.5 px-1
        cursor-pointer transition-[padding border-color background-color] duration-200  hover:pb-2.5 relative"
     :class="showDetails ?
-      'pb-2' : ''" 
+      'pb-2' : ''"
     @click="toggleDetails()"
     @contextmenu="handleRightClick">
-      
-      <div v-for="(col,index) in props.cols" :key="index" class="grid-col flex" :class="col.alignmentClasses">
-        <a v-if="col.link" :href="col.link(props.time)" class="group/timeLink flex w-full px-1.5" @click.stop :class="`${col.classes} ${col.alignmentClasses}`">
-          <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
-        </a>
-        <div v-else class="flex w-full px-1.5" :class="col.classes">
-          <TimesListItemContent :col="col" :time="props.time" :wrTime="props.wrTime"></TimesListItemContent>
-        </div>
-      </div>
+      <TimesListItemColumn v-for="(col,index) in props.cols" :key="index" :time="time" :wrTime="wrTime" :col="col"></TimesListItemColumn>
     </div>
     <TimesListItemMoreDetails v-if="showDetails" :time="props.time" :cols="moreDetailsCols"></TimesListItemMoreDetails>
 
@@ -143,7 +156,7 @@
     />
 
     <!-- Context Menu -->
-    <div 
+    <div
       v-if="showContextMenu"
       class="fixed bg-main-800 border border-main-400 rounded-lg shadow-xl py-1 z-50 min-w-[150px]"
       :style="{ left: contextMenuX + 'px', top: contextMenuY + 'px' }"
@@ -161,55 +174,16 @@
 </template>
 
 <style scoped>
-  .os-grid-cols-auto{
-    grid-template-columns: v-bind('colWidthsStyle');
+  @media(min-width:768px){
+    .os-grid-cols-auto{
+      grid-template-columns: v-bind('colWidthsStyle');
+      grid-template-rows: v-bind('rowWidthsStyle');
+    }
   }
   @media(max-width:767px){
     .os-grid-cols-auto{
-      grid-template-columns: 40% 60%;
-      grid-template-rows: repeat(2, 1fr);
-    }
-    .os-grid-cols-auto>.grid-col{
-      width:100%;
-    }
-    .os-grid-cols-auto>.grid-col:nth-child(1n){
-      text-align: left;
-      justify-content: left;
-    }
-    .os-grid-cols-auto>.grid-col:nth-child(2n){
-      text-align: right;
-      justify-content: right;
-    }
-    .os-grid-cols-auto>.grid-col:nth-child(2n+1):last-child{
-      grid-column:span 2;
-    }
-  }
-</style>
-
-
-
-<style scoped>
-  .os-grid-cols-auto{
-    grid-template-columns: v-bind('colWidthsStyle');
-  }
-  @media(max-width:767px){
-    .os-grid-cols-auto{
-      grid-template-columns: 40% 60%;
-      grid-template-rows: repeat(2, 1fr);
-    }
-    .os-grid-cols-auto>.grid-col{
-      width:100%;
-    }
-    .os-grid-cols-auto>.grid-col:nth-child(1n){
-      text-align: left;
-      justify-content: left;
-    }
-    .os-grid-cols-auto>.grid-col:nth-child(2n){
-      text-align: right;
-      justify-content: right;
-    }
-    .os-grid-cols-auto>.grid-col:nth-child(2n+1):last-child{
-      grid-column:span 2;
+      grid-template-columns: v-bind('colWidthsStyleMobile');
+      grid-template-rows: v-bind('rowWidthsStyleMobile');
     }
   }
 </style>

@@ -3,7 +3,7 @@
   import type { TimeListColumn } from '@/types/TimeListColumn';
   import timeLinks from '@/utils/timeLinks';
   import { computed } from 'vue';
-  import RelativeDate from './RelativeDate.vue';
+  import RelativeDate from '../RelativeDate.vue';
   const props = defineProps<{
       time: Time,
       cols: TimeListColumn[]

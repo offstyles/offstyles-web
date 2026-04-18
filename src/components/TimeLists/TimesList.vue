@@ -5,7 +5,7 @@ import TimesListItem from './TimesListItem.vue';
 import type { Time } from '@/types/Time';
 import type { TimeListColumn } from '@/types/TimeListColumn';
 import TimesListHeading from './TimesListHeading.vue';
-import BulkModerationModal from './Moderation/BulkModerationModal.vue';
+import BulkModerationModal from '../Moderation/BulkModerationModal.vue';
 import { useModerationStore } from '@/stores/moderation';
 
   const props = defineProps<{
