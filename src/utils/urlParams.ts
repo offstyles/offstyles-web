@@ -28,4 +28,17 @@ const clearPage = function() {
   return Object.fromEntries(params)
 }
 
-export default {update, get, getAsObject, clearPage};
+const updateMany = function(updates: Record<string, string | number | boolean | undefined>) {
+  const params = new URLSearchParams(window.location.search);
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === undefined || (key === 'style' && value === Style.all)) {
+      params.delete(key);
+    } else {
+      params.set(key, String(value));
+    }
+  }
+  params.delete('page');
+  return Object.fromEntries(params);
+};
+
+export default {update, get, getAsObject, clearPage, updateMany};

@@ -20,7 +20,8 @@
 
   const props = defineProps<{
     recentTimes: Time[] | null,
-    isLoading: boolean
+    isLoading: boolean,
+    total: number,
   }>()
  
   const currentStyle: Ref<number> = ref(urlParams.getAsObject().style ? Number(urlParams.getAsObject().style) : Style.all);
@@ -90,11 +91,9 @@
       currentStyle.value = value;
     }
     await router.replace({query:urlParams.update(name, value)});
-    emit('updateRecentTimes');
   }
   const paginationChanged = async (page: number)=>{
     await router.replace({query:urlParams.update('page', page)});
-    emit('updateRecentTimes');
   }
 </script>
 
@@ -106,12 +105,12 @@
     <div class="flex py-2 justify-between flex-wrap gap-3">
       <CustomDropdown :options="[Style.all, Style.normal, Style.sideways, Style.wonly, Style.legit_scroll, Style.half_sideways, Style.a_d_only, Style.segmented]"
        :name="'style'" :format="styleFormat.name" :default="Style.all" @dropdown-Changed="dropdownChanged"></CustomDropdown>
-      <CheckboxInput @checkbox-Changed="dropdownChanged" :name="'wr'" :label="'Only show WR times'"></CheckboxInput>
+      <CheckboxInput @checkbox-Changed="dropdownChanged" :name="'wr'" :label="'Only show WR times'" :default="true"></CheckboxInput>
     </div>
     <TimesList v-if="props.recentTimes" :times="props.recentTimes" :cols="tableColumns"
     @refresh-data="emit('updateRecentTimes')"
     ></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected parameters</h1>
-    <TimesListPagination :limitPerPage="15" :times="props.recentTimes" :isLoading = "props.isLoading" @pagination-changed="paginationChanged"></TimesListPagination>
+    <TimesListPagination :limitPerPage="15" :times="props.recentTimes" :isLoading = "props.isLoading" :total="props.total" @pagination-changed="paginationChanged"></TimesListPagination>
   </div>
 </template>

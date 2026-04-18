@@ -4,19 +4,19 @@
   import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
   import IconCheck from './icons/IconCheck.vue';
   import IconChevronUpDown from './icons/IconChevronUpDown.vue';
-  import { Style } from '@/types/Style';
   import urlParams from '@/utils/urlParams';
   const emit = defineEmits(['dropdown-Changed']);
-  
+
   const props = defineProps<{
-    options: (number)[], 
+    options: (number)[],
     name: string,
     format: (value: number) => string,
     default: number
   }>()
 
-  const currentInput : Ref<number> = ref(urlParams.getAsObject().style ? Number(urlParams.getAsObject().style) : props.default);
-  
+  const initial = urlParams.getAsObject()[props.name];
+  const currentInput : Ref<number> = ref(initial !== undefined ? Number(initial) : props.default);
+
   watch(currentInput, async() => {
     emit('dropdown-Changed', props.name, currentInput.value);
   });

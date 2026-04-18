@@ -6,9 +6,13 @@
   const props = defineProps<{
     name: string,
     label: string,
+    default?: boolean,
   }>()
-  const currentInput : Ref<boolean> = ref(urlParams.getAsObject().wr ? urlParams.getAsObject().wr === 'true' : true);
-  
+  const initial = urlParams.getAsObject()[props.name];
+  const currentInput : Ref<boolean> = ref(
+    initial !== undefined ? initial === 'true' : (props.default ?? false)
+  );
+
   watch(currentInput, async() => {
     emit('checkbox-Changed', props.name, currentInput.value);
   });
