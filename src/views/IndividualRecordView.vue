@@ -2,7 +2,7 @@
   import { ref, onMounted, computed } from 'vue'
   import type { Ref } from 'vue'
   import OffstylesApi from '@/api/offstylesApi';
-  import type { WRAwareRecord } from '@/api/offstylesApi';
+  import type { Time } from '@/types/Time';
   import loadWheel from '@/components/icons/loadWheel.vue';
   import dateTimeFormats from '@/utils/dateTimeFormats';
   import RelativeDate from '@/components/RelativeDate.vue';
@@ -18,7 +18,7 @@
   const router = useRouter();
   const { isLoggedIn } = useAuth();
   const isLoading: Ref<boolean> = ref(false);
-  const record: Ref<WRAwareRecord | null> = ref(null);
+  const record: Ref<Time | null> = ref(null);
   const error: Ref<string | null> = ref(null);
   const showReplayViewer: Ref<boolean> = ref(false);
 

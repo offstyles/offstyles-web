@@ -1,17 +1,9 @@
 import { Style } from '@/types/Style';
 import Api from './api';
-import type { Time } from '@/types/Time';
+import type { Time, TimesPage } from '@/types/Time';
+import type { TimesFilter } from '@/types/TimesFilter';
 import type { User } from '@/types/User';
 import type { RecentModAction, ModerationTargetFilter, ModerationAction } from '@/types/moderation';
-
-// Add new interfaces based on the API spec
-export interface RankAwareRecord extends Time {
-  rank: number;
-}
-
-export interface WRAwareRecord extends Time {
-  wr_time: number;
-}
 
 export interface ReturnStyle {
   name: string;
@@ -89,74 +81,36 @@ export interface ModerationLogResponse {
 class OffstylesApi extends Api {
   static offstylesApiUrl = "/api";
 
-  // Fixed method signature to require style parameter
-  static async getTimesByMap(
-    mapName: string,
-    style: number = Style.normal,
-    steamid?: string,
-    limit: number = 50,
-    page: number = 1,
-  ): Promise<RankAwareRecord[]> {
-    const params = new URLSearchParams({
-      map: mapName,
-      style: style.toString(),
-      limit: limit.toString(),
-      page: page.toString(),
-    });
+  static async getTimes(filter: TimesFilter): Promise<TimesPage> {
+    const params = new URLSearchParams();
 
-    if (steamid) {
-      params.append("steamid", steamid);
+    if (filter.map) params.append("map", filter.map);
+    if (filter.steamid) params.append("steamid", filter.steamid);
+    if (filter.style !== undefined && filter.style !== Style.all) {
+      params.append("style", filter.style.toString());
     }
-
-    this.url = `${this.offstylesApiUrl}/map?${params.toString()}`;
-    return await this.fetchFromUrl();
-  }
-
-  static async getTimesByPlayer(
-    steamID: string,
-    map?: string,
-    style: number = Style.all,
-    limit: number = 50,
-    page: number = 1,
-    best: boolean = false,
-  ): Promise<WRAwareRecord[]> {
-    const params = new URLSearchParams({
-      steamid: steamID,
-      limit: limit.toString(),
-      page: page.toString(),
-      best: best.toString(),
-    });
-
-    if (map) {
-      params.append("map", map);
+    if (filter.sort) params.append("sort", filter.sort);
+    if (filter.best !== undefined) params.append("best", filter.best.toString());
+    if (filter.has_replay) params.append("has_replay", "true");
+    if (filter.invalidated !== undefined) {
+      params.append("invalidated", filter.invalidated.toString());
     }
+    if (filter.wr !== undefined) params.append("wr", filter.wr.toString());
+    if (filter.recent) params.append("recent", "true");
+    params.append("page", filter.page.toString());
+    params.append("limit", filter.limit.toString());
 
-    if (style !== undefined && style !== Style.all) {
-      params.append("style", style.toString());
+    const response = await fetch(`${this.offstylesApiUrl}/times?${params.toString()}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
     }
-
-    this.url = `${this.offstylesApiUrl}/times?${params.toString()}`;
-    return await this.fetchFromUrl();
-  }
-
-  static async getRecentTimes(
-    style: number = Style.all,
-    limit: number = 15,
-    page: number = 1,
-    wr: boolean = true,
-  ): Promise<WRAwareRecord[]> {
-    const params = new URLSearchParams({
-      limit: limit.toString(),
-      page: page.toString(),
-      wr: wr.toString(),
-    });
-
-    if (style !== undefined && style !== Style.all) {
-      params.append("style", style.toString());
-    }
-
-    this.url = `${this.offstylesApiUrl}/recent?${params.toString()}`;
-    return await this.fetchFromUrl();
+    return await response.json();
   }
 
   // New methods based on the API spec
@@ -178,13 +132,23 @@ class OffstylesApi extends Api {
     return await this.fetchFromUrl();
   }
 
-  static async getSingleTime(id: string): Promise<WRAwareRecord> {
-    const params = new URLSearchParams({
-      id: id,
-    });
-
-    this.url = `${this.offstylesApiUrl}/time?${params.toString()}`;
-    return await this.fetchFromUrl();
+  static async getSingleTime(id: string): Promise<Time> {
+    const params = new URLSearchParams({ ids: id, limit: '1', page: '1' });
+    const response = await fetch(`${this.offstylesApiUrl}/times?${params.toString()}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const error: JsonError = JSON.parse(errorText);
+        throw new Error(`${error.code}: ${error.reason}`);
+      } catch {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+    }
+    const page: TimesPage = await response.json();
+    if (page.data.length === 0) {
+      throw new Error('404: Record not found');
+    }
+    return page.data[0];
   }
 
   static async getStyles(): Promise<ReturnStyle[]> {
