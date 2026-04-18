@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import TimesList from './TimesList.vue';
+  import TimesList from './TimeLists/TimesList.vue';
   import TimesFilterBar from './TimesFilterBar.vue';
   import dateTimeFormats from '@/utils/dateTimeFormats';
   import timeLinks from '@/utils/timeLinks';
@@ -9,7 +9,7 @@
   import urlParams from '@/utils/urlParams';
   import { useRoute, useRouter } from 'vue-router';
   import { computed } from 'vue';
-  import TimesListPagination from './TimesListPagination.vue';
+  import TimesListPagination from './TimeLists/TimesListPagination.vue';
 
   const route = useRoute();
   const router = useRouter();
@@ -62,29 +62,52 @@
       label: 'Player',
       data: 'name',
       placement: true,
-      width:'25%',
-      alignmentClasses: 'text-left',
+      col: 1,
+      row: 1,
+      rowSpan: 2,
+      colMobile: 1,
+      rowMobile: 1,
+      width: '25%',
+      widthMobile: '40%',
+      alignmentClasses: 'text-left justify-start',
       link: timeLinks.playerLink
     },
     {
       label: 'Server',
       data: 'server',
-      width: '30%',
+      col: 2,
+      row: 1,
+      rowSpan: 2,
+      colMobile: 1,
+      colSpanMobile: 2,
+      rowMobile: 2,
+      width: '45%',
       classes: 'text-sm text-gray-400',
-      alignmentClasses: 'text-left text-gray-300'
-    },
-    {
-      label: 'Date',
-      data: 'date',
-      width:'15%',
-      alignmentClasses: 'text-right justify-end',
+      alignmentClasses: 'text-left justify-start text-gray-300'
     },
     {
       label: 'Time',
       data: 'time',
+      col: 3,
+      row: 1,
+      colMobile: 2,
+      colSpanMobile: 2,
+      rowMobile: 1,
       width: '30%',
-      alignmentClasses: 'text-right justify-end monospace',
+      widthMobile: '25%',
+      classes: 'monospace',
+      alignmentClasses: 'text-right justify-end',
       numFormat: dateTimeFormats.time
+    },
+    {
+      label: 'Date',
+      data: 'date',
+      col: 3,
+      row: 2,
+      colMobile: 3,
+      rowMobile: 2,
+      classes: 'text-xs text-gray-400',
+      alignmentClasses: 'text-right justify-end',
     }]"
     @refresh-data="() => emit('updateMap', props.mapName)"
     ></TimesList>

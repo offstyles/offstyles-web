@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import TimesList from './TimesList.vue';
+  import TimesList from './TimeLists/TimesList.vue';
   import TimesFilterBar from './TimesFilterBar.vue';
   import dateTimeFormats from '@/utils/dateTimeFormats';
   import timeLinks from '@/utils/timeLinks';
@@ -16,7 +16,7 @@
   import OffstylesApi from '@/api/offstylesApi';
   import ModerationModal from './Moderation/ModerationModal.vue';
   import { useModerationStore, type ModerationTarget } from '@/stores/moderation';
-  import TimesListPagination from './TimesListPagination.vue';
+  import TimesListPagination from './TimeLists/TimesListPagination.vue';
 
   const route = useRoute();
   const router = useRouter();
@@ -57,51 +57,107 @@
   const showStyleColumn = computed(() => currentFilter.value.style === Style.all);
 
   const tableColumns = computed((): TimeListColumn[] => {
-    const columns: TimeListColumn[] = [
-      {
-        label: 'Map',
-        data: 'map',
-        width: showStyleColumn.value ? '22%' : '25%',
-        alignmentClasses: 'text-left',
-        link: timeLinks.mapLink,
-      },
-      {
-        label: 'Server',
-        data: 'server',
-        width: showStyleColumn.value ? '25%' : '30%',
-        classes: 'text-sm text-gray-400',
-        alignmentClasses: 'text-left text-gray-300',
-      },
-    ];
+    const mapCol: TimeListColumn = {
+      label: 'Map',
+      data: 'map',
+      col: 1,
+      row: 1,
+      rowSpan: 2,
+      colMobile: 1,
+      rowMobile: 1,
+      width: showStyleColumn.value ? '20%' : '30%',
+      widthMobile: '40%',
+      alignmentClasses: 'text-left justify-start',
+      link: timeLinks.mapLink,
+    };
+
+    const serverCol: TimeListColumn = {
+      label: 'Server',
+      data: 'server',
+      col: 2,
+      row: 1,
+      rowSpan: 2,
+      colMobile: 1,
+      colSpanMobile: 3,
+      rowMobile: 2,
+      width: showStyleColumn.value ? '30%' : '35%',
+      classes: 'text-sm text-gray-400',
+      alignmentClasses: 'text-left justify-start text-gray-300',
+    };
 
     if (showStyleColumn.value) {
-      columns.push({
-        label: 'Style',
-        data: 'style',
-        width: '12%',
-        classes: 'text-sm text-gray-400',
-        alignmentClasses: 'text-right justify-end md:justify-start md:text-left',
-        numFormat: styleFormat.name,
-      });
+      return [
+        mapCol,
+        serverCol,
+        {
+          label: 'Style',
+          data: 'style',
+          col: 3,
+          row: 1,
+          colMobile: 1,
+          colSpanMobile: 2,
+          rowMobile: 3,
+          width: '18%',
+          classes: 'text-sm text-gray-400',
+          alignmentClasses: 'text-left justify-start',
+          numFormat: styleFormat.name,
+        },
+        {
+          label: 'Date',
+          data: 'date',
+          col: 3,
+          row: 2,
+          colMobile: 3,
+          rowMobile: 3,
+          classes: 'text-xs text-gray-400',
+          alignmentClasses: 'text-right justify-end md:text-left md:justify-start',
+        },
+        {
+          label: 'Time',
+          data: 'time',
+          col: 4,
+          row: 1,
+          rowSpan: 2,
+          colMobile: 2,
+          colSpanMobile: 2,
+          rowMobile: 1,
+          width: '32%',
+          widthMobile: '25%',
+          classes: 'monospace',
+          alignmentClasses: 'text-right justify-end',
+          numFormat: dateTimeFormats.time,
+        },
+      ];
     }
 
-    columns.push(
-      {
-        label: 'Date',
-        data: 'date',
-        width: showStyleColumn.value ? '13%' : '15%',
-        alignmentClasses: 'text-right justify-end',
-      },
+    return [
+      mapCol,
+      serverCol,
       {
         label: 'Time',
         data: 'time',
-        width: showStyleColumn.value ? '28%' : '30%',
-        alignmentClasses: 'text-right justify-end monospace',
+        col: 3,
+        row: 1,
+        colMobile: 2,
+        colSpanMobile: 2,
+        rowMobile: 1,
+        width: '35%',
+        widthMobile: '25%',
+        classes: 'monospace',
+        alignmentClasses: 'text-right justify-end',
         numFormat: dateTimeFormats.time,
       },
-    );
-
-    return columns;
+      {
+        label: 'Date',
+        data: 'date',
+        col: 3,
+        row: 2,
+        colMobile: 3,
+        rowMobile: 2,
+        classes: 'text-xs text-gray-400',
+        alignmentClasses: 'text-right justify-end',
+      },
+    ];
   });
 
   const moderationTarget = computed((): ModerationTarget | null => {
