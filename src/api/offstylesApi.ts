@@ -78,6 +78,20 @@ export interface ModerationLogResponse {
   actions: ModerationLogAction[];
 }
 
+async function throwApiError(response: Response): Promise<never> {
+  const errorText = await response.text();
+  let parsed: JsonError | null = null;
+  try {
+    parsed = JSON.parse(errorText);
+  } catch {
+    // response body was not JSON — fall through
+  }
+  if (parsed && typeof parsed.code === 'number' && typeof parsed.reason === 'string') {
+    throw new Error(`${parsed.code}: ${parsed.reason}`);
+  }
+  throw new Error(`${response.status}: ${response.statusText || errorText.slice(0, 200)}`);
+}
+
 class OffstylesApi extends Api {
   static offstylesApiUrl = "/api";
 
@@ -101,15 +115,7 @@ class OffstylesApi extends Api {
     params.append("limit", filter.limit.toString());
 
     const response = await fetch(`${this.offstylesApiUrl}/times?${params.toString()}`);
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
     return await response.json();
   }
 
@@ -165,15 +171,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return response;
   }
@@ -198,15 +196,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
   }
 
   static async moderateRecord(
@@ -237,15 +227,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
   }
 
   // Get user profile data
@@ -256,15 +238,7 @@ class OffstylesApi extends Api {
 
     const response = await fetch(`${this.offstylesApiUrl}/profile?${params.toString()}`);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -305,15 +279,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -353,15 +319,7 @@ class OffstylesApi extends Api {
       credentials: "include",
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     // The API returns the created key info as KeyReturnJson
     return await response.json();
@@ -382,15 +340,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -406,15 +356,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -428,15 +370,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -451,15 +385,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     // Handle plain text response "true"
     const responseText = await response.text();
@@ -479,15 +405,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -513,15 +431,7 @@ class OffstylesApi extends Api {
       credentials: "include", // Include cookies for session authentication
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.text();
   }
@@ -544,15 +454,7 @@ class OffstylesApi extends Api {
       },
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -577,15 +479,7 @@ class OffstylesApi extends Api {
       },
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -610,15 +504,7 @@ class OffstylesApi extends Api {
       },
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -634,15 +520,7 @@ class OffstylesApi extends Api {
       credentials: "include",
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
@@ -661,15 +539,7 @@ class OffstylesApi extends Api {
       credentials: "include",
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      try {
-        const error: JsonError = JSON.parse(errorText);
-        throw new Error(`${error.code}: ${error.reason}`);
-      } catch {
-        throw new Error(`${response.status}: ${response.statusText}`);
-      }
-    }
+    if (!response.ok) await throwApiError(response);
 
     return await response.json();
   }
