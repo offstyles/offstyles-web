@@ -1,4 +1,4 @@
-import type { TimesFilter, SortOrder } from '@/types/TimesFilter';
+import type { TimesFilter, SortOrder, TimesScope } from '@/types/TimesFilter';
 import { Style } from '@/types/Style';
 
 export interface FilterDefaults {
@@ -14,20 +14,26 @@ const parseSort = function(raw: string | undefined, fallback: SortOrder): SortOr
   return VALID_SORTS.includes(raw as SortOrder) ? (raw as SortOrder) : fallback;
 };
 
-const fromQuery = function(
-  query: Record<string, string>,
-  defaults: FilterDefaults,
-  canSeeInvalidated: boolean = false,
-): TimesFilter {
-  const styleRaw = query.style ? parseInt(query.style) : defaults.style;
-  const style = styleRaw === Style.all || Number.isNaN(styleRaw) ? undefined : styleRaw;
+const parsePage = function(raw: string | undefined): number {
+  const n = raw ? parseInt(raw) : 1;
+  return Number.isFinite(n) && n >= 1 ? n : 1;
+};
 
-  const pageRaw = query.page ? parseInt(query.page) : 1;
-  const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? pageRaw : 1;
+const parseStyle = function(raw: string | undefined, fallback: number): number | undefined {
+  const n = raw ? parseInt(raw) : fallback;
+  return n === Style.all || Number.isNaN(n) ? undefined : n;
+};
 
+interface BaseArgs {
+  query: Record<string, string>;
+  defaults: FilterDefaults;
+  canSeeInvalidated?: boolean;
+}
+
+function baseFilter({ query, defaults, canSeeInvalidated = false }: BaseArgs): Omit<TimesFilter, 'scope'> {
   return {
-    style,
-    page,
+    style: parseStyle(query.style, defaults.style),
+    page: parsePage(query.page),
     limit: defaults.limit,
     sort: parseSort(query.sort, defaults.sort),
     best: query.best !== undefined ? query.best === 'true' : defaults.best,
@@ -37,6 +43,36 @@ const fromQuery = function(
       ? query.invalidated === 'true'
       : undefined,
   };
+}
+
+const forMap = function(
+  query: Record<string, string>,
+  mapName: string,
+  defaults: FilterDefaults,
+  canSeeInvalidated: boolean,
+): TimesFilter {
+  return { ...baseFilter({ query, defaults, canSeeInvalidated }), scope: { kind: 'map', map: mapName } };
 };
 
-export default { fromQuery };
+const forPlayer = function(
+  query: Record<string, string>,
+  steamid: string,
+  defaults: FilterDefaults,
+  canSeeInvalidated: boolean,
+): TimesFilter {
+  return { ...baseFilter({ query, defaults, canSeeInvalidated }), scope: { kind: 'player', steamid } };
+};
+
+const forGlobals = function(
+  query: Record<string, string>,
+  defaults: FilterDefaults,
+  scope: Omit<TimesScope & { kind: 'globals' }, 'kind'> = { recent: true, wr: true },
+): TimesFilter {
+  const wr = query.wr !== undefined ? query.wr === 'true' : scope.wr;
+  return {
+    ...baseFilter({ query, defaults }),
+    scope: { kind: 'globals', recent: scope.recent, wr },
+  };
+};
+
+export default { forMap, forPlayer, forGlobals };
