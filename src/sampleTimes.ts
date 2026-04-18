@@ -10,13 +10,14 @@ const sampleTimes : Time[] = [{
     strafes: 2416224402,
     jumps: 3222771933,
     date: 2460341901,
-    tickrate: 100,
-    replay: null,
+    replay_ref: null,
     style: 7,
+    is_invalid: false,
+    is_banned: false,
+    invalid_ref: null,
     server: {
-      ip: "62.175.236.81",
-      name: "TvwkLBcQRwZieAD",
-      internal_id: "PWsHDFKRKRwPiBL",
+      hostname: "Sample Server #1",
+      key_id: "sample_key_id_1",
     }
   },
   {
@@ -29,13 +30,14 @@ const sampleTimes : Time[] = [{
     strafes: 2416224402,
     jumps: 3222771933,
     date: 2460341901,
-    tickrate: 100,
-    replay: null,
+    replay_ref: null,
     style: 7,
+    is_invalid: false,
+    is_banned: false,
+    invalid_ref: null,
     server: {
-      ip: "62.175.236.81",
-      name: "TvwkLBcQRwZieAD",
-      internal_id: "PWsHDFKRKRwPiBL",
+      hostname: "Sample Server #2",
+      key_id: "sample_key_id_2",
     }
   },
 ];

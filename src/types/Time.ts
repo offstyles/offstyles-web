@@ -1,7 +1,6 @@
 export interface RecordHeaders {
-  ip: string;
-  server: string;
-  internal_server_id: string;
+  hostname: string;
+  key_id: string;
 }
 
 export interface Time {
@@ -20,6 +19,11 @@ export interface Time {
   is_banned: boolean;
   invalid_ref?: string | null;
   server?: RecordHeaders | null;
-  rank?: number;
-  wr_time?: number;
+  rank?: number | null;
+  wr_time?: number | null;
+}
+
+export interface TimesPage {
+  data: Time[];
+  total: number;
 }

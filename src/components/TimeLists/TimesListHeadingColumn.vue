@@ -1,16 +1,19 @@
 <script setup lang="ts">
   import type { TimeListColumn } from '@/types/TimeListColumn';
   import { computed } from 'vue';
+
   const props = defineProps<{
       col: TimeListColumn
     }>();
 
-
+  // Mobile: only render a header label for columns on row 1.
+  // Secondary rows (rowMobile > 1) are self-explanatory from their data content.
+  const hideOnMobile = computed(()=>(props.col.rowMobile ?? 1) > 1);
 </script>
 
 
 <template>
-    <div class="px-1.5 time-grid-heading-col">
+    <div class="px-1.5 time-grid-heading-col" :class="hideOnMobile ? 'max-md:hidden' : ''">
       <div :class="`${col.alignmentClasses} ${col.row && col.row > 1 ? 'text-gray-500 leading-[1.17em]' : ''}`">{{ col.label }}</div>
     </div>
 </template>

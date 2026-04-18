@@ -2,44 +2,48 @@
   import type { TimeListColumn } from '@/types/TimeListColumn';
   import TimesListHeadingColumn from './TimesListHeadingColumn.vue';
   import { computed } from 'vue';
+
   const props = defineProps<{
       cols: TimeListColumn[]
     }>();
 
-  const totalCols = computed(()=>{
-    return Math.max(...props.cols.map((v)=>{return v.col && v.colSpan ? v.col+v.colSpan : 1}));
-  })
-  const totalRows = computed(()=>{
-    return Math.max(...props.cols.map((v)=>{return v.row && v.rowSpan ? v.row+v.rowSpan : 1}));
-  })
-
-  const colWidthsStyle = computed(()=>{
-    return props.cols.filter((v)=>v.row === undefined || v.row === 1) //only first row
-    .sort((a,b)=>a.col - b.col) //sort into correct col order
-    .map((v)=>v.width ? v.width : 'auto').join(' '); //make css
-  })
-
-  const rowWidthsStyle = computed(()=>{
-    return '1fr'; 
-  })
-
-    const totalRowsMobile = computed(()=>{
-    return Math.max(...props.cols.map((v)=>{return v.rowMobile && v.rowSpanMobile ? v.rowMobile+v.rowSpanMobile : 1}));
-  })
-
   const firstRowCols = computed(()=>{
     return props.cols.filter((v)=>v.row === undefined || v.row === 1);
   })
-  
-  const colWidthsStyleMobile = computed(()=>{
-    return props.cols.filter((v)=>(v.rowMobile === undefined || v.rowMobile === 1)) //only first row
-    .sort((a,b)=>(a.colMobile ?? 1) - (b.colMobile ?? 1)) //sort into correct col order
-    .map((v)=>v.widthMobile ? v.widthMobile : 'auto').join(' '); //make css
+
+  const maxCol = computed(()=>{
+    return Math.max(...props.cols.map((v)=>v.col + (v.colSpan ?? 1) - 1));
   })
 
-  const rowWidthsStyleMobile = computed(()=>{
-    return totalRowsMobile.value > 1 ? '1fr 0.5fr' : '1fr'; 
-  });
+  const maxColMobile = computed(()=>{
+    return Math.max(...props.cols.map((v)=>(v.colMobile ?? 1) + (v.colSpanMobile ?? 1) - 1));
+  })
+
+  const colWidthsStyle = computed(()=>{
+    const widths: string[] = [];
+    for (let i = 1; i <= maxCol.value; i++) {
+      const match = props.cols.find((c)=>c.col === i && c.width);
+      widths.push(match?.width ?? 'auto');
+    }
+    return widths.join(' ');
+  })
+
+  const rowWidthsStyle = computed(()=>'1fr');
+
+  const totalRowsMobile = computed(()=>{
+    return Math.max(...props.cols.map((v)=>(v.rowMobile ?? 1) + (v.rowSpanMobile ?? 1) - 1));
+  })
+
+  const colWidthsStyleMobile = computed(()=>{
+    const widths: string[] = [];
+    for (let i = 1; i <= maxColMobile.value; i++) {
+      const match = props.cols.find((c)=>(c.colMobile ?? 1) === i && c.widthMobile);
+      widths.push(match?.widthMobile ?? 'auto');
+    }
+    return widths.join(' ');
+  })
+
+  const rowWidthsStyleMobile = computed(()=>totalRowsMobile.value > 1 ? '1fr 0.5fr' : '1fr');
 </script>
 
 
@@ -58,20 +62,6 @@
     .os-grid-cols-auto{
       grid-template-columns: v-bind('colWidthsStyleMobile');
       grid-template-rows: v-bind('rowWidthsStyleMobile');
-    }
-    .os-grid-cols-auto>.grid-col{
-      width:100%;
-    }
-    .os-grid-cols-auto>.grid-col:nth-child(1n){
-      text-align: left;
-      justify-content: left;
-    }
-    .os-grid-cols-auto>.grid-col:nth-child(2n){
-      text-align: right;
-      justify-content: right;
-    }
-    .os-grid-cols-auto>.grid-col:nth-child(2n+1):last-child{
-      grid-column:span 2;
     }
   }
 </style>
