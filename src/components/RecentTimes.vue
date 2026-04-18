@@ -111,6 +111,6 @@
     @refresh-data="emit('updateRecentTimes')"
     ></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected parameters</h1>
-    <TimesListPagination :limitPerPage="15" :times="props.recentTimes" :isLoading = "props.isLoading" :total="props.total" @pagination-changed="paginationChanged"></TimesListPagination>
+    <TimesListPagination :limitPerPage="15" :isLoading = "props.isLoading" :total="props.total" @pagination-changed="paginationChanged"></TimesListPagination>
   </div>
 </template>

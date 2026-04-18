@@ -9,6 +9,7 @@
   import { useModerationStore } from '@/stores/moderation';
 
   type InvalidatedChoice = 'hide' | 'mix' | 'only';
+  type FilterKey = 'style' | 'sort' | 'best' | 'has_replay' | 'invalidated';
 
   const SORT_OPTIONS: SortOrder[] = ['Fastest', 'Slowest', 'Newest', 'Oldest'];
   const INVALIDATED_OPTIONS: { value: InvalidatedChoice, label: string }[] = [
@@ -27,11 +28,13 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'filter-Changed', name: string, value: string | number | boolean | undefined): void;
+    (e: 'filter-Changed', name: FilterKey, value: string | number | boolean | undefined): void;
   }>();
 
   const moderationStore = useModerationStore();
 
+  // Tri-state round-trip: backend reads `invalidated` as omitted = valid-only (hide),
+  // `false` = mix valid + invalidated, `true` = only invalidated. UI mirrors that exact mapping.
   const invalidatedValue = computed<InvalidatedChoice>(() => {
     if (props.invalidated === undefined) return 'hide';
     return props.invalidated ? 'only' : 'mix';

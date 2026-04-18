@@ -31,6 +31,7 @@ const clearPage = function() {
 const updateMany = function(updates: Record<string, string | number | boolean | undefined>) {
   const params = new URLSearchParams(window.location.search);
   for (const [key, value] of Object.entries(updates)) {
+    // Style.all is the implicit default — keep it out of the URL so shared links stay clean.
     if (value === undefined || (key === 'style' && value === Style.all)) {
       params.delete(key);
     } else {

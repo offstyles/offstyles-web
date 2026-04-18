@@ -1,31 +1,26 @@
 <script setup lang="ts">
-import type { Time } from '@/types/Time';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
   const props = defineProps<{
     limitPerPage: number,
-    times: Time[] | null,
     isLoading: boolean,
-    total?: number,
+    total: number,
   }>()
   const emit = defineEmits(['pagination-Changed']);
   const route = useRoute();
 
   const currentPage = computed(() => {
-    const pageParam = route.query.page;
-    return pageParam ? Number(pageParam) : 1;
+    const n = route.query.page ? Number(route.query.page) : 1;
+    return Number.isFinite(n) && n >= 1 ? n : 1;
   });
 
-  const totalPages = computed(() => {
-    if (props.total === undefined) return null;
-    return Math.max(1, Math.ceil(props.total / props.limitPerPage));
-  });
+  const totalPages = computed(() =>
+    Math.max(1, Math.ceil(props.total / props.limitPerPage))
+  );
 
-  const nextDisabled = computed(() => {
-    if (props.isLoading) return true;
-    if (totalPages.value !== null) return currentPage.value >= totalPages.value;
-    return props.times !== null && props.times.length < props.limitPerPage;
-  });
+  const nextDisabled = computed(() =>
+    props.isLoading || currentPage.value >= totalPages.value
+  );
 
   function paginationChanged(page : number){
     emit('pagination-Changed', page);
@@ -37,9 +32,7 @@ import { useRoute } from 'vue-router';
   <div class="w-full py-2 flex justify-between align-end">
     <div class="text-gray-400 text-sm my-auto">
       Page <span class="text-base text-gray-200">{{ currentPage }}</span>
-      <template v-if="totalPages !== null">
-        of <span class="text-base text-gray-200">{{ totalPages }}</span>
-      </template>
+      of <span class="text-base text-gray-200">{{ totalPages }}</span>
     </div>
     <div class="flex items-center gap-1 text-gray-200">
       <button class="btn bg-main-900 rounded p-1.5 cursor-pointer disabled:opacity-50 disabled:pointer-events-none" @click="paginationChanged(currentPage-1)" :disabled="props.isLoading || currentPage <= 1">

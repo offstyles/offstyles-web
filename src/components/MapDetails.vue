@@ -36,7 +36,7 @@
     };
   });
 
-  const filterChanged = async (name: string, value: string | number | boolean | undefined) => {
+  const filterChanged = async (name: 'style' | 'sort' | 'best' | 'has_replay' | 'invalidated', value: string | number | boolean | undefined) => {
     await router.replace({ query: urlParams.updateMany({ [name]: value }) });
   };
 
@@ -89,6 +89,6 @@
     @refresh-data="() => emit('updateMap', props.mapName)"
     ></TimesList>
     <h1 v-else-if="!props.isLoading" class="text-gray-200 mt-3">No times found for selected map & filters</h1>
-    <TimesListPagination :limitPerPage="50" :times="props.mapTimes" :isLoading="props.isLoading" :total="props.total" @pagination-changed="paginationChanged"></TimesListPagination>
+    <TimesListPagination :limitPerPage="50" :isLoading="props.isLoading" :total="props.total" @pagination-changed="paginationChanged"></TimesListPagination>
   </div>
 </template>
