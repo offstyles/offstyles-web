@@ -1,6 +1,12 @@
 export type SortOrder = 'Fastest' | 'Slowest' | 'Newest' | 'Oldest';
 
+export type TimesScope =
+  | { kind: 'map'; map: string }
+  | { kind: 'player'; steamid: string }
+  | { kind: 'globals'; wr?: boolean; recent?: boolean };
+
 export interface TimesFilter {
+  scope: TimesScope;
   style?: number;
   page: number;
   limit: number;
@@ -8,8 +14,4 @@ export interface TimesFilter {
   best?: boolean;
   has_replay?: boolean;
   invalidated?: boolean;
-  map?: string;
-  steamid?: string;
-  wr?: boolean;
-  recent?: boolean;
 }

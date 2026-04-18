@@ -75,12 +75,12 @@
     playerTimes.value = null;
     loadError.value = null;
 
-    const filter = timesFilterFromQuery.fromQuery(
+    const filter = timesFilterFromQuery.forPlayer(
       urlParams.getAsObject(),
+      playerId,
       { style: Style.all, sort: 'Newest', best: true, limit: 50 },
       moderationStore.canInvalidateTimes.value,
     );
-    filter.steamid = playerId;
 
     try {
       const result = await OffstylesApi.getTimes(filter);
