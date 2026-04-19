@@ -493,7 +493,7 @@ const { user } = useAuth();
 const canEdit = computed(() => {
   if (!user.value) return false;
   // Check if user is the owner or has admin permissions
-  return (props.server.user && user.value.steam_id === props.server.user.steam_id) || user.value.permissions > 0;
+  return (props.server.user && user.value.steam_id === props.server.user.steam_id) || canManageApiKeys(user.value.permissions);
 });
 
 // Check if user has admin permissions for API key management

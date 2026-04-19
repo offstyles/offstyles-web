@@ -304,7 +304,7 @@ const { user } = useAuth();
 // Check if user can edit a specific server (owner or admin)
 const canEditServer = (server: ServerActivityResponse) => {
   if (!user.value) return false;
-  return user.value.steam_id === server.user.steam_id || user.value.permissions > 0;
+  return user.value.steam_id === server.user.steam_id || canManageApiKeys(user.value.permissions);
 };
 
 // Check if user can create servers (requires MANAGE_API_KEYS permission)
