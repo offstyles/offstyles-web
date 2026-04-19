@@ -258,7 +258,15 @@
           class="w-12 h-12 rounded-full"
         />
         <div class="text-left">
-          <h1 class="text-2xl">{{ playerName }}</h1>
+          <h1 class="text-2xl">
+            <a
+              :href="`https://steamcommunity.com/profiles/${playerSteamId}/`"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-gray-300 transition-colors duration-200"
+              title="View Steam profile"
+            >{{ playerName }}</a>
+          </h1>
           <div v-if="playerStatus" :class="`text-sm ${playerStatus.class}`">{{ playerStatus.message }}</div>
         </div>
       </div>
