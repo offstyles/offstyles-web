@@ -2,15 +2,44 @@
   import type { Time } from '@/types/Time';
   import type { TimeListColumn } from '@/types/TimeListColumn';
   import timeLinks from '@/utils/timeLinks';
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
+  import type { Ref } from 'vue';
   import RelativeDate from '../RelativeDate.vue';
+  import OffstylesApi from '@/api/offstylesApi';
+  import { useAuth } from '@/stores/auth';
+  import ReplayViewerOverlay from '@/replay-viewer/ReplayViewerOverlay.vue';
   const props = defineProps<{
       time: Time,
       cols: TimeListColumn[]
     }>();
+
+  const { isLoggedIn } = useAuth();
+  const showReplayViewer: Ref<boolean> = ref(false);
+
   const colWidthsStyle = computed(()=>{
     return props.cols.map((v)=>v.width ? v.width : 'auto').join(' ');
   })
+
+  const hasReplay = computed(()=>isLoggedIn.value && !!props.time.replay_ref);
+
+  async function downloadReplay() {
+    if (!props.time.replay_ref) return;
+    try {
+      const response = await OffstylesApi.downloadReplay(props.time.replay_ref);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${props.time.map}.replay`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Failed to download replay:', error);
+      alert('Failed to download replay. Please try again.');
+    }
+  }
 </script>
 
 
@@ -23,15 +52,39 @@
       </span>
       <span v-else>{{ col.data === 'sync' ? props.time[col.data].toFixed(2) + '%' : props.time[col.data] }}</span>
     </div>
-    <!-- Add link to individual record -->
-    <div v-if="props.time._id" class="flex flex-col justify-center">
-      <a 
-        :href="timeLinks.recordLink(props.time)" 
-        class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-main-700 rounded hover:bg-main-600 transition-colors text-center"
+    <!-- Action buttons -->
+    <div class="flex flex-wrap gap-2 justify-center col-span-full pt-1" @click.stop>
+      <a
+        v-if="props.time._id"
+        :href="timeLinks.recordLink(props.time)"
+        class="text-blue-400 hover:text-blue-300 text-xs px-3 py-1.5 bg-main-700 rounded hover:bg-main-600 transition-colors"
       >
         View Record
       </a>
+      <button
+        v-if="hasReplay"
+        @click="showReplayViewer = true"
+        class="text-xs px-3 py-1.5 bg-green-700 hover:bg-green-600 text-gray-100 rounded transition-colors cursor-pointer"
+      >
+        View Replay
+      </button>
+      <button
+        v-if="hasReplay"
+        @click="downloadReplay"
+        class="text-xs px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-gray-100 rounded transition-colors cursor-pointer"
+      >
+        Download Replay
+      </button>
     </div>
+  </div>
+
+  <div v-if="hasReplay" @click.stop>
+    <ReplayViewerOverlay
+      :show="showReplayViewer"
+      :map-name="props.time.map"
+      :replay-id="props.time.replay_ref!"
+      @close="showReplayViewer = false"
+    />
   </div>
 </template>
 
