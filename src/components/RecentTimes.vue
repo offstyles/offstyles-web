@@ -75,14 +75,16 @@
       data: 'time',
       col: 3,
       row: 1,
-      rowSpan: 2,
+      rowSpan: showStyleColumn.value ? 2 : undefined,
       colMobile: 2,
       colSpanMobile: 2,
       rowMobile: 1,
-      width: showStyleColumn.value ? '30%' : '30%',
+      width: '30%',
       widthMobile: '20%',
       classes: 'monospace',
-      alignmentClasses: 'text-right justify-end lg:text-left lg:justify-start lg:ml-16',
+      alignmentClasses: showStyleColumn.value
+        ? 'text-right justify-end lg:text-left lg:justify-start lg:ml-16'
+        : 'text-right justify-end',
       numFormat: dateTimeFormats.time,
     };
 
