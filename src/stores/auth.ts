@@ -24,9 +24,12 @@ const fetchUser = async (): Promise<void> => {
   }
 }
 
-// Login - redirect to Steam auth
+// Login - redirect to Steam auth, preserving the current page for post-login return
 const login = (): void => {
-  window.location.href = OffstylesApi.getLoginUrl()
+  const redirectTo = window.location.pathname + window.location.search + window.location.hash
+  const loginUrl = new URL(OffstylesApi.getLoginUrl(), window.location.origin)
+  loginUrl.searchParams.set('redirect_to', redirectTo)
+  window.location.href = loginUrl.toString()
 }
 
 // Logout - redirect to logout endpoint
