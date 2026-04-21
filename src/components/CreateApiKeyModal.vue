@@ -337,7 +337,12 @@ const createApiKey = async () => {
     apiKey.value = '';
 
     const permissionValue = calculatePermissions();
-    const owner = ownerSteamId.value.trim() || undefined;
+    const owner = ownerSteamId.value.trim() || user.value?.steam_id;
+
+    if (!owner) {
+      errorMessage.value = 'Unable to determine owner Steam ID. Please log in or specify an owner.';
+      return;
+    }
 
     const result = await OffstylesApi.createServer(
       serverName.value.trim(),
