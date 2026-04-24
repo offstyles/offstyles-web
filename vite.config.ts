@@ -2,9 +2,19 @@ import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 import wasm from 'vite-plugin-wasm'
+
+// Node 22+ exposes an experimental `localStorage` global as an empty `{}`
+// (unless `--localstorage-file` is set). `@vue/devtools-kit` checks
+// `typeof localStorage === 'undefined'` before calling `localStorage.getItem`
+// at module load — the empty object passes the guard, then `getItem` throws
+// and Vite's config load fails. Removing the global makes `typeof` undefined
+// so the guard short-circuits. The dynamic `import()` below ensures this
+// runs before `@vue/devtools-kit` evaluates (a static import gets hoisted by
+// the config bundler and would run too late).
+delete (globalThis as { localStorage?: unknown }).localStorage
+const { default: vueDevTools } = await import('vite-plugin-vue-devtools')
 
 // https://vite.dev/config/
 export default defineConfig({
