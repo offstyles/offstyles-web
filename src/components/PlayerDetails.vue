@@ -50,6 +50,7 @@
       sort: (q.sort as SortOrder) || 'Newest',
       best: q.best !== undefined ? q.best === 'true' : true,
       hasReplay: q.has_replay === 'true',
+      wr: q.wr === 'true',
       invalidated: q.invalidated !== undefined ? q.invalidated === 'true' : undefined,
     };
   });
@@ -212,7 +213,7 @@
     }
   };
 
-  const filterChanged = async (name: 'style' | 'sort' | 'best' | 'has_replay' | 'invalidated', value: string | number | boolean | undefined) => {
+  const filterChanged = async (name: 'style' | 'sort' | 'best' | 'has_replay' | 'wr' | 'invalidated', value: string | number | boolean | undefined) => {
     await router.replace({ query: urlParams.updateMany({ [name]: value }) });
   };
 
@@ -283,6 +284,8 @@
       :sort="currentFilter.sort"
       :best="currentFilter.best"
       :hasReplay="currentFilter.hasReplay"
+      :wr="currentFilter.wr"
+      :showWr="true"
       :invalidated="currentFilter.invalidated"
       :styleOptions="playerStyleOptions"
       @filter-Changed="filterChanged"
