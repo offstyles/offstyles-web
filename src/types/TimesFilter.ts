@@ -2,7 +2,7 @@ export type SortOrder = 'Fastest' | 'Slowest' | 'Newest' | 'Oldest';
 
 export type TimesScope =
   | { kind: 'map'; map: string }
-  | { kind: 'player'; steamid: string }
+  | { kind: 'player'; steamid: string; wr?: boolean }
   | { kind: 'globals'; wr?: boolean; recent?: boolean };
 
 export interface TimesFilter {
