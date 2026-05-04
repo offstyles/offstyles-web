@@ -29,12 +29,12 @@ const login = (): void => {
   const redirectTo = window.location.pathname + window.location.search + window.location.hash
   const loginUrl = new URL(OffstylesApi.getLoginUrl(), window.location.origin)
   loginUrl.searchParams.set('redirect_to', redirectTo)
-  window.location.replace(loginUrl.toString())
+  window.location.href = loginUrl.toString()
 }
 
 // Logout - redirect to logout endpoint
 const logout = (): void => {
-  window.location.replace(OffstylesApi.getLogoutUrl())
+  window.location.href = OffstylesApi.getLogoutUrl()
 }
 
 // Initialize auth state
