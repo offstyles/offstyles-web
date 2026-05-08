@@ -61,7 +61,9 @@ export class UserPermissions {
   static readonly INVALIDATE_TIMES = 1 << 0;
   static readonly BAN_PLAYERS = 1 << 1;
   static readonly SERVER_OWNER_INVALIDATE_TIMES = 1 << 2;
+  static readonly SERVER_OWNER_EDIT_SERVER = 1 << 3;
   static readonly UNDO_MOD_ACTION = 1 << 15;
+  static readonly EDIT_SERVERS = 1 << 28;
   static readonly BYPASS_RATELIMITS = 1 << 29;
   static readonly CREATE_KEY = 1 << 30;
   static readonly MANAGE_KEYS = 1 << 31;
@@ -97,7 +99,9 @@ const KNOWN_FLAGS: Array<[number, PermissionLabel]> = [
   [UserPermissions.INVALIDATE_TIMES,             { name: 'Invalidate Times',    tone: 'red' }],
   [UserPermissions.BAN_PLAYERS,                  { name: 'Ban Players',         tone: 'red' }],
   [UserPermissions.SERVER_OWNER_INVALIDATE_TIMES,{ name: 'Server-Owner Invalidate', tone: 'purple' }],
+  [UserPermissions.SERVER_OWNER_EDIT_SERVER,     { name: 'Server-Owner Edit',   tone: 'purple' }],
   [UserPermissions.UNDO_MOD_ACTION,              { name: 'Reverse Mod Actions', tone: 'purple' }],
+  [UserPermissions.EDIT_SERVERS,                 { name: 'Edit Servers',        tone: 'blue' }],
   [UserPermissions.BYPASS_RATELIMITS,            { name: 'Bypass Rate Limits',  tone: 'yellow' }],
   [UserPermissions.CREATE_KEY,                   { name: 'Create API Keys',     tone: 'blue' }],
   [UserPermissions.MANAGE_KEYS,                  { name: 'Manage API Keys',     tone: 'blue' }],
