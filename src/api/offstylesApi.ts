@@ -239,6 +239,25 @@ class OffstylesApi extends Api {
     if (!response.ok) await throwApiError(response);
   }
 
+  // Server-owner self-invalidation (always invalidates; backend verifies the
+  // caller owns the server each record was set on).
+  static async serverOwnerInvalidate(recordIds: string[], reason: string): Promise<void> {
+    const params = new URLSearchParams({
+      ids: recordIds.join(","),
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/so_moderate?${params.toString()}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain",
+      },
+      body: reason,
+      credentials: "include",
+    });
+
+    if (!response.ok) await throwApiError(response);
+  }
+
   // Get user profile data
   static async getUserProfile(steamId: string): Promise<User> {
     const params = new URLSearchParams({

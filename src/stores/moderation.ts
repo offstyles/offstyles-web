@@ -49,6 +49,19 @@ export const useModerationStore = () => {
     return userPermissions.value.contains(UserPermissions.UNDO_MOD_ACTION)
   })
 
+  // Server owners can self-invalidate runs on their own servers. Backend
+  // requires both SERVER_OWNER_INVALIDATE_TIMES and INVALIDATE_TIMES.
+  const canServerOwnerInvalidate = computed(() => {
+    return userPermissions.value.contains(UserPermissions.SERVER_OWNER_INVALIDATE_TIMES)
+        && userPermissions.value.contains(UserPermissions.INVALIDATE_TIMES)
+  })
+
+  // Truthy for anyone with at least one moderation-adjacent capability —
+  // mods, admins, and server owners. Used to gate the /moderation route.
+  const canAccessModerationPanel = computed(() => {
+    return canModerate.value || canUndoModerationActions.value || canServerOwnerInvalidate.value
+  })
+
   const getAvailableActions = (target: ModerationTarget) => {
     if (!canModerate.value) return []
     
@@ -121,6 +134,21 @@ export const useModerationStore = () => {
     }
   }
 
+  const performServerOwnerInvalidate = async (recordIds: string[], reason: string): Promise<void> => {
+    if (!reason.trim()) {
+      throw new Error('Reason is required')
+    }
+    if (recordIds.length === 0) {
+      throw new Error('No records selected')
+    }
+    isLoading.value = true
+    try {
+      await OffstylesApi.serverOwnerInvalidate(recordIds, reason.trim())
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const getModerationLogs = async (id: string) => {
     return await OffstylesApi.getModerationLogs(id)
   }
@@ -144,14 +172,17 @@ export const useModerationStore = () => {
     canBanPlayers,
     canInvalidateTimes,
     canUndoModerationActions,
+    canServerOwnerInvalidate,
+    canAccessModerationPanel,
     userPermissions,
-    
+
     // Actions
     getAvailableActions,
     openModerationModal,
     closeModerationModal,
     performModerationAction,
     performBulkModerationAction,
+    performServerOwnerInvalidate,
     getModerationLogs,
     reverseModerationActions,
     getRecentModerationLogs
