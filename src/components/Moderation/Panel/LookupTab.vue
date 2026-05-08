@@ -7,6 +7,7 @@ import type { User } from '@/types/User'
 import type { Time } from '@/types/Time'
 import ActionBadge from './ActionBadge.vue'
 import RelativeDate from '@/components/RelativeDate.vue'
+import PermissionBadges from '@/components/PermissionBadges.vue'
 
 interface ResolvedPlayer {
   kind: 'player'
@@ -176,8 +177,10 @@ watch(() => props.prefillQuery, (q) => {
           </div>
           <div class="text-xs text-gray-500 font-mono">{{ result.user.steam_id }}</div>
           <div class="text-xs text-gray-500 mt-1">
-            Joined {{ new Date(result.user.created_at * 1000).toLocaleDateString() }} ·
-            Permissions: <span class="font-mono">0x{{ result.user.permissions.toString(16) }}</span>
+            Joined {{ new Date(result.user.created_at * 1000).toLocaleDateString() }}
+          </div>
+          <div class="mt-2">
+            <PermissionBadges :permissions="result.user.permissions" />
           </div>
         </div>
         <a :href="`/players/${result.user.steam_id}`" class="px-3 py-1.5 text-sm bg-main-700 hover:bg-main-600 border border-main-500 rounded text-gray-200 cursor-pointer shrink-0">

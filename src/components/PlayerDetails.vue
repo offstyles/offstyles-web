@@ -17,6 +17,7 @@
   import ModerationModal from './Moderation/ModerationModal.vue';
   import { useModerationStore, type ModerationTarget } from '@/stores/moderation';
   import TimesListPagination from './TimeLists/TimesListPagination.vue';
+  import PermissionBadges from './PermissionBadges.vue';
 
   const route = useRoute();
   const router = useRouter();
@@ -268,6 +269,9 @@
             >{{ playerName }}</a>
           </h1>
           <div v-if="playerStatus" :class="`text-sm ${playerStatus.class}`">{{ playerStatus.message }}</div>
+          <div v-if="userProfile && userProfile.permissions > 0" class="mt-1.5">
+            <PermissionBadges :permissions="userProfile.permissions" />
+          </div>
         </div>
       </div>
       <button

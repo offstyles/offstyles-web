@@ -9,6 +9,7 @@ import LookupTab from '@/components/Moderation/Panel/LookupTab.vue'
 import ModeratorsTab from '@/components/Moderation/Panel/ModeratorsTab.vue'
 import ServerOwnerTab from '@/components/Moderation/Panel/ServerOwnerTab.vue'
 import BulkSelectionTray from '@/components/Moderation/Panel/BulkSelectionTray.vue'
+import PermissionBadges from '@/components/PermissionBadges.vue'
 import type { RecentModAction } from '@/types/moderation'
 
 type TabKey = 'activity' | 'lookup' | 'moderators' | 'server-owner'
@@ -115,9 +116,11 @@ onMounted(() => {
             {{ visibleTabs.find(t => t.key === activeTab)?.description }}
           </p>
         </div>
-        <div class="text-xs text-gray-500 text-right">
-          Signed in as <span class="text-gray-300">{{ user.username }}</span><br />
-          <span class="font-mono">perms 0x{{ user.permissions.toString(16) }}</span>
+        <div class="text-xs text-gray-500 sm:text-right">
+          <div>Signed in as <span class="text-gray-300">{{ user.username }}</span></div>
+          <div class="mt-1 sm:flex sm:justify-end">
+            <PermissionBadges :permissions="user.permissions" />
+          </div>
         </div>
       </div>
 
