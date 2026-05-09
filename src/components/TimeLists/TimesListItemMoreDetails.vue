@@ -83,6 +83,7 @@
       :show="showReplayViewer"
       :map-name="props.time.map"
       :replay-id="props.time.replay_ref!"
+      :time="props.time"
       @close="showReplayViewer = false"
     />
   </div>
