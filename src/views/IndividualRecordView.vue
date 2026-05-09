@@ -168,7 +168,7 @@
 
           <div class="bg-main-700 p-3 rounded">
             <div class="text-sm text-gray-400 mb-0.5">Sync</div>
-            <div class="text-xl font-mono">{{ record.sync }}%</div>
+            <div class="text-xl font-mono">{{ record.sync.toFixed(2) }}%</div>
           </div>
 
           <div class="bg-main-700 p-3 rounded">
