@@ -124,10 +124,23 @@ const performReverse = async () => {
   }
 }
 
+// Actions from the loaded site-wide feed that fall inside the timeframe
+// for the targeted moderator. Empty in raw mode if the mod hasn't shown
+// up in the recent feed; the reversal still runs server-side, but we
+// can't preview what's about to be reverted.
+const previewActions = computed(() => {
+  if (!effectiveSteamId.value || timeframeHours.value <= 0) return []
+  const cutoff = Date.now() - timeframeHours.value * 3600_000
+  return allRecent.value
+    .filter(a => a.moderator_steam_id === effectiveSteamId.value && a.timestamp >= cutoff)
+    .sort((a, b) => b.timestamp - a.timestamp)
+})
+
 const confirmRows = computed<ConfirmRow[]>(() => [
   { label: 'Moderator', value: selectedMod.value?.name ?? '(by Steam ID only)' },
   { label: 'Steam ID', value: effectiveSteamId.value },
   { label: 'Timeframe', value: `${timeframeHours.value} hour${timeframeHours.value === 1 ? '' : 's'}` },
+  { label: 'Visible actions', value: `${previewActions.value.length}${allRecent.value.length >= 20 ? ' (capped feed — actual reversal may be more)' : ''}` },
 ])
 </script>
 
@@ -313,6 +326,30 @@ const confirmRows = computed<ConfirmRow[]>(() => [
       :is-processing="isReversing"
       @confirm="performReverse"
       @cancel="showConfirm = false"
-    />
+    >
+      <template #preview>
+        <div class="bg-main-900/60 border border-main-500 rounded p-3">
+          <div class="text-xs text-gray-400 uppercase tracking-wide mb-2">
+            Actions visible in this window
+            <span v-if="previewActions.length === 0" class="normal-case lowercase text-gray-500">— none in loaded feed</span>
+          </div>
+          <div v-if="previewActions.length === 0" class="text-xs text-gray-500">
+            Nothing matches in the recent feed. The server-side reversal still runs over the full window.
+          </div>
+          <div v-else class="max-h-44 overflow-y-auto space-y-1">
+            <div
+              v-for="(a, i) in previewActions"
+              :key="i"
+              class="flex items-center gap-2 text-xs"
+            >
+              <ActionBadge :action="a.action" size="sm" />
+              <span class="text-gray-300 truncate">{{ a.target_name }}</span>
+              <span class="text-[10px] uppercase tracking-wide text-gray-500">{{ a.target_type }}</span>
+              <span class="ml-auto text-gray-500"><RelativeDate :date="a.timestamp" /></span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </ConfirmActionDialog>
   </div>
 </template>

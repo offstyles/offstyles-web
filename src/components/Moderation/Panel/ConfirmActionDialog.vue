@@ -56,6 +56,8 @@ const intentRingClass = {
           <div class="text-xs text-gray-400 uppercase tracking-wide mb-1">Reason</div>
           <div class="text-sm text-gray-200 whitespace-pre-wrap">{{ reason || '(no reason supplied)' }}</div>
         </div>
+
+        <slot name="preview" />
       </div>
 
       <div class="p-4 border-t border-main-400 flex justify-end gap-3">
