@@ -264,6 +264,7 @@
       :show="showReplayViewer"
       :map-name="record.map"
       :replay-id="record.replay_ref"
+      :time="record"
       @close="showReplayViewer = false"
     />
   </main>
