@@ -16,11 +16,19 @@ const error: Ref<string> = ref('')
 const success: Ref<string> = ref('')
 const showConfirm: Ref<boolean> = ref(false)
 
-const parsedIds = computed(() => {
+const tokens = computed(() => {
   return idsRaw.value
     .split(/[\s,]+/)
     .map(s => s.trim())
-    .filter(s => /^[a-f0-9]{24}$/i.test(s))
+    .filter(s => s.length > 0)
+})
+
+const parsedIds = computed(() => {
+  return tokens.value.filter(s => /^[a-f0-9]{24}$/i.test(s))
+})
+
+const invalidTokens = computed(() => {
+  return tokens.value.filter(s => !/^[a-f0-9]{24}$/i.test(s))
 })
 
 const dedupedIds = computed(() => {
@@ -103,8 +111,18 @@ const confirmRows = computed<ConfirmRow[]>(() => [
           placeholder="Paste ObjectIds — comma, space, or newline separated"
           class="w-full mt-1 px-3 py-2 bg-main-700 border border-main-500 rounded text-gray-200 text-sm font-mono placeholder-gray-500 focus:outline-none focus:border-main-300"
         />
-        <div class="flex justify-between text-xs mt-1">
-          <span class="text-gray-500">{{ parsedIds.length }} valid · {{ idsRaw.split(/\s|,/).filter(s => s.trim()).length - parsedIds.length }} invalid</span>
+        <div class="flex flex-wrap justify-between gap-2 text-xs mt-1">
+          <span class="text-gray-500">
+            {{ parsedIds.length }} valid<span v-if="invalidTokens.length"> · <span class="text-red-400">{{ invalidTokens.length }} invalid</span></span>
+          </span>
+        </div>
+        <div v-if="invalidTokens.length" class="flex flex-wrap gap-1 text-[11px] mt-1">
+          <span
+            v-for="t in invalidTokens.slice(0, 8)"
+            :key="t"
+            class="px-1.5 py-0.5 rounded bg-red-900/20 border border-red-800/40 text-red-300 font-mono"
+          >{{ t.length > 18 ? t.slice(0, 16) + '…' : t }}</span>
+          <span v-if="invalidTokens.length > 8" class="text-red-400">+{{ invalidTokens.length - 8 }} more</span>
         </div>
       </div>
 
