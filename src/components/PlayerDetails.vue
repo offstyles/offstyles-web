@@ -98,7 +98,7 @@
           colSpanMobile: 2,
           rowMobile: 3,
           width: '18%',
-          classes: 'text-sm text-gray-400',
+          classes: 'text-sm text-gray-200',
           alignmentClasses: 'text-left justify-start',
           numFormat: styleFormat.name,
         },

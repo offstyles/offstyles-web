@@ -102,7 +102,7 @@
           colMobile: 3,
           rowMobile: 2,
           width: '15%',
-          classes: 'text-sm text-gray-400',
+          classes: 'text-sm text-gray-200',
           alignmentClasses: 'text-right justify-end',
           numFormat: styleFormat.name,
         },
