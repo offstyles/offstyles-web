@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+
 export interface ConfirmRow {
   label: string
   value: string
 }
 
-defineProps<{
+const props = defineProps<{
   show: boolean
   title: string
   intent: 'danger' | 'warning' | 'neutral'
@@ -30,6 +32,36 @@ const intentRingClass = {
   warning: 'ring-purple-500/30',
   neutral: 'ring-blue-500/30',
 } as const
+
+const cancelBtnRef = ref<HTMLButtonElement | null>(null)
+
+const onKeydown = (e: KeyboardEvent) => {
+  if (!props.show) return
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    if (!props.isProcessing) emit('cancel')
+  } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault()
+    if (!props.isProcessing) emit('confirm')
+  }
+}
+
+watch(() => props.show, async (val) => {
+  if (val) {
+    await nextTick()
+    // Autofocus cancel — for destructive confirmation, the safer default
+    // is "don't fire on a stray Enter." Cmd/Ctrl+Enter still confirms.
+    cancelBtnRef.value?.focus()
+  }
+})
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+})
 </script>
 
 <template>
@@ -37,11 +69,14 @@ const intentRingClass = {
     v-if="show"
     class="fixed inset-0 bg-black/60 flex items-start justify-center z-[80] p-4 overflow-y-auto"
     @click.self="emit('cancel')"
+    role="dialog"
+    aria-modal="true"
+    :aria-label="title"
   >
     <div :class="['bg-main-800 border border-main-400 rounded-lg shadow-2xl w-full max-w-md my-12 mx-auto ring-2', intentRingClass[intent]]">
       <div class="p-4 border-b border-main-400">
         <h3 class="text-lg font-medium text-gray-100">{{ title }}</h3>
-        <p class="text-sm text-gray-400 mt-1">Review the details before confirming.</p>
+        <p class="text-sm text-gray-400 mt-1">Review the details before confirming. <span class="text-gray-500">(Esc to cancel · Ctrl+Enter to confirm)</span></p>
       </div>
 
       <div class="p-4 space-y-3">
@@ -62,16 +97,17 @@ const intentRingClass = {
 
       <div class="p-4 border-t border-main-400 flex justify-end gap-3">
         <button
+          ref="cancelBtnRef"
           @click="emit('cancel')"
           :disabled="isProcessing"
-          class="px-4 py-2 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer disabled:opacity-50"
+          class="px-4 py-2 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/60 rounded"
         >
           Cancel
         </button>
         <button
           @click="emit('confirm')"
           :disabled="isProcessing"
-          :class="['px-4 py-2 text-white rounded-lg transition-colors cursor-pointer', intentBtnClass[intent]]"
+          :class="['px-4 py-2 text-white rounded-lg transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60', intentBtnClass[intent]]"
         >
           {{ isProcessing ? 'Working…' : confirmLabel }}
         </button>

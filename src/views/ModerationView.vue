@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useModerationStore } from '@/stores/moderation'
@@ -8,7 +8,7 @@ import ActivityTab from '@/components/Moderation/Panel/ActivityTab.vue'
 import LookupTab from '@/components/Moderation/Panel/LookupTab.vue'
 import ModeratorsTab from '@/components/Moderation/Panel/ModeratorsTab.vue'
 import ServerOwnerTab from '@/components/Moderation/Panel/ServerOwnerTab.vue'
-import PermissionBadges from '@/components/PermissionBadges.vue'
+import { permissionRoleLabel } from '@/types/moderation'
 import type { RecentModAction } from '@/types/moderation'
 
 type TabKey = 'activity' | 'lookup' | 'moderators' | 'server-owner'
@@ -83,13 +83,33 @@ const onInspectTarget = (action: RecentModAction) => {
 
 const accessGranted = computed(() => moderationStore.canAccessModerationPanel.value)
 
+const role = computed(() => user.value ? permissionRoleLabel(user.value.permissions) : null)
+
+const tablistRef = ref<HTMLElement | null>(null)
+
+const onTabKey = async (e: KeyboardEvent) => {
+  const keys = visibleTabs.value.map(t => t.key)
+  const i = keys.indexOf(activeTab.value)
+  let nextIdx = i
+  if (e.key === 'ArrowRight') nextIdx = (i + 1) % keys.length
+  else if (e.key === 'ArrowLeft') nextIdx = (i - 1 + keys.length) % keys.length
+  else if (e.key === 'Home') nextIdx = 0
+  else if (e.key === 'End') nextIdx = keys.length - 1
+  else return
+  e.preventDefault()
+  setTab(keys[nextIdx])
+  await nextTick()
+  const btn = tablistRef.value?.querySelector<HTMLButtonElement>(`[data-tab-key="${keys[nextIdx]}"]`)
+  btn?.focus()
+}
+
 onMounted(() => {
   syncTabFromRoute()
 })
 </script>
 
 <template>
-  <main class="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full">
+  <main class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
     <!-- Loading skeleton while auth resolves -->
     <div v-if="authLoading" class="text-center py-16 text-gray-500">
       Checking permissions…
@@ -115,23 +135,42 @@ onMounted(() => {
             {{ visibleTabs.find(t => t.key === activeTab)?.description }}
           </p>
         </div>
-        <div class="text-xs text-gray-500 sm:text-right">
+        <div class="text-xs text-gray-500 sm:text-right flex items-center gap-2 sm:flex-col sm:items-end">
           <div>Signed in as <span class="text-gray-300">{{ user.username }}</span></div>
-          <div class="mt-1 sm:flex sm:justify-end">
-            <PermissionBadges :permissions="user.permissions" />
-          </div>
+          <span
+            v-if="role"
+            class="px-1.5 py-0.5 rounded border text-[10px] uppercase tracking-wide font-semibold"
+            :class="role === 'Admin' ? 'text-purple-300 bg-purple-900/30 border-purple-800/40'
+                  : role === 'Server Owner' ? 'text-purple-300 bg-purple-900/30 border-purple-800/40'
+                  : 'text-red-300 bg-red-900/30 border-red-800/40'"
+            :title="`Permissions bitfield: 0x${user.permissions.toString(16)}`"
+          >
+            {{ role }}
+          </span>
         </div>
       </div>
 
       <!-- Tab nav -->
       <div class="border-b border-main-500 -mx-1">
-        <div class="flex gap-1 overflow-x-auto px-1">
+        <div
+          ref="tablistRef"
+          role="tablist"
+          aria-label="Moderation sections"
+          class="flex gap-1 overflow-x-auto px-1"
+          @keydown="onTabKey"
+        >
           <button
             v-for="t in visibleTabs"
             :key="t.key"
+            :data-tab-key="t.key"
+            role="tab"
+            :aria-selected="activeTab === t.key"
+            :aria-controls="`tabpanel-${t.key}`"
+            :id="`tab-${t.key}`"
+            :tabindex="activeTab === t.key ? 0 : -1"
             @click="setTab(t.key)"
             :class="[
-              'px-4 py-2.5 text-sm font-medium rounded-t-md border-b-2 transition-colors cursor-pointer whitespace-nowrap',
+              'px-4 py-2.5 text-sm font-medium rounded-t-md border-b-2 transition-colors cursor-pointer whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60',
               activeTab === t.key
                 ? 'text-gray-100 border-blue-500 bg-main-800'
                 : 'text-gray-400 border-transparent hover:text-gray-200 hover:bg-main-800/50',
@@ -143,7 +182,13 @@ onMounted(() => {
       </div>
 
       <!-- Active tab -->
-      <div>
+      <div
+        role="tabpanel"
+        :id="`tabpanel-${activeTab}`"
+        :aria-labelledby="`tab-${activeTab}`"
+        tabindex="0"
+        class="focus:outline-none"
+      >
         <ActivityTab
           v-if="activeTab === 'activity'"
           @inspect-mod="onInspectMod"
