@@ -105,6 +105,9 @@ class OffstylesApi extends Api {
       case 'player':
         params.append("steamid", filter.scope.steamid);
         break;
+      case 'server':
+        params.append("server", filter.scope.server);
+        break;
       case 'globals':
         if (filter.scope.recent) params.append("recent", "true");
         if (filter.scope.wr !== undefined) params.append("wr", filter.scope.wr.toString());
