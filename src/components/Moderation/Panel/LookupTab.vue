@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import type { Ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useModerationStore } from '@/stores/moderation'
 import OffstylesApi from '@/api/offstylesApi'
 import type { User } from '@/types/User'
@@ -24,30 +25,56 @@ interface ResolvedRef {
   ref_id: string
   logs: { actions: Array<{ action: string; timestamp: number; notes?: string; mod: { username: string; steam_id: string; avatar_url?: string } }> }
 }
-type Resolved = ResolvedPlayer | ResolvedRecord | ResolvedRef
+interface ResolvedCandidates {
+  kind: 'candidates'
+  candidates: Array<{ username: string; steam_id: string }>
+}
+type Resolved = ResolvedPlayer | ResolvedRecord | ResolvedRef | ResolvedCandidates
 
 const props = defineProps<{
   prefillQuery?: string
 }>()
 
+const route = useRoute()
+const router = useRouter()
 const moderationStore = useModerationStore()
 
-const query: Ref<string> = ref(props.prefillQuery ?? '')
+const query: Ref<string> = ref(props.prefillQuery ?? (route.query.q as string) ?? '')
 const isLoading: Ref<boolean> = ref(false)
 const error: Ref<string> = ref('')
 const result: Ref<Resolved | null> = ref(null)
 
 // Steam IDs are 17-digit numbers starting with 7656119; record/ref IDs are
-// 24-character hex (Mongo ObjectId). Anything else is treated as ambiguous
-// and we'll try the mod-log lookup first, falling back to time lookup.
-const detectKind = (raw: string): 'steam' | 'oid' | 'unknown' => {
+// 24-character hex (Mongo ObjectId). Anything else is treated as a username
+// and routed through autocomplete_players.
+type Kind = 'steam' | 'oid' | 'name'
+const detectKind = (raw: string): Kind => {
   const s = raw.trim()
   if (/^7656119\d{10}$/.test(s)) return 'steam'
   if (/^[a-f0-9]{24}$/i.test(s)) return 'oid'
-  return 'unknown'
+  return 'name'
 }
 
 const detected = computed(() => detectKind(query.value))
+
+const syncQueryToUrl = (q: string) => {
+  const next = q ? { ...route.query, q } : { ...route.query, q: undefined }
+  router.replace({ query: next }).catch(() => {})
+}
+
+const resolveSteam = async (steamId: string): Promise<ResolvedPlayer> => {
+  const user = await OffstylesApi.getUserProfile(steamId)
+  let logs: ResolvedPlayer['logs'] = null
+  if (user.ban_ref) {
+    try {
+      const r = await moderationStore.getModerationLogs(user.ban_ref)
+      logs = { actions: (r.actions || []).sort((a, b) => b.timestamp - a.timestamp) }
+    } catch {
+      logs = null
+    }
+  }
+  return { kind: 'player', user, logs }
+}
 
 const lookup = async () => {
   const q = query.value.trim()
@@ -55,21 +82,12 @@ const lookup = async () => {
   isLoading.value = true
   error.value = ''
   result.value = null
+  syncQueryToUrl(q)
 
   try {
     const kind = detectKind(q)
     if (kind === 'steam') {
-      const user = await OffstylesApi.getUserProfile(q)
-      let logs: ResolvedPlayer['logs'] = null
-      if (user.ban_ref) {
-        try {
-          const r = await moderationStore.getModerationLogs(user.ban_ref)
-          logs = { actions: (r.actions || []).sort((a, b) => b.timestamp - a.timestamp) }
-        } catch {
-          logs = null
-        }
-      }
-      result.value = { kind: 'player', user, logs }
+      result.value = await resolveSteam(q)
     } else if (kind === 'oid') {
       // Try as a record ID first; if that fails, treat as a mod-log ref.
       try {
@@ -93,7 +111,19 @@ const lookup = async () => {
         }
       }
     } else {
-      throw new Error('Enter a 17-digit Steam ID or a 24-char ObjectId.')
+      const matches = await OffstylesApi.getPlayersForAutoComplete(q)
+      if (matches.length === 0) {
+        throw new Error(`No players match "${q}". Try a Steam ID or 24-char ObjectId.`)
+      }
+      if (matches.length === 1) {
+        const [, steamId] = matches[0]
+        result.value = await resolveSteam(steamId)
+      } else {
+        result.value = {
+          kind: 'candidates',
+          candidates: matches.slice(0, 12).map(([username, steam_id]) => ({ username, steam_id })),
+        }
+      }
     }
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Lookup failed'
@@ -102,20 +132,26 @@ const lookup = async () => {
   }
 }
 
+const pickCandidate = async (steamId: string) => {
+  query.value = steamId
+  await lookup()
+}
+
 const reset = () => {
   query.value = ''
   result.value = null
   error.value = ''
+  syncQueryToUrl('')
 }
 
 onMounted(() => {
-  if (props.prefillQuery && detectKind(props.prefillQuery) !== 'unknown') {
+  if (query.value) {
     lookup()
   }
 })
 
 watch(() => props.prefillQuery, (q) => {
-  if (q && detectKind(q) !== 'unknown') {
+  if (q) {
     query.value = q
     lookup()
   }
@@ -128,15 +164,15 @@ watch(() => props.prefillQuery, (q) => {
       <div>
         <label class="text-xs text-gray-400 uppercase tracking-wide">Lookup</label>
         <p class="text-sm text-gray-500 mt-1">
-          Paste a Steam ID, run ID, or moderation log reference. Type is detected automatically.
+          Search by username, Steam ID, run ID, or moderation log reference. Type is detected automatically.
         </p>
       </div>
       <div class="flex gap-2">
         <input
           v-model="query"
           type="text"
-          placeholder="76561198… or 24-char hex"
-          class="flex-1 px-3 py-2 bg-main-700 border border-main-500 rounded text-gray-200 placeholder-gray-500 focus:outline-none focus:border-main-300 font-mono text-sm"
+          placeholder="username, 76561198…, or 24-char hex"
+          class="flex-1 px-3 py-2 bg-main-700 border border-main-500 rounded text-gray-200 placeholder-gray-500 focus:outline-none focus:border-main-300 text-sm"
           @keyup.enter="lookup"
         />
         <button
@@ -158,12 +194,34 @@ watch(() => props.prefillQuery, (q) => {
         Detected:
         <span v-if="detected === 'steam'" class="text-blue-300">Steam ID (player profile)</span>
         <span v-else-if="detected === 'oid'" class="text-emerald-300">ObjectId (run or mod-log ref)</span>
-        <span v-else class="text-gray-500">unrecognized — search will reject</span>
+        <span v-else class="text-yellow-300">username (autocomplete search)</span>
       </div>
     </div>
 
     <div v-if="error" class="bg-red-900/20 border border-red-800/40 text-red-300 rounded-lg p-3 text-sm">
       {{ error }}
+    </div>
+
+    <!-- Username candidates -->
+    <div v-if="result?.kind === 'candidates'" class="bg-main-800 border border-main-500 rounded-lg overflow-hidden">
+      <div class="px-4 py-2 border-b border-main-500 flex items-center justify-between">
+        <div class="text-xs text-gray-400 uppercase tracking-wide">Multiple matches — pick one</div>
+        <div class="text-xs text-gray-500">{{ result.candidates.length }} result{{ result.candidates.length === 1 ? '' : 's' }}</div>
+      </div>
+      <div>
+        <button
+          v-for="c in result.candidates"
+          :key="c.steam_id"
+          @click="pickCandidate(c.steam_id)"
+          class="w-full text-left px-4 py-2.5 flex items-center gap-3 border-b border-main-500/40 last:border-b-0 hover:bg-main-700/50 cursor-pointer"
+        >
+          <div class="flex-1 min-w-0">
+            <div class="text-sm text-gray-200 truncate">{{ c.username }}</div>
+            <div class="text-xs text-gray-500 font-mono truncate">{{ c.steam_id }}</div>
+          </div>
+          <span class="text-xs text-gray-500">→</span>
+        </button>
+      </div>
     </div>
 
     <!-- Player result -->
