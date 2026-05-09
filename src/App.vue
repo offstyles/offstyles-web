@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { onMounted } from 'vue'
 import AuthButton from '@/components/AuthButton.vue'
+import BulkSelectionTray from '@/components/Moderation/Panel/BulkSelectionTray.vue'
 import IconDiscord from '@/components/icons/IconDiscord.vue'
 import IconYoutube from '@/components/icons/IconYoutube.vue'
 import IconGithub from '@/components/icons/IconGithub.vue'
@@ -43,6 +44,8 @@ onMounted(async () => {
       </div>
     </header>
     <RouterView class="mb-auto" />
+
+    <BulkSelectionTray v-if="moderationStore.canAccessModerationPanel.value" />
 
     <!-- Footer -->
     <footer class="pt-8">

@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { Ref } from 'vue'
+import { computed } from 'vue'
 import TimesListItem from './TimesListItem.vue';
 import type { Time } from '@/types/Time';
 import type { TimeListColumn } from '@/types/TimeListColumn';
 import TimesListHeading from './TimesListHeading.vue';
-import BulkModerationModal from '../Moderation/BulkModerationModal.vue';
 import { useModerationStore } from '@/stores/moderation';
+import { useBulkSelection } from '@/composables/useBulkSelection';
 
   const props = defineProps<{
       times: Time[],
@@ -16,62 +15,68 @@ import { useModerationStore } from '@/stores/moderation';
   const emit = defineEmits(['refreshData'])
 
   const moderationStore = useModerationStore()
-  const showBulkModal: Ref<boolean> = ref(false)
+  const bulk = useBulkSelection()
 
   const handleRefreshData = () => {
     emit('refreshData')
   }
 
-  const openBulkModeration = () => {
-    showBulkModal.value = true
-  }
+  const pageEntries = computed(() => {
+    return props.times
+      .filter(t => !!t._id)
+      .map(t => ({
+        id: t._id!,
+        label: `${t.name} · ${t.map} · ${t.time.toFixed(3)}s`,
+      }))
+  })
 
-  const closeBulkModeration = () => {
-    showBulkModal.value = false
-  }
+  const pageSelectedCount = computed(() => {
+    return pageEntries.value.filter(e => bulk.has(e.id)).length
+  })
 
-  const handleBulkModerationComplete = () => {
-    emit('refreshData')
-    showBulkModal.value = false
+  const allPageSelected = computed(() => {
+    return pageEntries.value.length > 0 && pageSelectedCount.value === pageEntries.value.length
+  })
+
+  const togglePageSelection = () => {
+    if (allPageSelected.value) {
+      bulk.removeMany(pageEntries.value.map(e => e.id))
+    } else {
+      bulk.addMany(pageEntries.value)
+    }
   }
 </script>
 
 
 <template>
   <div>
-    <!-- Bulk moderation button above header -->
-    <div v-if="moderationStore.canInvalidateTimes.value && props.times.length > 0" 
-         class="flex justify-end mb-2">
+    <div v-if="moderationStore.canAccessModerationPanel.value && pageEntries.length > 0"
+         class="flex items-center justify-end gap-3 mb-2 text-sm">
+      <span v-if="pageSelectedCount > 0" class="text-gray-400">
+        {{ pageSelectedCount }} of {{ pageEntries.length }} selected
+      </span>
       <button
-        @click="openBulkModeration"
-        class="px-3 py-1 bg-main-700 hover:bg-main-600 border border-main-500 text-gray-200 text-sm rounded transition-colors whitespace-nowrap cursor-pointer"
+        @click="togglePageSelection"
+        class="px-3 py-1 bg-main-700 hover:bg-main-600 border border-main-500 text-gray-200 rounded transition-colors whitespace-nowrap cursor-pointer"
       >
-        Bulk Moderate
+        {{ allPageSelected ? 'Clear page' : 'Select page' }}
       </button>
     </div>
-    
+
     <!-- Header -->
     <div>
       <TimesListHeading :cols="props.cols"></TimesListHeading>
     </div>
-    
+
     <!-- Times list -->
-    <TimesListItem 
-      v-for="(time,index) in props.times" 
-      :key="index" 
-      :placement="index+1" 
-      :time="time" 
-      :cols="props.cols" 
+    <TimesListItem
+      v-for="(time,index) in props.times"
+      :key="index"
+      :placement="index+1"
+      :time="time"
+      :cols="props.cols"
       :wrTime="props.times[0]"
       @refresh-data="handleRefreshData"
     ></TimesListItem>
-
-    <!-- Bulk Moderation Modal -->
-    <BulkModerationModal
-      :times="props.times"
-      :show="showBulkModal"
-      @moderationComplete="handleBulkModerationComplete"
-      @close="closeBulkModeration"
-    />
   </div>
 </template>

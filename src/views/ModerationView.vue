@@ -8,7 +8,6 @@ import ActivityTab from '@/components/Moderation/Panel/ActivityTab.vue'
 import LookupTab from '@/components/Moderation/Panel/LookupTab.vue'
 import ModeratorsTab from '@/components/Moderation/Panel/ModeratorsTab.vue'
 import ServerOwnerTab from '@/components/Moderation/Panel/ServerOwnerTab.vue'
-import BulkSelectionTray from '@/components/Moderation/Panel/BulkSelectionTray.vue'
 import PermissionBadges from '@/components/PermissionBadges.vue'
 import type { RecentModAction } from '@/types/moderation'
 
@@ -159,6 +158,5 @@ onMounted(() => {
       </div>
     </div>
 
-    <BulkSelectionTray />
   </main>
 </template>
