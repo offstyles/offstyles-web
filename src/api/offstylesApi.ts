@@ -30,6 +30,7 @@ export interface ServerActivityOwner {
 
 export interface ServerActivityResponse {
   _id: string;
+  key_id: string;
   name: string;
   servers: ServerInfo[];
   permissions: number;
