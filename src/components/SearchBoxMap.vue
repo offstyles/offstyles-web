@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import type { Ref } from 'vue';
+  import { useRouter } from 'vue-router';
   import OffstylesApi from '@/api/offstylesApi';
   import loadWheel from './icons/loadWheel.vue';
   import urlParams from '@/utils/urlParams';
@@ -8,6 +9,8 @@
   const autoCompleteResults : Ref<string[]> = ref([]);
   const showAutoCompleteDropdown : Ref<boolean> = ref(false);
   const isLoading : Ref<boolean> = ref(false);
+  const router = useRouter();
+  const emit = defineEmits<{ updateMap: [string] }>();
   const props = defineProps<{
     placeholder: string,
   }>()
@@ -31,6 +34,15 @@
       isLoading.value = false;
     }, 600);
   }
+
+  const goToTopMatch = () => {
+    if(isLoading.value || !currentInput.value || !autoCompleteResults.value.length) return;
+    const exact = autoCompleteResults.value.find(m => m.toLowerCase() === currentInput.value.toLowerCase());
+    const target = exact ?? autoCompleteResults.value[0];
+    showAutoCompleteDropdown.value = false;
+    emit('updateMap', target);
+    router.push({path:`/maps/${target}/`, query:urlParams.clearPage()});
+  }
 </script>
 
 <template>
@@ -39,6 +51,7 @@
     v-model="currentInput"
     @input="updateMapAutoComplete"
     @click="showAutoCompleteDropdown = true"
+    @keydown.enter="goToTopMatch"
     :placeholder = "props.placeholder"
     class="rounded-lg bg-main-800 text-left border border-transparent focus-within:border-main-50 py-2 px-3 text-sm leading-5 text-gray-200 placeholder:text-gray-500 outline-none">
     <div class="absolute top-full w-full rounded-lg bg-main-900 border border-main-100 text-sm text-gray-300 mt-1 py-2 px-2 shadow-xl/20 hidden group-focus-within:block z-[999]" v-if="showAutoCompleteDropdown && currentInput">
