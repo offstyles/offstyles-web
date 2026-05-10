@@ -3,11 +3,7 @@
   import dateTimeFormats from '@/utils/dateTimeFormats';
   import RelativeDate from '../RelativeDate.vue';
   import type { TimeListColumn } from '@/types/TimeListColumn';
-  import ValidityIndicator from '../ValidityIndicator.vue';
   import { computed } from 'vue';
-  import { useRoute } from 'vue-router';
-
-  const route = useRoute();
 
   const props = defineProps<{
       time: Time,
@@ -28,11 +24,6 @@
   })
 
   const wrTime = props.time.wr_time ?? (props.wrTime ? props.wrTime.time : null) ?? false;
-
-  // Only show validity indicator when viewing times from player lookup tab
-  const isPlayerLookupContext = computed(() => {
-    return route.path.startsWith('/players');
-  });
 </script>
 
 
@@ -51,13 +42,6 @@
           <span class="truncate group-hover/timeLink:underline flex-1 max-w-full block">{{ data }}</span>
         </div>
       </template>
-      <!-- Show validity indicator for time column only in player lookup context -->
-      <ValidityIndicator
-        v-if="props.col.data === 'time' && isPlayerLookupContext"
-        :is-invalid="props.time.is_invalid"
-        :is-banned="props.time.is_banned"
-        size="sm"
-      />
     </div>
     <span v-if="props.col.data === 'time' && wrTime"
     :class="
