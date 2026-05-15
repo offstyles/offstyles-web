@@ -1,9 +1,38 @@
 import { fileURLToPath, URL } from 'node:url'
+import { execSync } from 'node:child_process'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import wasm from 'vite-plugin-wasm'
+
+function git(args: string): string {
+  try {
+    return execSync(`git ${args}`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+  } catch {
+    return ''
+  }
+}
+
+const gitCommit = git('rev-parse --short HEAD')
+const gitCommitDate = git('log -1 --format=%cI')
+
+function buildInfoPlugin() {
+  const virtualId = 'virtual:build-info'
+  const resolvedId = '\0' + virtualId
+  return {
+    name: 'build-info',
+    resolveId(id: string) {
+      if (id === virtualId) return resolvedId
+    },
+    load(id: string) {
+      if (id === resolvedId) {
+        return `export const gitCommit = ${JSON.stringify(gitCommit)};\n`
+          + `export const gitCommitDate = ${JSON.stringify(gitCommitDate)};\n`
+      }
+    },
+  }
+}
 
 // Node 22+ exposes an experimental `localStorage` global as an empty `{}`
 // (unless `--localstorage-file` is set). `@vue/devtools-kit` checks
@@ -24,6 +53,7 @@ export default defineConfig({
     vueDevTools(),
     tailwindcss(),
     wasm(),
+    buildInfoPlugin(),
   ],
   resolve: {
     alias: {

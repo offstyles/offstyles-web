@@ -1,14 +1,32 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import AuthButton from '@/components/AuthButton.vue'
 import AdminModerationPanel from '@/components/Moderation/AdminModerationPanel.vue'
 import IconDiscord from '@/components/icons/IconDiscord.vue'
 import IconYoutube from '@/components/icons/IconYoutube.vue'
 import IconGithub from '@/components/icons/IconGithub.vue'
 import { useAuth } from '@/stores/auth'
+import { gitCommit, gitCommitDate } from 'virtual:build-info'
 
 const { initAuth } = useAuth()
+
+const commitUrl = computed(() =>
+  gitCommit ? `https://github.com/offstyles/offstyles-web/commit/${gitCommit}` : ''
+)
+
+const commitDateLabel = computed(() => {
+  if (!gitCommitDate) return ''
+  const d = new Date(gitCommitDate)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+})
 
 onMounted(async () => {
   await initAuth()
@@ -78,6 +96,18 @@ onMounted(async () => {
         <!-- Footer Text -->
         <div class="text-gray-500 text-sm">
           Offstyle DB © 2025
+        </div>
+
+        <!-- Build version -->
+        <div v-if="gitCommit" class="text-gray-600 text-xs mt-2">
+          <a
+            :href="commitUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-mono hover:text-gray-400 transition-colors duration-200"
+            :title="`Commit ${gitCommit}`"
+          >{{ gitCommit }}</a>
+          <span v-if="commitDateLabel"> · {{ commitDateLabel }}</span>
         </div>
       </div>
     </footer>
