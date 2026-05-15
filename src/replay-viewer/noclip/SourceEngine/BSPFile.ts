@@ -2109,6 +2109,56 @@ export class BSPFile {
         }
     }
 
+    // Specialized fast path for "does any leaf intersecting `aabb` belong to a cluster
+    // in `pvs`?" — used by per-entity visibility culling, which hits this every frame
+    // for every drawable entity. Iterative + inlined math avoids the callback / closure
+    // overhead of generic queryAABB.
+    private pvsTouchesAABBStack: Int32Array = new Int32Array(512);
+    public pvsTouchesAABB(aabb: AABB, pvs: BitMap): boolean {
+        const aabbMinX = aabb.min[0], aabbMinY = aabb.min[1], aabbMinZ = aabb.min[2];
+        const aabbMaxX = aabb.max[0], aabbMaxY = aabb.max[1], aabbMaxZ = aabb.max[2];
+
+        const stack = this.pvsTouchesAABBStack;
+        let sp = 0;
+        stack[sp++] = 0;
+        while (sp > 0) {
+            const nodeid = stack[--sp];
+            if (nodeid < 0) {
+                const leaf = this.leaflist[-nodeid - 1];
+                if (pvs.getBit(leaf.cluster))
+                    return true;
+                continue;
+            }
+
+            const node = this.nodelist[nodeid];
+            const nbmin = node.bbox.min, nbmax = node.bbox.max;
+            if (nbmin[0] > aabbMaxX || aabbMinX > nbmax[0] ||
+                nbmin[1] > aabbMaxY || aabbMinY > nbmax[1] ||
+                nbmin[2] > aabbMaxZ || aabbMinZ > nbmax[2])
+                continue;
+
+            const plane = node.plane;
+            const nx = plane.n[0], ny = plane.n[1], nz = plane.n[2], d = plane.d;
+            const farX  = nx >= 0 ? aabbMaxX : aabbMinX;
+            const farY  = ny >= 0 ? aabbMaxY : aabbMinY;
+            const farZ  = nz >= 0 ? aabbMaxZ : aabbMinZ;
+            if (farX * nx + farY * ny + farZ * nz + d < 0) {
+                stack[sp++] = node.child1;
+                continue;
+            }
+            const nearX = nx >= 0 ? aabbMinX : aabbMaxX;
+            const nearY = ny >= 0 ? aabbMinY : aabbMaxY;
+            const nearZ = nz >= 0 ? aabbMinZ : aabbMaxZ;
+            if (nearX * nx + nearY * ny + nearZ * nz + d > 0) {
+                stack[sp++] = node.child0;
+                continue;
+            }
+            stack[sp++] = node.child1;
+            stack[sp++] = node.child0;
+        }
+        return false;
+    }
+
     public queryAABB(aabb: AABB, callback: QueryLeafCallback, nodeid = 0): boolean {
         if (nodeid < 0) {
             const leafidx = -nodeid - 1;
