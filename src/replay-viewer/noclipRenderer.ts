@@ -146,16 +146,26 @@ export class NoclipRenderer {
         this.applySettingsToContext();
     }
 
+    public isAutoExposureSupported(): boolean {
+        // The auto-exposure path on WebGL2 polls occlusion query results every
+        // frame. Firefox makes gl.getQueryParameter a synchronous GPU-process
+        // round-trip, which stalls the JS thread (~75% of frame time in
+        // testing) and tanks FPS. The WebGL2 backend already exposes this as
+        // occlusionQueriesRecommended; honor it.
+        return this.device.queryLimits().occlusionQueriesRecommended;
+    }
+
     private applySettingsToContext(): void {
         if (this.renderContext === null) return;
+        const autoExposure = this.settings.autoExposure && this.isAutoExposureSupported();
         this.renderContext.enableBloom = this.settings.bloom;
-        this.renderContext.enableAutoExposure = this.settings.autoExposure;
+        this.renderContext.enableAutoExposure = autoExposure;
         this.renderContext.enableFog = !this.settings.disableFog;
 
         if (this.settings.fullbright) {
             this.renderContext.enableAutoExposure = false;
             this.renderContext.toneMapParams.toneMapScale = 4.0;
-        } else if (!this.settings.autoExposure) {
+        } else if (!autoExposure) {
             this.renderContext.toneMapParams.toneMapScale = 1.0;
         }
     }
