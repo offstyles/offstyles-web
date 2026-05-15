@@ -4,6 +4,8 @@ import type { Ref } from 'vue'
 import { ModerationActionType } from '@/types/moderation'
 import { useModerationStore, type ModerationTarget } from '@/stores/moderation'
 import ModerationLogsModal from './ModerationLogsModal.vue'
+import ConfirmActionDialog from './Panel/ConfirmActionDialog.vue'
+import type { ConfirmRow } from './Panel/ConfirmActionDialog.vue'
 import IconCheck from '@/components/icons/IconCheck.vue'
 
 const emit = defineEmits(['moderationComplete', 'close'])
@@ -21,6 +23,19 @@ const isSubmitting: Ref<boolean> = ref(false)
 const showSuccess: Ref<boolean> = ref(false)
 const showLogsModal: Ref<boolean> = ref(false)
 const errorMessage: Ref<string> = ref('')
+const showConfirm: Ref<boolean> = ref(false)
+
+const requiresConfirm = computed(() => {
+  return selectedAction.value === ModerationActionType.Ban
+      || selectedAction.value === ModerationActionType.Unban
+})
+
+const confirmRows = computed<ConfirmRow[]>(() => [
+  { label: 'Action', value: selectedAction.value ?? '' },
+  { label: 'Target', value: props.target.name },
+  { label: 'Type', value: props.target.type === 'player' ? 'Player' : 'Record' },
+  { label: 'ID', value: props.target.id },
+])
 
 const availableActions = computed(() => {
   return moderationStore.getAvailableActions(props.target)
@@ -73,33 +88,39 @@ const resetForm = () => {
   reason.value = ''
   errorMessage.value = ''
   showSuccess.value = false
+  showConfirm.value = false
 }
 
 const selectAction = (action: ModerationActionType) => {
   selectedAction.value = action
 }
 
-const handleSubmit = async () => {
+const handleSubmit = () => {
   if (!canSubmit.value || !selectedAction.value) return
+  errorMessage.value = ''
+  if (requiresConfirm.value) {
+    showConfirm.value = true
+    return
+  }
+  performAction()
+}
 
+const performAction = async () => {
+  if (!selectedAction.value) return
   isSubmitting.value = true
   errorMessage.value = ''
-
   try {
     await moderationStore.performModerationAction(
       selectedAction.value,
       reason.value,
       props.target
     )
-
+    showConfirm.value = false
     showSuccess.value = true
-
-    // Auto close after success
     setTimeout(() => {
       emit('moderationComplete')
       emit('close')
     }, 1500)
-
   } catch (error) {
     console.error('Moderation action failed:', error)
     errorMessage.value = error instanceof Error ? error.message : 'Unknown error occurred'
@@ -262,5 +283,18 @@ const getActionColor = (action: ModerationActionType) => {
     :target-name="target.name"
     :show="showLogsModal"
     @close="closeLogsModal"
+  />
+
+  <!-- Confirmation step for Ban/Unban -->
+  <ConfirmActionDialog
+    :show="showConfirm"
+    :title="`${selectedAction} ${target.type === 'player' ? 'player' : 'record'}?`"
+    intent="danger"
+    :rows="confirmRows"
+    :reason="reason"
+    :confirm-label="`Yes, ${selectedAction?.toLowerCase()}`"
+    :is-processing="isSubmitting"
+    @confirm="performAction"
+    @cancel="showConfirm = false"
   />
 </template>

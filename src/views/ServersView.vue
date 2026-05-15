@@ -414,9 +414,12 @@ const onServerUpdated = (updatedServer: ServerDataDocument) => {
   // Find and update the server in the list
   const index = servers.value.findIndex(s => s._id === updatedServer._id);
   if (index !== -1 && updatedServer._id && updatedServer.user && updatedServer.servers) {
-    // Convert ServerDataDocument back to ServerActivityResponse format
+    // Convert ServerDataDocument back to ServerActivityResponse format,
+    // preserving key_id from the existing entry since the update payload
+    // doesn't carry it.
     const response: ServerActivityResponse = {
       _id: updatedServer._id,
+      key_id: servers.value[index].key_id,
       name: updatedServer.name,
       servers: updatedServer.servers,
       user: updatedServer.user,

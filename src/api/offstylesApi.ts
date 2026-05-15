@@ -30,6 +30,7 @@ export interface ServerActivityOwner {
 
 export interface ServerActivityResponse {
   _id: string;
+  key_id: string;
   name: string;
   servers: ServerInfo[];
   permissions: number;
@@ -104,6 +105,9 @@ class OffstylesApi extends Api {
         break;
       case 'player':
         params.append("steamid", filter.scope.steamid);
+        break;
+      case 'server':
+        params.append("server", filter.scope.server);
         break;
       case 'globals':
         if (filter.scope.recent) params.append("recent", "true");
@@ -234,6 +238,25 @@ class OffstylesApi extends Api {
       },
       body: reason,
       credentials: "include", // Include cookies for session authentication
+    });
+
+    if (!response.ok) await throwApiError(response);
+  }
+
+  // Server-owner self-invalidation (always invalidates; backend verifies the
+  // caller owns the server each record was set on).
+  static async serverOwnerInvalidate(recordIds: string[], reason: string): Promise<void> {
+    const params = new URLSearchParams({
+      ids: recordIds.join(","),
+    });
+
+    const response = await fetch(`${this.offstylesApiUrl}/so_moderate?${params.toString()}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain",
+      },
+      body: reason,
+      credentials: "include",
     });
 
     if (!response.ok) await throwApiError(response);

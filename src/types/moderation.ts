@@ -61,29 +61,73 @@ export class UserPermissions {
   static readonly INVALIDATE_TIMES = 1 << 0;
   static readonly BAN_PLAYERS = 1 << 1;
   static readonly SERVER_OWNER_INVALIDATE_TIMES = 1 << 2;
+  static readonly SERVER_OWNER_EDIT_SERVER = 1 << 3;
   static readonly UNDO_MOD_ACTION = 1 << 15;
+  static readonly EDIT_SERVERS = 1 << 28;
   static readonly BYPASS_RATELIMITS = 1 << 29;
   static readonly CREATE_KEY = 1 << 30;
   static readonly MANAGE_KEYS = 1 << 31;
-  
+
   // Permission groups
   static readonly MODERATOR = UserPermissions.INVALIDATE_TIMES | UserPermissions.BAN_PLAYERS;
   static readonly ADMIN = UserPermissions.MODERATOR | UserPermissions.UNDO_MOD_ACTION | UserPermissions.CREATE_KEY;
   // OWNER would have all permissions
-  
+
   constructor(private value: number) {}
-  
+
   contains(permission: number): boolean {
     return (this.value & permission) === permission;
   }
-  
+
   isModerator(): boolean {
     return this.contains(UserPermissions.MODERATOR);
   }
-  
+
   isAdmin(): boolean {
     return this.contains(UserPermissions.ADMIN);
   }
+}
+
+export type PermissionTone = 'red' | 'purple' | 'yellow' | 'blue' | 'gray'
+
+export interface PermissionLabel {
+  name: string
+  tone: PermissionTone
+}
+
+const KNOWN_FLAGS: Array<[number, PermissionLabel]> = [
+  [UserPermissions.INVALIDATE_TIMES,             { name: 'Invalidate Times',    tone: 'red' }],
+  [UserPermissions.BAN_PLAYERS,                  { name: 'Ban Players',         tone: 'red' }],
+  [UserPermissions.SERVER_OWNER_INVALIDATE_TIMES,{ name: 'Server-Owner Invalidate', tone: 'purple' }],
+  [UserPermissions.SERVER_OWNER_EDIT_SERVER,     { name: 'Server-Owner Edit',   tone: 'purple' }],
+  [UserPermissions.UNDO_MOD_ACTION,              { name: 'Reverse Mod Actions', tone: 'purple' }],
+  [UserPermissions.EDIT_SERVERS,                 { name: 'Edit Servers',        tone: 'blue' }],
+  [UserPermissions.BYPASS_RATELIMITS,            { name: 'Bypass Rate Limits',  tone: 'yellow' }],
+  [UserPermissions.CREATE_KEY,                   { name: 'Create API Keys',     tone: 'blue' }],
+  [UserPermissions.MANAGE_KEYS,                  { name: 'Manage API Keys',     tone: 'blue' }],
+]
+
+export function describePermissions(value: number): PermissionLabel[] {
+  const out: PermissionLabel[] = []
+  let covered = 0
+  for (const [bit, label] of KNOWN_FLAGS) {
+    if ((value & bit) === bit) {
+      out.push(label)
+      covered |= bit
+    }
+  }
+  const rest = value & ~covered
+  if (rest !== 0) {
+    out.push({ name: `Other (0x${rest.toString(16)})`, tone: 'gray' })
+  }
+  return out
+}
+
+export function permissionRoleLabel(value: number): string | null {
+  if ((value & UserPermissions.ADMIN) === UserPermissions.ADMIN) return 'Admin'
+  if ((value & UserPermissions.MODERATOR) === UserPermissions.MODERATOR) return 'Moderator'
+  if ((value & UserPermissions.SERVER_OWNER_INVALIDATE_TIMES) === UserPermissions.SERVER_OWNER_INVALIDATE_TIMES) return 'Server Owner'
+  return null
 }
 
 // Standard API error response

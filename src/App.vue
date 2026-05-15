@@ -2,13 +2,15 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { onMounted } from 'vue'
 import AuthButton from '@/components/AuthButton.vue'
-import AdminModerationPanel from '@/components/Moderation/AdminModerationPanel.vue'
+import BulkSelectionTray from '@/components/Moderation/Panel/BulkSelectionTray.vue'
 import IconDiscord from '@/components/icons/IconDiscord.vue'
 import IconYoutube from '@/components/icons/IconYoutube.vue'
 import IconGithub from '@/components/icons/IconGithub.vue'
 import { useAuth } from '@/stores/auth'
+import { useModerationStore } from '@/stores/moderation'
 
 const { initAuth } = useAuth()
+const moderationStore = useModerationStore()
 
 onMounted(async () => {
   await initAuth()
@@ -31,6 +33,11 @@ onMounted(async () => {
             <router-link class="hover:text-gray-100 text-nowrap" to="/maps">Map Leaderboards</router-link>
             <router-link class="hover:text-gray-100 text-nowrap" to="/players">Player Lookup</router-link>
             <router-link class="hover:text-gray-100 text-nowrap" to="/servers">Servers</router-link>
+            <router-link
+              v-if="moderationStore.canAccessModerationPanel.value"
+              class="hover:text-gray-100 text-nowrap text-purple-300 hover:text-purple-200"
+              to="/moderation"
+            >Moderation</router-link>
           </nav>
           <AuthButton />
         </div>
@@ -38,8 +45,7 @@ onMounted(async () => {
     </header>
     <RouterView class="mb-auto" />
 
-    <!-- Admin Moderation Panel -->
-    <AdminModerationPanel />
+    <BulkSelectionTray v-if="moderationStore.canAccessModerationPanel.value" />
 
     <!-- Footer -->
     <footer class="pt-8">

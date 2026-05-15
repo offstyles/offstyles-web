@@ -7,6 +7,7 @@
   import TimesListItemMoreDetails from './TimesListItemMoreDetails.vue';
   import ModerationModal from '../Moderation/ModerationModal.vue';
   import { useModerationStore, type ModerationTarget } from '@/stores/moderation';
+  import { useBulkSelection } from '@/composables/useBulkSelection';
 
   const props = defineProps<{
       time: Time,
@@ -18,12 +19,25 @@
   const emit = defineEmits(['refreshData']);
 
   const moderationStore = useModerationStore();
+  const bulk = useBulkSelection();
   const showModerationModal: Ref<boolean> = ref(false);
 
   // Context menu state
   const showContextMenu: Ref<boolean> = ref(false);
   const contextMenuX: Ref<number> = ref(0);
   const contextMenuY: Ref<number> = ref(0);
+
+  const isSelected = computed(() => !!props.time._id && bulk.has(props.time._id));
+
+  const bulkLabel = computed(() => {
+    const t = props.time;
+    return `${t.name} · ${t.map} · ${t.time.toFixed(3)}s`;
+  });
+
+  const toggleBulkSelection = () => {
+    if (!props.time._id) return;
+    bulk.toggle({ id: props.time._id, label: bulkLabel.value });
+  };
 
   const totalRows = computed(()=>{
     return Math.max(...props.cols.map((v)=>(v.row ?? 1) + (v.rowSpan ?? 1) - 1));
@@ -115,6 +129,11 @@
     closeContextMenu();
   }
 
+  const handleContextBulkToggle = () => {
+    toggleBulkSelection();
+    closeContextMenu();
+  }
+
   const handleDocumentClick = () => {
     if (showContextMenu.value) {
       closeContextMenu();
@@ -132,11 +151,13 @@
 
 
 <template>
-  <div class="transition-[padding border-color background-color] duration-200 border-b hover:bg-main-500 group"
-  :class="showDetails ?
-    'bg-main-500':
-    'bg-main-600 odd:bg-main-700 hover:border-gray-400 border-transparent border-gray-400 hover:border-gray-200'
-  ">
+  <div class="transition-[padding border-color background-color] duration-200 border-b hover:bg-main-500 group relative"
+  :class="[
+    showDetails
+      ? 'bg-main-500'
+      : 'bg-main-600 odd:bg-main-700 hover:border-gray-400 border-transparent border-gray-400 hover:border-gray-200',
+    isSelected ? 'ring-1 ring-blue-500/50 ring-inset' : '',
+  ]">
     <div class="grid os-grid-cols-auto p-1.5 px-1
        cursor-pointer transition-[padding border-color background-color] duration-200  hover:pb-2.5 relative"
     :class="showDetails ?
@@ -168,6 +189,14 @@
       >
         <span class="text-xs">⚙️</span>
         <span>Moderate Record</span>
+      </button>
+      <button
+        v-if="time._id"
+        @click="handleContextBulkToggle"
+        class="w-full px-3 py-2 text-left text-gray-200 hover:bg-main-700 transition-colors cursor-pointer flex items-center gap-2"
+      >
+        <span class="text-xs">{{ isSelected ? '☑' : '☐' }}</span>
+        <span>{{ isSelected ? 'Remove from selection' : 'Add to selection' }}</span>
       </button>
     </div>
   </div>
