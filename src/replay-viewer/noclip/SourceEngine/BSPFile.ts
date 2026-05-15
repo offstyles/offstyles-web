@@ -2065,11 +2065,11 @@ export class BSPFile {
         this.indexData = indexBuffer.finalize();
     }
 
-    private findLeafWaterForPointR(p: ReadonlyVec3, liveLeafSet: Set<number>, nodeid: number): BSPLeafWaterData | null {
+    private findLeafWaterForPointR(p: ReadonlyVec3, pvs: BitMap, nodeid: number): BSPLeafWaterData | null {
         if (nodeid < 0) {
             const leafidx = -nodeid - 1;
-            if (liveLeafSet.has(leafidx)) {
-                const leaf = this.leaflist[leafidx];
+            const leaf = this.leaflist[leafidx];
+            if (pvs.getBit(leaf.cluster)) {
                 if (leaf.leafwaterdata !== -1)
                     return this.leafwaterdata[leaf.leafwaterdata];
             }
@@ -2082,21 +2082,21 @@ export class BSPFile {
         const check1 = dot >= 0.0 ? node.child0 : node.child1;
         const check2 = dot >= 0.0 ? node.child1 : node.child0;
 
-        const w1 = this.findLeafWaterForPointR(p, liveLeafSet, check1);
+        const w1 = this.findLeafWaterForPointR(p, pvs, check1);
         if (w1 !== null)
             return w1;
-        const w2 = this.findLeafWaterForPointR(p, liveLeafSet, check2);
+        const w2 = this.findLeafWaterForPointR(p, pvs, check2);
         if (w2 !== null)
             return w2;
 
         return null;
     }
 
-    public findLeafWaterForPoint(p: ReadonlyVec3, liveLeafSet: Set<number>): BSPLeafWaterData | null {
+    public findLeafWaterForPoint(p: ReadonlyVec3, pvs: BitMap): BSPLeafWaterData | null {
         if (this.leafwaterdata.length === 0)
             return null;
 
-        return this.findLeafWaterForPointR(p, liveLeafSet, 0);
+        return this.findLeafWaterForPointR(p, pvs, 0);
     }
 
     public queryPoint(p: ReadonlyVec3, nodeid: number = 0): BSPLeaf | null {
