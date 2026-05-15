@@ -174,7 +174,11 @@ export class NoclipRenderer {
         // antialias: false — noclip renders to its own offscreen target and
         // blits the resolve to the default framebuffer; a multisampled
         // default FB makes that blit invalid.
-        const gl = canvas.getContext("webgl2", { antialias: false });
+        // powerPreference: "high-performance" nudges Safari/iOS off the
+        // low-power GPU path; on ProMotion iPhones that path is also where the
+        // 60Hz rAF cap tends to stick. Won't help if iOS Low Power Mode is on
+        // -- Apple forces 60Hz unconditionally there.
+        const gl = canvas.getContext("webgl2", { antialias: false, powerPreference: "high-performance" });
         if (!gl) throw new Error("WebGL2 not supported");
         this.gl = gl;
 
