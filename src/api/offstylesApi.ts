@@ -138,7 +138,7 @@ class OffstylesApi extends Api {
     return await this.fetchFromUrl();
   }
 
-  static async getPlayersForAutoComplete(text: string): Promise<[string, string][]> {
+  static async getPlayersForAutoComplete(text: string): Promise<[string, string, string?][]> {
     const params = new URLSearchParams({
       text: text,
     });
