@@ -5,12 +5,16 @@
   import loadWheel from './icons/loadWheel.vue';
   import urlParams from '@/utils/urlParams';
   const currentInput : Ref<string> = ref('');
-  const autoCompleteResults : Ref<[string, string][]> = ref([]);
+  const autoCompleteResults : Ref<[string, string, string?][]> = ref([]);
   const showAutoCompleteDropdown : Ref<boolean> = ref(false);
   const isLoading : Ref<boolean> = ref(false);
   const props = defineProps<{
     placeholder: string,
   }>()
+
+  const hideAvatarOnError = (event: Event) => {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
 
   let debounce : ReturnType<typeof setTimeout>;
   const updatePlayerAutoComplete = () => {
@@ -45,7 +49,9 @@
       <loadWheel v-if="isLoading" class="text-gray-300 flex mx-auto w-6 h-6"></loadWheel>
       <router-link v-else v-for="(result, index) in autoCompleteResults.slice(0, 6)" :to="{path:`/players/${result[1]}/`, query:urlParams.clearPage()}" :key="index"
         @click="$emit('updatePlayer', result[1]); showAutoCompleteDropdown = false"
-        class="py-1 px-1.5 hover:bg-main-600 rounded-sm block truncate">{{ result[0] }}
+        class="flex items-center gap-2 py-1 px-1.5 hover:bg-main-600 rounded-sm min-w-0">
+        <img v-if="result[2]" :src="result[2]" :alt="result[0]" @error="hideAvatarOnError" class="w-5 h-5 rounded-full flex-shrink-0" />
+        <span class="truncate">{{ result[0] }}</span>
       </router-link>
     </div>
   </div>
