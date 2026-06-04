@@ -60,7 +60,8 @@ const forPlayer = function(
   defaults: FilterDefaults,
   canSeeInvalidated: boolean,
 ): TimesFilter {
-  return { ...baseFilter({ query, defaults, canSeeInvalidated }), scope: { kind: 'player', steamid } };
+  const wr = query.wr === 'true' ? true : undefined;
+  return { ...baseFilter({ query, defaults, canSeeInvalidated }), scope: { kind: 'player', steamid, wr } };
 };
 
 const forGlobals = function(

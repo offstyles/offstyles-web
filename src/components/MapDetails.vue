@@ -36,7 +36,7 @@
     };
   });
 
-  const filterChanged = async (name: 'style' | 'sort' | 'best' | 'has_replay' | 'invalidated', value: string | number | boolean | undefined) => {
+  const filterChanged = async (name: 'style' | 'sort' | 'best' | 'has_replay' | 'wr' | 'invalidated', value: string | number | boolean | undefined) => {
     await router.replace({ query: urlParams.updateMany({ [name]: value }) });
   };
 
