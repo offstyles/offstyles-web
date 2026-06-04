@@ -9,7 +9,7 @@
   import { useModerationStore } from '@/stores/moderation';
 
   type InvalidatedChoice = 'hide' | 'mix' | 'only';
-  type FilterKey = 'style' | 'sort' | 'best' | 'has_replay' | 'invalidated';
+  type FilterKey = 'style' | 'sort' | 'best' | 'has_replay' | 'wr' | 'invalidated';
 
   const SORT_OPTIONS: SortOrder[] = ['Fastest', 'Slowest', 'Newest', 'Oldest'];
   const INVALIDATED_OPTIONS: { value: InvalidatedChoice, label: string }[] = [
@@ -23,6 +23,8 @@
     sort: SortOrder,
     best: boolean,
     hasReplay: boolean,
+    wr?: boolean,
+    showWr?: boolean,
     invalidated: boolean | undefined,
     styleOptions: number[],
   }>();
@@ -60,6 +62,11 @@
   const hasReplayChanged = (event: Event) => {
     const checked = (event.target as HTMLInputElement).checked;
     emit('filter-Changed', 'has_replay', checked ? true : undefined);
+  };
+
+  const wrChanged = (event: Event) => {
+    const checked = (event.target as HTMLInputElement).checked;
+    emit('filter-Changed', 'wr', checked ? true : undefined);
   };
 
   const invalidatedChanged = (value: InvalidatedChoice) => {
@@ -114,6 +121,11 @@
     <label class="flex items-center gap-2 cursor-pointer">
       <input type="checkbox" :checked="props.hasReplay" @change="hasReplayChanged">
       <span>Has replay</span>
+    </label>
+
+    <label v-if="props.showWr" class="flex items-center gap-2 cursor-pointer">
+      <input type="checkbox" :checked="!!props.wr" @change="wrChanged">
+      <span>Only show WR times</span>
     </label>
 
     <Listbox
