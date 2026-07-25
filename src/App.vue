@@ -15,6 +15,8 @@ const commitUrl = computed(() =>
   gitCommit ? `https://github.com/offstyles/offstyles-web/commit/${gitCommit}` : ''
 )
 
+const currentYear = new Date().getFullYear()
+
 const commitDateLabel = computed(() => {
   if (!gitCommitDate) return ''
   const d = new Date(gitCommitDate)
@@ -95,7 +97,7 @@ onMounted(async () => {
 
         <!-- Footer Text -->
         <div class="text-gray-500 text-sm">
-          Offstyle DB © 2025
+          Offstyle DB © {{ currentYear }}
         </div>
 
         <!-- Build version -->
