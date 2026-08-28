@@ -6,7 +6,6 @@
   import CustomDropdown from './CustomDropdown.vue';
   import styleFormat from '@/utils/styleFormat';
   import type { SortOrder } from '@/types/TimesFilter';
-  import { useModerationStore } from '@/stores/moderation';
 
   type InvalidatedChoice = 'hide' | 'mix' | 'only';
   type FilterKey = 'style' | 'sort' | 'best' | 'has_replay' | 'wr' | 'invalidated';
@@ -32,8 +31,6 @@
   const emit = defineEmits<{
     (e: 'filter-Changed', name: FilterKey, value: string | number | boolean | undefined): void;
   }>();
-
-  const moderationStore = useModerationStore();
 
   // Tri-state round-trip: backend reads `invalidated` as omitted = valid-only (hide),
   // `false` = mix valid + invalidated, `true` = only invalidated. UI mirrors that exact mapping.
@@ -129,7 +126,6 @@
     </label>
 
     <Listbox
-      v-if="moderationStore.canInvalidateTimes.value"
       :model-value="invalidatedValue"
       @update:model-value="invalidatedChanged"
       class="w-auto"
