@@ -57,6 +57,8 @@
 
   const showStyleColumn = computed(() => currentFilter.value.style === Style.all);
 
+  const displayName = computed(() => userProfile.value?.username || props.playerName);
+
   const tableColumns = computed((): TimeListColumn[] => {
     const mapCol: TimeListColumn = {
       label: 'Map',
@@ -255,7 +257,7 @@
         <img
           v-if="userProfile?.avatar_url"
           :src="userProfile.avatar_url"
-          :alt="playerName"
+          :alt="displayName"
           class="w-12 h-12 rounded-full"
         />
         <div class="text-left">
@@ -266,7 +268,7 @@
               rel="noopener noreferrer"
               class="hover:text-gray-300 transition-colors duration-200"
               title="View Steam profile"
-            >{{ playerName }}</a>
+            >{{ displayName }}</a>
           </h1>
           <div v-if="playerStatus" :class="`text-sm ${playerStatus.class}`">{{ playerStatus.message }}</div>
         </div>
