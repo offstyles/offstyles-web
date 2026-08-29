@@ -57,6 +57,7 @@ export default defineConfig({
   ],
   optimizeDeps: {
     exclude: ['@offstyles/replay-viewer'],
+    include: ['gl-matrix', 'pako', 'lzma1'],
   },
   resolve: {
     alias: {

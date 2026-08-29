@@ -19,6 +19,7 @@
   const record: Ref<Time | null> = ref(null);
   const error: Ref<string | null> = ref(null);
   const showReplayViewer: Ref<boolean> = ref(false);
+  const compareReplayRef: Ref<string | null> = ref(null);
 
   const playerUrl = computed(() => {
     return record.value ? `/players/${record.value.steamid}` : null;
@@ -40,11 +41,32 @@
     try {
       const apiRecord = await OffstylesApi.getSingleTime(props.id);
       record.value = apiRecord;
+      fetchCompareReplayRef(apiRecord).then((ref) => { compareReplayRef.value = ref; });
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load record';
       console.error('Failed to fetch record:', err);
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  async function fetchCompareReplayRef(current: Time): Promise<string | null> {
+    if (!current.replay_ref) return null;
+    try {
+      const page = await OffstylesApi.getTimes({
+        scope: { kind: 'map', map: current.map },
+        style: current.style,
+        has_replay: true,
+        best: true,
+        sort: 'Fastest',
+        page: 1,
+        limit: 2,
+      });
+      const other = page.data.find((t) => t._id !== current._id && t.replay_ref);
+      return other?.replay_ref ?? null;
+    } catch (err) {
+      console.error('Failed to fetch comparison replay:', err);
+      return null;
     }
   }
 
@@ -244,6 +266,7 @@
       :show="showReplayViewer"
       :map-name="record.map"
       :replay-id="record.replay_ref"
+      :compare-replay-id="compareReplayRef"
       :time="record"
       @close="showReplayViewer = false"
     />
