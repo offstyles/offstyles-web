@@ -9,6 +9,7 @@
   import { useRouter } from 'vue-router';
   import timeLinks from '@/utils/timeLinks';
   import { ReplayViewerOverlay } from '@offstyles/replay-viewer';
+  import { fetchCompareReplayRef } from '@/utils/compareReplay';
 
   const props = defineProps<{
       time: Time,
@@ -23,7 +24,15 @@
   const showModerationModal: Ref<boolean> = ref(false);
   const router = useRouter();
   const showReplayViewer: Ref<boolean> = ref(false);
+  const compareReplayRef: Ref<string | null> = ref(null);
   const hasReplay = computed(()=>!!props.time.replay_ref);
+
+  async function openReplayViewer() {
+    if (compareReplayRef.value === null) {
+      compareReplayRef.value = await fetchCompareReplayRef(props.time);
+    }
+    showReplayViewer.value = true;
+  }
 
   // Context menu state
   const showContextMenu: Ref<boolean> = ref(false);
@@ -134,7 +143,7 @@
     <div class="grid os-grid-cols-auto p-1.5 px-1 cursor-pointer select-none relative"
     @dblclick="openRecord()"
     @contextmenu="handleRightClick">
-      <TimesListItemColumn v-for="(col,index) in props.cols" :key="index" :time="time" :wrTime="wrTime" :col="col" :canPlay="hasReplay" @play="showReplayViewer = true"></TimesListItemColumn>
+      <TimesListItemColumn v-for="(col,index) in props.cols" :key="index" :time="time" :wrTime="wrTime" :col="col" :canPlay="hasReplay" @play="openReplayViewer"></TimesListItemColumn>
     </div>
 
     <div v-if="hasReplay" @click.stop @dblclick.stop>
@@ -142,6 +151,7 @@
         :show="showReplayViewer"
         :map-name="props.time.map"
         :replay-id="props.time.replay_ref!"
+        :compare-replay-id="compareReplayRef"
         :time="props.time"
         @close="showReplayViewer = false"
       />

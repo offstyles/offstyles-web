@@ -9,6 +9,7 @@
   import styleFormat from '@/utils/styleFormat';
   import { useRouter } from 'vue-router';
   import { ReplayViewerOverlay } from '@offstyles/replay-viewer';
+  import { fetchCompareReplayRef } from '@/utils/compareReplay';
   
   const props = defineProps<{
     id: string
@@ -47,26 +48,6 @@
       console.error('Failed to fetch record:', err);
     } finally {
       isLoading.value = false;
-    }
-  }
-
-  async function fetchCompareReplayRef(current: Time): Promise<string | null> {
-    if (!current.replay_ref) return null;
-    try {
-      const page = await OffstylesApi.getTimes({
-        scope: { kind: 'map', map: current.map },
-        style: current.style,
-        has_replay: true,
-        best: true,
-        sort: 'Fastest',
-        page: 1,
-        limit: 2,
-      });
-      const other = page.data.find((t) => t._id !== current._id && t.replay_ref);
-      return other?.replay_ref ?? null;
-    } catch (err) {
-      console.error('Failed to fetch comparison replay:', err);
-      return null;
     }
   }
 
