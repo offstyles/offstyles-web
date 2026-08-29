@@ -62,6 +62,8 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
+    // Symlinked replay-viewer has its own vue.
+    dedupe: ['vue', 'gl-matrix'],
   },
   worker: {
     format: 'es',

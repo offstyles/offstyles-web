@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "link:replay-viewer": "rm -rf node_modules/@offstyles/replay-viewer && ln -s ../../../replay-viewer node_modules/@offstyles/replay-viewer && rm -rf node_modules/.vite"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
