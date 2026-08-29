@@ -8,7 +8,6 @@
   import RelativeDate from '@/components/RelativeDate.vue';
   import styleFormat from '@/utils/styleFormat';
   import { useRouter } from 'vue-router';
-  import { useAuth } from '@/stores/auth';
   import { ReplayViewerOverlay } from '@offstyles/replay-viewer';
   
   const props = defineProps<{
@@ -16,7 +15,6 @@
   }>();
 
   const router = useRouter();
-  const { isLoggedIn } = useAuth();
   const isLoading: Ref<boolean> = ref(false);
   const record: Ref<Time | null> = ref(null);
   const error: Ref<string | null> = ref(null);
@@ -218,34 +216,16 @@
         <div class="flex flex-wrap gap-3 justify-center">
           <div v-if="record.replay_ref" class="flex flex-wrap gap-3">
             <button
-              v-if="isLoggedIn"
               @click="showReplayViewer = true"
               class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
             >
               View Replay
             </button>
             <button
-              v-else
-              disabled
-              class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed"
-              title="Login with Steam required to view replays"
-            >
-              View Replay (Login Required)
-            </button>
-            <button
-              v-if="isLoggedIn"
               @click="downloadReplay"
               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
             >
               Download Replay
-            </button>
-            <button
-              v-else
-              disabled
-              class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed"
-              title="Login with Steam required to download replays"
-            >
-              Download Replay (Login Required)
             </button>
           </div>
 

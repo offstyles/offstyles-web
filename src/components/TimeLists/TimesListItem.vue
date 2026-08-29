@@ -6,7 +6,6 @@
   import TimesListItemColumn from './TimesListItemColumn.vue';
   import ModerationModal from '../Moderation/ModerationModal.vue';
   import { useModerationStore, type ModerationTarget } from '@/stores/moderation';
-  import { useAuth } from '@/stores/auth';
   import { useRouter } from 'vue-router';
   import timeLinks from '@/utils/timeLinks';
   import { ReplayViewerOverlay } from '@offstyles/replay-viewer';
@@ -23,9 +22,8 @@
   const moderationStore = useModerationStore();
   const showModerationModal: Ref<boolean> = ref(false);
   const router = useRouter();
-  const { isLoggedIn } = useAuth();
   const showReplayViewer: Ref<boolean> = ref(false);
-  const hasReplay = computed(()=>isLoggedIn.value && !!props.time.replay_ref);
+  const hasReplay = computed(()=>!!props.time.replay_ref);
 
   // Context menu state
   const showContextMenu: Ref<boolean> = ref(false);
