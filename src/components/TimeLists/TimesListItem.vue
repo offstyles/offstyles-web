@@ -4,9 +4,12 @@
   import type { Ref } from 'vue';
   import { computed, ref, onMounted, onUnmounted } from 'vue';
   import TimesListItemColumn from './TimesListItemColumn.vue';
-  import TimesListItemMoreDetails from './TimesListItemMoreDetails.vue';
   import ModerationModal from '../Moderation/ModerationModal.vue';
   import { useModerationStore, type ModerationTarget } from '@/stores/moderation';
+  import { useAuth } from '@/stores/auth';
+  import { useRouter } from 'vue-router';
+  import timeLinks from '@/utils/timeLinks';
+  import { ReplayViewerOverlay } from '@offstyles/replay-viewer';
 
   const props = defineProps<{
       time: Time,
@@ -19,6 +22,10 @@
 
   const moderationStore = useModerationStore();
   const showModerationModal: Ref<boolean> = ref(false);
+  const router = useRouter();
+  const { isLoggedIn } = useAuth();
+  const showReplayViewer: Ref<boolean> = ref(false);
+  const hasReplay = computed(()=>isLoggedIn.value && !!props.time.replay_ref);
 
   // Context menu state
   const showContextMenu: Ref<boolean> = ref(false);
@@ -63,14 +70,6 @@
 
   const rowWidthsStyleMobile = computed(()=>'auto');
 
-  const moreDetailsCols: TimeListColumn[] = [
-    { label: 'Jumps', data: 'jumps', col: 1 },
-    { label: 'Strafes', data: 'strafes', col: 2 },
-    { label: 'Sync', data: 'sync', col: 3 },
-  ];
-
-  const showDetails: Ref<boolean> = ref(false);
-
   const moderationTarget = computed((): ModerationTarget => ({
     id: props.time._id || '',
     type: 'record',
@@ -80,8 +79,8 @@
     invalid_ref: props.time.invalid_ref
   }));
 
-  function toggleDetails(){
-    showDetails.value = !showDetails.value;
+  function openRecord(){
+    if (props.time._id) router.push(timeLinks.recordLink(props.time));
   }
 
   const openModerationModal = () => {
@@ -132,20 +131,23 @@
 
 
 <template>
-  <div class="transition-[padding border-color background-color] duration-200 border-b hover:bg-main-500 group"
-  :class="showDetails ?
-    'bg-main-500':
-    'bg-main-600 odd:bg-main-700 hover:border-gray-400 border-transparent border-gray-400 hover:border-gray-200'
-  ">
-    <div class="grid os-grid-cols-auto p-1.5 px-1
-       cursor-pointer transition-[padding border-color background-color] duration-200  hover:pb-2.5 relative"
-    :class="showDetails ?
-      'pb-2' : ''"
-    @click="toggleDetails()"
+  <div class="transition-[border-color background-color] duration-200 border-b hover:bg-main-500 group
+    bg-main-600 odd:bg-main-700 border-transparent hover:border-gray-200">
+    <div class="grid os-grid-cols-auto p-1.5 px-1 cursor-pointer select-none relative"
+    @dblclick="openRecord()"
     @contextmenu="handleRightClick">
-      <TimesListItemColumn v-for="(col,index) in props.cols" :key="index" :time="time" :wrTime="wrTime" :col="col"></TimesListItemColumn>
+      <TimesListItemColumn v-for="(col,index) in props.cols" :key="index" :time="time" :wrTime="wrTime" :col="col" :canPlay="hasReplay" @play="showReplayViewer = true"></TimesListItemColumn>
     </div>
-    <TimesListItemMoreDetails v-if="showDetails" :time="props.time" :cols="moreDetailsCols"></TimesListItemMoreDetails>
+
+    <div v-if="hasReplay" @click.stop @dblclick.stop>
+      <ReplayViewerOverlay
+        :show="showReplayViewer"
+        :map-name="props.time.map"
+        :replay-id="props.time.replay_ref!"
+        :time="props.time"
+        @close="showReplayViewer = false"
+      />
+    </div>
 
     <!-- Moderation Modal -->
     <ModerationModal

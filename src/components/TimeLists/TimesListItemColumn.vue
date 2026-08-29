@@ -9,7 +9,10 @@
       time: Time,
       wrTime: Time | undefined,
       col: TimeListColumn,
+      canPlay?: boolean,
     }>();
+
+  const emit = defineEmits(['play']);
 
   const data = computed(()=>{
     if(props.col.data === "server"){
@@ -28,9 +31,19 @@
 
 
 <template>
-  <div class="flex time-grid-col px-1.5 min-w-0 overflow-hidden" :class="`${col.alignmentClasses}`">
+  <div class="flex time-grid-col px-1.5 min-w-0" :class="`${col.alignmentClasses}`">
     <span v-if="props.col.placement" class="inline-flex items-center justify-end text-end mr-1.5 min-w-5 text-sm text-gray-400">{{ props.time.rank }}.</span>
-    <div class="flex items-center gap-1.5 max-w-full min-w-0">
+    <div class="relative flex items-center gap-1.5 max-w-full min-w-0">
+      <button
+        v-if="props.col.data === 'time' && props.canPlay"
+        type="button"
+        title="View replay"
+        class="absolute -left-1.5 top-1/2 -translate-y-1/2 -translate-x-full inline-flex items-center justify-center w-5 h-5 rounded bg-main-500 text-gray-300 hover:bg-main-400 hover:text-white cursor-pointer"
+        @click.stop="emit('play')"
+        @dblclick.stop
+      >
+        <svg viewBox="0 0 16 16" class="w-3 h-3 fill-current"><path d="M3 2l11 6-11 6z"/></svg>
+      </button>
       <template v-if="props.col.data === 'date'">
         <RelativeDate :date="(data ?? '') as string | number | Date" class="truncate group-hover/timeLink:underline flex-1" :class="`${col.classes}`" />
       </template>
