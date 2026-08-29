@@ -10,7 +10,6 @@
   import SearchBoxPlayer from '@/components/SearchBoxPlayer.vue';
   import { Style } from '@/types/Style';
   import timesFilterFromQuery from '@/utils/timesFilterFromQuery';
-  import { useModerationStore } from '@/stores/moderation';
 
   const props = defineProps({
     playerSteamId: {
@@ -20,7 +19,6 @@
   });
 
   const route = useRoute();
-  const moderationStore = useModerationStore();
   const isLoading: Ref<boolean> = ref(false);
   const playerTimes: Ref<Time[] | null> = ref(null);
   const playerTotal: Ref<number> = ref(0);
@@ -79,7 +77,6 @@
       urlParams.getAsObject(),
       playerId,
       { style: Style.all, sort: 'Newest', best: true, limit: 50 },
-      moderationStore.canInvalidateTimes.value,
     );
 
     try {

@@ -10,7 +10,6 @@
   import SearchBoxMap from '@/components/SearchBoxMap.vue';
   import { Style } from '@/types/Style';
   import timesFilterFromQuery from '@/utils/timesFilterFromQuery';
-  import { useModerationStore } from '@/stores/moderation';
 
   const props = defineProps({
     mapName: {
@@ -20,7 +19,6 @@
   });
 
   const route = useRoute();
-  const moderationStore = useModerationStore();
   const isLoading: Ref<boolean> = ref(false);
   const mapTimes: Ref<Time[] | null> = ref(null);
   const mapTotal: Ref<number> = ref(0);
@@ -51,7 +49,6 @@
       urlParams.getAsObject(),
       name,
       { style: Style.normal, sort: 'Fastest', best: true, limit: 50 },
-      moderationStore.canInvalidateTimes.value,
     );
 
     try {
