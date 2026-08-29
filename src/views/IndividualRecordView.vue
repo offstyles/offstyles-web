@@ -9,7 +9,7 @@
   import styleFormat from '@/utils/styleFormat';
   import { useRouter } from 'vue-router';
   import { useAuth } from '@/stores/auth';
-  import ReplayViewerOverlay from '@/replay-viewer/ReplayViewerOverlay.vue';
+  import { ReplayViewerOverlay } from '@offstyles/replay-viewer';
   
   const props = defineProps<{
     id: string

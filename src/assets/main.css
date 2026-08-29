@@ -1,6 +1,7 @@
 @import './base.css';
 @import "tailwindcss";
 @config "../../tailwind.config.js";
+@source "../../node_modules/@offstyles/replay-viewer/src";
 
 @font-face {
   font-family: "Roboto";

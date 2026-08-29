@@ -55,6 +55,9 @@ export default defineConfig({
     wasm(),
     buildInfoPlugin(),
   ],
+  optimizeDeps: {
+    exclude: ['@offstyles/replay-viewer'],
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -66,6 +69,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    fs: {
+      allow: ['.', '../replay-viewer'],
+    },
     proxy: {
       '/api': {
         target: 'https://offstyles.net',
